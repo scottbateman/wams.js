@@ -1,0 +1,12 @@
+# tmp text editor files
+*~
+*.swp
+
+# ignore css files because they are generated
+*.css
+
+# ignore node modules
+node_modules/
+
+# ignore IDE files
+.idea/
