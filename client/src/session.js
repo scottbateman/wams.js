@@ -1,0 +1,375 @@
+all();
+function all() {
+   /**
+    * Function is alias to {@link Session.init}
+    * @param {string} [host] Host socket.io is connecting to
+    * @param {object} clientDescription User specified description of client
+    * @returns {Session.init} Instance of session
+    *
+    * @alias Session
+    * @constructor
+    */
+   var Session = function(host, clientDescription) {
+      console.log('session creating');
+      return new Session.init(host, clientDescription);
+   };
+
+   /**
+    * Check if uuid is valid
+    * @param {string} uuid uuid to check
+    * @returns {boolean}
+    */
+   var isUUID = function(uuid) {
+      var uuidRegexp = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      return uuidRegexp.test(uuid);
+   };
+
+//   var //Returns true if object is a DOM node
+//      isNode = function(o) {
+//         return (typeof Node === "object" ? o instanceof Node :
+//            o && typeof o === "object" && typeof o.nodeType === "number"
+//               && typeof o.nodeName === "string");
+//      }
+//      , //Returns true if object is a DOM element
+//      isElement = function(o) {
+//         return (typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
+//            o && typeof o === "object" && o !== null && o.nodeType === 1
+//               && typeof o.nodeName === "string");
+//      }
+//      , //Returns true if object is jQuery element
+//      isJQueryElement = function(o) {
+//         return (o instanceof Session.modules.$);
+//      }
+//      , //Check if object is empty
+//      isEmpty = function(obj) {
+//         for (var key in obj) {
+//            if (obj.hasOwnProperty(key))
+//               return false;
+//         }
+//         return true;
+//      }
+//      , //default drag callback
+//      defaultDragCallback = function(ev) {
+//         var $ = Session.modules.$;
+//
+//      };
+
+   /**
+    * Is true when {@link Session.init#socket socket} is connected and
+    * {@link Session.init#MTObjects MT objects} initialized
+    * @type {boolean}
+    */
+   Session.READY = false;
+
+   /**
+    * All events that sent to server
+    * @type {{}}
+    */
+   var io_send_calls = {
+      new_connection:     "CONN"
+      , send_message:       "SEND_MSG"
+      , broadcast_message:  "BROADCAST_MSG"
+   };
+   /**
+    * All events that received from server
+    * @type {{}}
+    */
+   var io_recv_calls = {
+      connection_ok:      "CONN_OK"
+      , user_connected:     "CONN_USER"
+      , user_disconnected:  "DEL_USER"
+      , subscribe_mt_event: "MT_EVENT_SUBSCRIBE"
+      , receive_message:    "RECV_MSG"
+      , receive_broadcast:  "RECV_BROADCAST"
+   };
+   //   Session.events = new Session.modules.ev();
+
+   /**
+    * Function initializes new session instance
+    * @param {string} [host] Host socket.io is connecting to
+    * @param {object} clientDescription User specified description of client
+    * @returns {init} Instance of session
+    *
+    * @constructor
+    */
+   Session.init = function(host, clientDescription) {
+      if (typeof host !== "string") {
+         clientDescription = host;
+         host = undefined;
+      }
+      var self = this;
+
+      /**
+       * Description of client for current session
+       * @type {Object}
+       */
+      this.description = clientDescription;
+      /**
+       * Objects that has multi-touch properties
+       * @type {Array}
+       */
+      this.MTObjects = [];
+      this.MTSelector = "";
+
+      /**
+       * Array with all clients connected to server except this
+       * @type {Array}
+       */
+      this.otherClients = [];
+
+      /**
+       * Socket to the host for the current session
+       * @type {*|io.Socket}
+       */
+      this.socket = Session.modules.io.connect(host);
+
+
+      this.socket.emit(io_send_calls.new_connection, {
+         description: clientDescription
+      });
+      this.socket.once(io_recv_calls.connection_ok, function(data) {
+         self.uuid = data.uuid;
+         self.otherClients = data.otherClients;
+
+         //TODO fire event or something similar when connection happened
+      });
+      this.socket.on(io_recv_calls.user_connected, function(data) {
+         self.otherClients.push(data.client);
+
+         //TODO fire event
+      });
+      this.socket.on(io_recv_calls.user_disconnected, function(data) {
+         if (self.otherClients.length > 0) {
+            var toDelete = -1, i;
+            for (i = 0; i < self.otherClients.length && toDelete === -1; i++) {
+               if (self.otherClients[i].uuid === data.client.uuid) {toDelete = i;}
+            }
+            if (toDelete != -1) {
+               self.otherClients.splice(toDelete, 1);
+            }
+
+            //TODO fire event
+         }
+      });
+      this.socket.on(io_recv_calls.receive_message, function(data) {
+         //TODO fire event
+      });
+      this.socket.on(io_recv_calls.receive_broadcast, function(data) {
+         //TODO fire event
+      });
+
+      Session.READY = true;
+      return this;
+   };
+
+   Session.init.prototype = {
+      /**
+       * All multitouch events from Hammer
+       * @type {string[]}
+       */
+      MTEvents: [
+         "hold", "tap", "doubletap", "drag", "dragstart", "dragend", "dragup",
+         "dragdown", "dragleft", "dragright", "swipe", "swipeup", "swipedown",
+         "swipeleft", "swiperight", "transform", "transformstart", "transformend",
+         "rotate", "pinch", "pinchin", "pinchout", "touch", "release"
+      ],
+      /**
+       * Specify on which element multitouch is started
+       * @param {jQuery} elem Jquery array of elements
+       */
+      addMT: function(elem) {
+         //TODO make hammer start on body and move items only with certain classes
+         //FIXME --bug 1--
+         // when we pass clean js array of html elements (not $),
+         // and we push each element into MTObjects array, inside "on" function
+         // callback on elements is not called.
+         // Also. When in MTObjects was pushed instance of Hammer, "on" function
+         // was not calling callback on elements. (On github wiki it is working)
+         for (var i = 0, len = elem.length; i < len; i++) {
+            var newMTObj = new Session.modules.Hammer(elem[i], {
+               prevent_default: true,
+               no_mouseevents: true
+            });
+//            this.MTObjects.push(newMTObj);
+         }
+         this.MTObjects.push(elem);
+      },
+      // TODO check on idea of starting MT on body and only allowing
+      // to interact with elements with certain selector
+//      startMT: function (selector) {
+//         new Session.modules.Hammer(document.body, {
+//            prevent_default: true,
+//            no_mouseevents: true
+//         });
+//         this.MTSelector = selector;
+//      },
+      /**
+       * Send data to server through {@link init#socket|socket}
+       * @param {string} type Type of event created on server
+       * @param {string|object} data Object to send
+       */
+      emit: function(type, data) {
+         var self = this;
+         this.socket.emit(type, {
+            uuid: self.uuid,
+            msg: data
+         });
+      },
+      /**
+       * Register callback on specified event
+       * @param {string|string[]} types On which types fire callback
+       * @param {function} callback Function to execute
+       */
+      on: function(types, callback) {
+         var self = this;
+         types.split(' ').forEach(function(type) { // in case types is given as string of few events
+            if (self.MTEvents.indexOf(type) != -1) { // if this event is from hammer
+               self.MTObjects.forEach(function (MTObj) { // to all mt objects we attach listener
+                  MTObj.on(type, function (ev) { //listener callback
+                     var touches = ev.originalEvent.gesture.touches;
+                     var data = {
+                        sourceUUID: self.uuid,
+                        event: {
+                           type: type,
+                           element: []
+                        }
+                     };
+                     for (var i = 0; i < touches.length; i++) {
+                        var touch = touches[i];
+                        data.event.element.push({
+                           tag: touch.target.tagName,
+                           id: touch.target.id,
+                           className: touch.target.className,
+                           innerHTML: touch.target.innerHTML,
+                           x: touch.pageX,
+                           y: touch.pageY
+                        });
+                     }
+                     self.socket.emit(type, data);
+
+                     //FIXME --bug 1-- continued
+                     // cont from higher - this callback is not called when event is
+                     // generated. Right before callback any console.log is called,
+                     // but right inside this callback none of console.log are called
+                     callback(ev);
+                  });
+               });
+            } else {
+               self.socket.on(type, function (data) {
+                  callback(data);
+               });
+            }
+         });
+      },
+      /**
+       * Register callback on event type from remote server
+       * @param {string|string[]} types On which types fire callback
+       * @param {function} callback Function to execute
+       */
+      onRemote: function(types, callback) {
+         var self = this;
+         self.socket.emit(io_recv_calls.subscribe_mt_event, {
+            sourceUUID: self.uuid,
+            eventType: types
+         });
+         types.split(' ').forEach(function(type) {
+            self.socket.on(type, function(data) {
+               callback(data);
+            });
+         });
+      },
+      /**
+       * Send message to specified clients through server
+       * @param {string[]} target Array of target uuids
+       * @param {String|object} msg message
+       */
+      sendMSG: function(target, msg) {
+         var self = this;
+         self.socket.emit(io_send_calls.send_message, {
+            source: self.uuid,
+            target: target,
+            msg: msg
+         });
+      },
+      /**
+       * Send message to all clients through server
+       * @param {String|object} msg message
+       */
+      broadcastMSG: function(msg) {
+         var self = this;
+         self.socket.emit(io_send_calls.broadcast_message, {
+            source: self.uuid,
+            msg: msg
+         });
+      },
+      //FIXME rewrite better without return in the middle of for
+      getDescription: function(uuid) {
+         if (!isUUID(uuid)) {
+            console.error("Provide correct uuid");
+            return undefined;
+         }
+         for (var i = 0; i < this.otherClients.length; i++) {
+            if (this.otherClients[i].uuid === uuid) {
+               return this.otherClients[i].description;
+            }
+         }
+      }
+   };
+
+   /*
+    //Shared dic
+    var dic = {};
+    this.socket.on("DIC_SNAPSHOT", function(data) {
+    dic = data;
+    });
+    this.socket.on("DIC_UPDATE", function(data) {
+    dic[data.attr] = data.value;
+    console.log(dic);
+    });
+    console.log(dic);
+    this.socket.emit("PUSH_TO_DIC", {
+    attr: "uuid", value: this.uuid
+    });
+    dic["uuid"] = this.uuid;
+    console.log(dic);
+    //Shared dic end
+    */
+
+   // Taken from Hammer.js and modified
+   // Based off Lo-Dash's excellent UMD wrapper (slightly modified) - https://github.com/bestiejs/lodash/blob/master/lodash.js#L5515-L5543
+   // some AMD build optimizers, like r.js, check for specific condition patterns like the following:
+   if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
+      // define as module
+      define(["jquery", "hammer", "socket.io"],
+         function ($, Hammer, io) {
+            if (!Session.modules) {
+               Session.modules = {};
+            }
+            Session.modules.$ = $;
+            Session.modules.Hammer = Hammer;
+            Session.modules.io = io;
+
+            return Session;
+         });
+   }
+   // Browserify support
+   else if(typeof module === 'object' && typeof module.exports === 'object') {
+      var $ = require('');
+      var Hammer = require('hammerjs');
+      var io = require('socket.io-client');
+
+      Session.modules.$ = $;
+      Session.modules.Hammer = Hammer;
+      Session.modules.io = io;
+
+      module.exports = Session;
+   }
+   // If we have no plugins
+   else {
+      Session.modules.$ = window.jQuery;
+      Session.modules.Hammer = window.Hammer;
+      Session.modules.io = window.io;
+
+      window.Session = Session;
+   }
+}
