@@ -223,7 +223,9 @@ function all() {
       on: function(types, callback) {
          var self = this;
          types.split(' ').forEach(function(type) { // in case types is given as string of few events
-            if (self.MTEvents.indexOf(type) != -1) { // if this event is from hammer
+            if (type === "shake") {
+               window.addEventListener(type, callback, false);
+            } else if (self.MTEvents.indexOf(type) != -1) { // if this event is from hammer
                self.MTObjects.forEach(function (MTObj) { // to all mt objects we attach listener
                   MTObj.on(type, function (ev) { //listener callback
                      var touches = ev.originalEvent.gesture.touches;
@@ -261,6 +263,27 @@ function all() {
             }
          });
       },
+
+      /**
+       * Stop listening for events of these types
+       * @param {string|string[]} types
+       * @param {function} callback specify which function should be unsubscribed
+       */
+      off: function(types, callback) {
+         var self = this;
+         types.split(' ').forEach(function(type) { // in case types is given as string of few events
+            if (type === "shake") {
+               window.removeEventListener(type, callback, false);
+            } else if (self.MTEvents.indexOf(type) != -1) {
+               self.MTObjects.off(type, callback);
+               self.socket.removeListener(type, callback);
+            }
+            else {
+               self.socket.removeListener(type, callback);
+            }
+         });
+      },
+
       /**
        * Register callback on event type from remote server
        * @param {string|string[]} types On which types fire callback
