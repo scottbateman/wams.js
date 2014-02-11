@@ -246,16 +246,13 @@ function all() {
                self.MTObjects.forEach(function (MTObj) { // to all mt objects we attach listener
                   MTObj.on(type, function (ev) { //listener callback
                      var touches = ev.originalEvent.gesture.touches;
-                     var data = {
-                        sourceUUID: self.uuid,
-                        event: {
+                     var event = {
                            type: type,
                            element: []
-                        }
-                     };
+                        };
                      for (var i = 0; i < touches.length; i++) {
                         var touch = touches[i];
-                        data.event.element.push({
+                        event.element.push({
                            tag: touch.target.tagName,
                            id: touch.target.id,
                            className: touch.target.className,
@@ -264,7 +261,7 @@ function all() {
                            y: touch.pageY
                         });
                      }
-                     self.socket.emit(type, data);
+                     self.emit(type, event);
 
                      //FIXME --bug 1-- continued
                      // cont from higher - this callback is not called when event is
@@ -308,13 +305,12 @@ function all() {
        */
       onRemote: function(types, callback) {
          var self = this;
-         self.socket.emit(io_send_calls.subscribe_mt_event, {
-            sourceUUID: self.uuid,
+         self.emit(io_send_calls.subscribe_mt_event, {
             eventType: types
          });
          types.split(' ').forEach(function(type) {
             self.socket.on(type, function(data) {
-               callback(data);
+               callback(data.data);
             });
          });
       },
@@ -326,8 +322,7 @@ function all() {
        */
       sendMSG: function(targets, msg) {
          var self = this;
-         self.socket.emit(io_send_calls.message_sent, {
-            source: self.uuid,
+         self.emit(io_send_calls.message_sent, {
             targets: targets,
             msg: msg
          });
@@ -339,8 +334,7 @@ function all() {
        */
       broadcastMSG: function(msg) {
          var self = this;
-         self.socket.emit(io_send_calls.broadcast_sent, {
-            source: self.uuid,
+         self.emit(io_send_calls.broadcast_sent, {
             msg: msg
          });
       },
