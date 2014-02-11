@@ -52,9 +52,11 @@ exports.listen = function(server, options, callback) {
          var newUser = new User(getUUID(), socket, "", data.description);
          users.push(newUser);
 
-            uuid: newUser.uuid,
-            otherClients: users.except(newUser)
          socket.emit(server_io_send_calls.connection_ok, {
+            data: {
+               uuid: newUser.uuid,
+               otherClients: users.exportExcept(newUser)
+            }
          });
 
          socket.on(server_io_recv_calls.subscribe_mt_event, function(data) {
@@ -64,8 +66,10 @@ exports.listen = function(server, options, callback) {
             });
          });
 
-            client: newUser
          socket.broadcast.emit(server_io_send_calls.user_connected, {
+            data: {
+               client: newUser.copy()
+            }
          });
 
          MTEvents.forEach(function(type) {
@@ -102,8 +106,10 @@ exports.listen = function(server, options, callback) {
          });
 
          socket.once('disconnect', function() {
-               client: newUser
             socket.broadcast.emit(server_io_send_calls.user_disconnected, {
+               data: {
+                  client: newUser.copy()
+               }
             });
             users.pop(newUser);
          });
