@@ -10,7 +10,6 @@ function all() {
     * @constructor
     */
    var Session = function(host, clientDescription) {
-      console.log('session creating');
       return new Session.init(host, clientDescription);
    };
 
@@ -66,21 +65,29 @@ function all() {
     * @type {{}}
     */
    var io_send_calls = {
-      new_connection:     "CONN"
-      , send_message:       "SEND_MSG"
-      , broadcast_message:  "BROADCAST_MSG"
+      new_connection:       "CONN"
+      , subscribe_mt_event: "MT_EVENT_SUBSCRIBE"
+      , message_sent:       "SEND_MSG"
+      , broadcast_sent:     "SEND_BROADCAST"
    };
    /**
     * All events that received from server
     * @type {{}}
     */
-   var io_recv_calls = {
-      connection_ok:      "CONN_OK"
+   var io_recv_calls = Session.when = {
+      connection_ok:        "CONN_OK"
       , user_connected:     "CONN_USER"
       , user_disconnected:  "DEL_USER"
-      , subscribe_mt_event: "MT_EVENT_SUBSCRIBE"
-      , receive_message:    "RECV_MSG"
-      , receive_broadcast:  "RECV_BROADCAST"
+      , message_received:   "RECV_MSG"
+      , broadcast_received: "RECV_BROADCAST"
+   };
+   io_recv_calls.has = function(target) {
+      for (var i in this) {
+         if (this[i] === target) {
+            return true;
+         }
+      }
+      return false;
    };
    //   Session.events = new Session.modules.ev();
 
@@ -88,7 +95,7 @@ function all() {
     * Function initializes new session instance
     * @param {string} [host] Host socket.io is connecting to
     * @param {object} clientDescription User specified description of client
-    * @returns {init} Instance of session
+    * @returns {Session.init} Instance of session
     *
     * @constructor
     */
@@ -151,10 +158,12 @@ function all() {
             //TODO fire event
          }
       });
-      this.socket.on(io_recv_calls.receive_message, function(data) {
+      this.socket.on(io_recv_calls.message_received, function(data) {
+//         console.log(data);
          //TODO fire event
       });
-      this.socket.on(io_recv_calls.receive_broadcast, function(data) {
+      this.socket.on(io_recv_calls.broadcast_received, function(data) {
+//         console.log(data);
          //TODO fire event
       });
 
@@ -173,6 +182,7 @@ function all() {
          "swipeleft", "swiperight", "transform", "transformstart", "transformend",
          "rotate", "pinch", "pinchin", "pinchout", "touch", "release"
       ],
+
       /**
        * Specify on which element multitouch is started
        * @param {jQuery} elem Jquery array of elements
@@ -194,6 +204,7 @@ function all() {
          }
          this.MTObjects.push(elem);
       },
+
       // TODO check on idea of starting MT on body and only allowing
       // to interact with elements with certain selector
 //      startMT: function (selector) {
@@ -203,8 +214,9 @@ function all() {
 //         });
 //         this.MTSelector = selector;
 //      },
+
       /**
-       * Send data to server through {@link init#socket|socket}
+       * Send data to server through {@link Session.init#socket|socket}
        * @param {string} type Type of event created on server
        * @param {string|object} data Object to send
        */
@@ -215,6 +227,7 @@ function all() {
             msg: data
          });
       },
+
       /**
        * Register callback on specified event
        * @param {string|string[]} types On which types fire callback
@@ -291,7 +304,7 @@ function all() {
        */
       onRemote: function(types, callback) {
          var self = this;
-         self.socket.emit(io_recv_calls.subscribe_mt_event, {
+         self.socket.emit(io_send_calls.subscribe_mt_event, {
             sourceUUID: self.uuid,
             eventType: types
          });
@@ -301,34 +314,37 @@ function all() {
             });
          });
       },
+
       /**
        * Send message to specified clients through server
-       * @param {string[]} target Array of target uuids
+       * @param {string[]} targets Array of target uuids
        * @param {String|object} msg message
        */
-      sendMSG: function(target, msg) {
+      sendMSG: function(targets, msg) {
          var self = this;
-         self.socket.emit(io_send_calls.send_message, {
+         self.socket.emit(io_send_calls.message_sent, {
             source: self.uuid,
-            target: target,
+            targets: targets,
             msg: msg
          });
       },
+
       /**
        * Send message to all clients through server
        * @param {String|object} msg message
        */
       broadcastMSG: function(msg) {
          var self = this;
-         self.socket.emit(io_send_calls.broadcast_message, {
+         self.socket.emit(io_send_calls.broadcast_sent, {
             source: self.uuid,
             msg: msg
          });
       },
+
       //FIXME rewrite better without return in the middle of for
       getDescription: function(uuid) {
          if (!isUUID(uuid)) {
-            console.error("Provide correct uuid");
+//            console.error("Provide correct uuid");
             return undefined;
          }
          for (var i = 0; i < this.otherClients.length; i++) {
