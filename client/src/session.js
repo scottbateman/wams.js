@@ -223,8 +223,8 @@ function all() {
       emit: function(type, data) {
          var self = this;
          this.socket.emit(type, {
-            uuid: self.uuid,
-            msg: data
+            source: self.uuid,
+            data: data
          });
       },
 
