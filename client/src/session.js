@@ -135,13 +135,13 @@ function all() {
          description: clientDescription
       });
       this.socket.once(io_recv_calls.connection_ok, function(data) {
-         self.uuid = data.uuid;
-         self.otherClients = data.otherClients;
+         self.uuid = data.data.uuid;
+         self.otherClients = data.data.otherClients;
 
          //TODO fire event or something similar when connection happened
       });
       this.socket.on(io_recv_calls.user_connected, function(data) {
-         self.otherClients.push(data.client);
+         self.otherClients.push(data.data.client);
 
          //TODO fire event
       });
@@ -149,7 +149,7 @@ function all() {
          if (self.otherClients.length > 0) {
             var toDelete = -1, i;
             for (i = 0; i < self.otherClients.length && toDelete === -1; i++) {
-               if (self.otherClients[i].uuid === data.client.uuid) {toDelete = i;}
+               if (self.otherClients[i].uuid === data.data.client.uuid) {toDelete = i;}
             }
             if (toDelete != -1) {
                self.otherClients.splice(toDelete, 1);
