@@ -60,7 +60,7 @@ exports.listen = function(server, options, callback) {
          });
 
          socket.on(server_io_recv_calls.subscribe_mt_event, function(data) {
-            data.eventType.split(" ").forEach(function(type) {
+            data.data.eventType.split(" ").forEach(function(type) {
                newUser.subscribe(type);
                socket.join(type);
             });
@@ -75,16 +75,16 @@ exports.listen = function(server, options, callback) {
          MTEvents.forEach(function(type) {
             socket.on(type, function(data) {
                socket.broadcast.to(type).emit(type, {
-                  source: newUser.uuid,
-                  data: data
+                  source: data.source,
+                  data: data.data
                });
             });
          });
 
          socket.on(server_io_recv_calls.send_message, function(data) {
             var source = data.source;
-            var targets = data.targets;
-            var msg = data.msg;
+            var targets = data.data.targets;
+            var msg = data.data.msg;
 
             targets.forEach(function(target) {
                var user = users.get(target);
@@ -97,7 +97,7 @@ exports.listen = function(server, options, callback) {
 
          socket.on(server_io_recv_calls.broadcast_message, function(data) {
             var source = data.source;
-            var msg = data.msg;
+            var msg = data.data.msg;
 
             socket.broadcast.emit(server_io_send_calls.receive_broadcast, {
                source: source,
