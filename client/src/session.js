@@ -1,16 +1,16 @@
 all();
 function all() {
    /**
-    * Function is alias to {@link Session.init}
+    * Function is alias to {@link WAMS.init}
     * @param {string} [host] Host socket.io is connecting to
     * @param {object} clientDescription User specified description of client
-    * @returns {Session.init} Instance of session
+    * @returns {WAMS.init} Instance of session
     *
-    * @alias Session
+    * @alias WAMS
     * @constructor
     */
-   var Session = function(host, clientDescription) {
-      return new Session.init(host, clientDescription);
+   var WAMS = function(host, clientDescription) {
+      return new WAMS.init(host, clientDescription);
    };
 
    /**
@@ -37,7 +37,7 @@ function all() {
 //      }
 //      , //Returns true if object is jQuery element
 //      isJQueryElement = function(o) {
-//         return (o instanceof Session.modules.$);
+//         return (o instanceof WAMS.modules.$);
 //      }
 //      , //Check if object is empty
 //      isEmpty = function(obj) {
@@ -49,16 +49,16 @@ function all() {
 //      }
 //      , //default drag callback
 //      defaultDragCallback = function(ev) {
-//         var $ = Session.modules.$;
+//         var $ = WAMS.modules.$;
 //
 //      };
 
    /**
-    * Is true when {@link Session.init#socket socket} is connected and
-    * {@link Session.init#MTObjects MT objects} initialized
+    * Is true when {@link WAMS.init#socket socket} is connected and
+    * {@link WAMS.init#MTObjects MT objects} initialized
     * @type {boolean}
     */
-   Session.READY = false;
+   WAMS.READY = false;
 
    /**
     * All events that sent to server
@@ -74,7 +74,7 @@ function all() {
     * All events that received from server
     * @type {{}}
     */
-   var io_recv_calls = Session.when = {
+   var io_recv_calls = WAMS.when = {
       connection_ok:        "CONN_OK"
       , user_connected:     "CONN_USER"
       , user_disconnected:  "DEL_USER"
@@ -89,17 +89,17 @@ function all() {
       }
       return false;
    };
-   //   Session.events = new Session.modules.ev();
+   //   WAMS.events = new WAMS.modules.ev();
 
    /**
     * Function initializes new session instance
     * @param {string} [host] Host socket.io is connecting to
     * @param {object} clientDescription User specified description of client
-    * @returns {Session.init} Instance of session
+    * @returns {WAMS.init} Instance of session
     *
     * @constructor
     */
-   Session.init = function(host, clientDescription) {
+   WAMS.init = function(host, clientDescription) {
       if (typeof host !== "string") {
          clientDescription = host;
          host = undefined;
@@ -128,7 +128,7 @@ function all() {
        * Socket to the host for the current session
        * @type {*|io.Socket}
        */
-      this.socket = Session.modules.io.connect(host);
+      this.socket = WAMS.modules.io.connect(host);
 
 
       this.socket.emit(io_send_calls.new_connection, {
@@ -167,11 +167,11 @@ function all() {
          //TODO fire event
       });
 
-      Session.READY = true;
+      WAMS.READY = true;
       return this;
    };
 
-   Session.init.prototype = {
+   WAMS.init.prototype = {
       /**
        * All multitouch events from Hammer
        * @type {string[]}
@@ -196,7 +196,7 @@ function all() {
          // Also. When in MTObjects was pushed instance of Hammer, "on" function
          // was not calling callback on elements. (On github wiki it is working)
          for (var i = 0, len = elem.length; i < len; i++) {
-            var newMTObj = new Session.modules.Hammer(elem[i], {
+            var newMTObj = new WAMS.modules.Hammer(elem[i], {
                prevent_default: true,
                no_mouseevents: true
             });
@@ -208,7 +208,7 @@ function all() {
       // TODO check on idea of starting MT on body and only allowing
       // to interact with elements with certain selector
 //      startMT: function (selector) {
-//         new Session.modules.Hammer(document.body, {
+//         new WAMS.modules.Hammer(document.body, {
 //            prevent_default: true,
 //            no_mouseevents: true
 //         });
@@ -216,7 +216,7 @@ function all() {
 //      },
 
       /**
-       * Send data to server through {@link Session.init#socket|socket}
+       * Send data to server through {@link WAMS.init#socket|socket}
        * @param {string} type Type of event created on server
        * @param {string|object} data Object to send
        */
@@ -380,14 +380,14 @@ function all() {
       // define as module
       define(["jquery", "hammer", "socket.io"],
          function ($, Hammer, io) {
-            if (!Session.modules) {
-               Session.modules = {};
+            if (!WAMS.modules) {
+               WAMS.modules = {};
             }
-            Session.modules.$ = $;
-            Session.modules.Hammer = Hammer;
-            Session.modules.io = io;
+            WAMS.modules.$ = $;
+            WAMS.modules.Hammer = Hammer;
+            WAMS.modules.io = io;
 
-            return Session;
+            return WAMS;
          });
    }
    // Browserify support
@@ -396,18 +396,18 @@ function all() {
       var Hammer = require('hammerjs');
       var io = require('socket.io-client');
 
-      Session.modules.$ = $;
-      Session.modules.Hammer = Hammer;
-      Session.modules.io = io;
+      WAMS.modules.$ = $;
+      WAMS.modules.Hammer = Hammer;
+      WAMS.modules.io = io;
 
-      module.exports = Session;
+      module.exports = WAMS;
    }
    // If we have no plugins
    else {
-      Session.modules.$ = window.jQuery;
-      Session.modules.Hammer = window.Hammer;
-      Session.modules.io = window.io;
+      WAMS.modules.$ = window.jQuery;
+      WAMS.modules.Hammer = window.Hammer;
+      WAMS.modules.io = window.io;
 
-      window.Session = Session;
+      window.WAMS = WAMS;
    }
 }
