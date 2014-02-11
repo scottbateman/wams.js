@@ -21,7 +21,7 @@ var getUUID = function() {
 var users = new Storage();
 
 exports.listen = function(server, options, callback) {
-   var io = socket_io(server, options, callback);
+   var io = socket_io.listen(server, options, callback);
 
    io.sockets.on('connection', function(socket) {
       socket.on('CONN', function(data) {
