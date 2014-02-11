@@ -238,6 +238,10 @@ function all() {
          types.split(' ').forEach(function(type) { // in case types is given as string of few events
             if (type === "shake") {
                window.addEventListener(type, callback, false);
+            } else if (io_recv_calls.has(type)) { // one of internal events
+               self.socket.on(type, function(data) {
+                  callback(data.data);
+               });
             } else if (self.MTEvents.indexOf(type) != -1) { // if this event is from hammer
                self.MTObjects.forEach(function (MTObj) { // to all mt objects we attach listener
                   MTObj.on(type, function (ev) { //listener callback
@@ -352,6 +356,7 @@ function all() {
                return this.otherClients[i].description;
             }
          }
+         return undefined;
       }
    };
 
