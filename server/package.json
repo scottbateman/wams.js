@@ -2,7 +2,7 @@
   "name": "wams.js-server",
   "version": "0.0.0",
   "description": "wams.js-server ==============",
-  "main": "./src/index.js",
+  "main": "./src/wams.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
