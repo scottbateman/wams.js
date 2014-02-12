@@ -62,7 +62,6 @@ exports.listen = function(server, options, callback) {
          socket.on(server_io_recv_calls.subscribe_mt_event, function(data) {
             data.data.eventType.split(" ").forEach(function(type) {
                newUser.subscribe(type);
-               socket.join(type);
             });
          });
 

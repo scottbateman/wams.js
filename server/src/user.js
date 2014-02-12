@@ -15,6 +15,7 @@ user.prototype.equals = function(user) {
 
 user.prototype.subscribe = function(event) {
    this.MTSubscription.push(event);
+   this.socket.join(event);
 };
 
 user.prototype.copy = function() {
