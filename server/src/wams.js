@@ -34,6 +34,10 @@ var MTEvents = [
    "rotate", "pinch", "pinchin", "pinchout", "touch", "release"
 ];
 
+/**
+ * Generates random UUID string
+ * @returns {string} UUID
+ */
 var getUUID = function() {
    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -41,7 +45,10 @@ var getUUID = function() {
    });
 };
 
-//user storage
+/**
+ * User storage
+ * @type {Storage}
+ */
 var users = new Storage();
 
 exports.listen = function(server, options, callback) {
