@@ -7,7 +7,10 @@ var user = function(uuid, socket, mode, description) {
 };
 
 user.prototype.equals = function(user) {
-   return (this.uuid === user.uuid);
+   if (typeof user === 'string')
+      return (this.uuid === user);
+   else
+      return (this.uuid === user.uuid);
 };
 
 user.prototype.subscribe = function(event) {
