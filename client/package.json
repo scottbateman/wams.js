@@ -2,7 +2,7 @@
   "name": "wams-client.js",
   "version": "0.0.1",
   "private": true,
-  "main": "./src/session.js",
+  "main": "./src/wams.js",
   "devDependencies": {
     "gulp": "~3.5.1",
     "gulp-browserify": "~0.4.2",
