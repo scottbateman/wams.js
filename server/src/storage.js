@@ -36,6 +36,14 @@ storage.prototype.exportExcept = function(user) {
    return list;
 };
 
+storage.prototype.exportAll = function() {
+   var list = [];
+   for (var i = 0; i < this.length; i++) {
+      list.push(this[i].copy());
+   }
+   return list;
+};
+
 storage.prototype.get = function(uuid) {
    for (var i = 0; i < this.length; i++) {
       if (this[i].uuid === uuid) {return this[i];}
