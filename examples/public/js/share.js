@@ -70,13 +70,13 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
            WAMS.when.user_connected,
            WAMS.when.user_disconnected].join(" "), updateBar);
 
-   setTimeout(function() {
+//   setTimeout(function() {
 //      wams.sendMSG([wams.otherClients[0].uuid], {msg: "hello", metadata: true});
 //      wams.broadcastMSG({msg: "hello", metadata: true});
-   }, 1000);
-   wams.on(WAMS.when.broadcast_received, function(data) {
-      console.log(data);
-   });
+//   }, 1000);
+//   wams.on(WAMS.when.broadcast_received, function(data) {
+//      console.log(data);
+//   });
 
 //   wams.addMT(".drag");
    wams.addMT($('.drag'));
@@ -86,7 +86,6 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
    wams.on('drag', onDrag);
    wams.on('release', onRelease);
    wams.on(WAMS.when.message_received, function(data) {
-      console.log(data);
       switch (data.action) {
          case "new_element":
             new_element(data.element);
@@ -155,8 +154,6 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
       }
    }
    function new_element(metadata) {
-      console.log(metadata);
-
       var newElem = $(document.createElement(metadata.tag));
       newElem.addClass(metadata.className);
       newElem.attr('id', metadata.id);
@@ -183,8 +180,8 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
 //      console.log('Undo?');
 //   });
 
-   window.sess = wams;
-   window.Session = WAMS;
+//   window.sess = wams;
+//   window.Session = WAMS;
 
    /*
    //FIXME check error with drag when element jumps to new location
