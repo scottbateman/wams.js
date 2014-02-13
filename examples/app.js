@@ -41,6 +41,7 @@ if ('development' == app.get('env')) {
 
 app.get('/', routes.index);
 app.get('/share', routes.share);
+app.get('/mirror', routes.mirror);
 
 server.listen(app.get('port'), function(){
   console.log('Express server listening on ' + app.get('ip') +  ':' + app.get('port'));
