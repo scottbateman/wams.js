@@ -60,8 +60,8 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
          var target = $(touches[t].target);
          if (isUnlocked(target, wams.uuid)) {
             lock(target);
+            liftZindex(target, 10);
          }
-         liftZindex(target);
       }
    }
    function onRemoteTouch(data) {
@@ -69,8 +69,8 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
          var ball = $('#' + element.id);
          if (isUnlocked(ball, data.source)) {
             lock(ball, data.source);
+            liftZindex(ball, 5);
          }
-         liftZindex(ball);
       });
    }
    function onDrag(ev) {
@@ -97,6 +97,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
          var target = $(touches[t].target);
          if (isUnlocked(target, wams.uuid)) {
             unlock(target);
+            lowerZindex(target);
          }
       }
    }
@@ -105,13 +106,23 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
          var ball = $('#' + element.id);
          if (isUnlocked(ball, data.source)) {
             unlock(ball);
+            lowerZindex(ball);
          }
       })
    }
 
-   function liftZindex(elem) {
-      $('.drag').css({ zIndex: 5 });
-      elem.css({ zIndex: 10 });
+   function liftZindex(elem, num) {
+//      $('.drag').css({ zIndex: 5 });
+      if (typeof num === 'undefined') {
+         num = 10
+      }
+      elem.css({ zIndex: num });
+   }
+   function lowerZindex(elem, num) {
+      if (typeof num === 'undefined') {
+         num = 1;
+      }
+      elem.css({ zIndex: num });
    }
    function moveElement(elem, x, y) {
       if (elem.hasClass('drag')) {
