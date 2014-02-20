@@ -310,6 +310,7 @@ function all() {
          });
          types.split(' ').forEach(function(type) {
             self.socket.on(type, function(data) {
+               data.data.source = data.source;
                callback(data.data);
             });
          });
