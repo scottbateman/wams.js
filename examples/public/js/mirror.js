@@ -49,35 +49,64 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
 
    wams.on('touch', onTouch);
    wams.on('drag transform', onDrag);
+   wams.on('release', onRelease);
    wams.onRemote('touch', onRemoteTouch);
    wams.onRemote("drag transform", onRemoteDrag);
+   wams.onRemote('release', onRemoteRelease);
 
    function onTouch(ev) {
       var touches = ev.originalEvent.gesture.touches;
       for (var t = 0, len = touches.length; t < len; t++) {
          var target = $(touches[t].target);
+         if (isUnlocked(target, wams.uuid)) {
+            lock(target);
+         }
          liftZindex(target);
       }
    }
    function onRemoteTouch(data) {
       data.element.forEach(function(element) {
          var ball = $('#' + element.id);
+         if (isUnlocked(ball, data.source)) {
+            lock(ball, data.source);
+         }
          liftZindex(ball);
       });
    }
    function onDrag(ev) {
       var touches = ev.originalEvent.gesture.touches;
       for (var t = 0, len = touches.length; t < len; t++) {
-//         var target = $(touches[t].target);
-         var target = $(ev.target);
-         moveElement(target, touches[t].pageX, touches[t].pageY);
+         var target = $(touches[t].target);
+//         var target = $(ev.target);
+         if (isUnlocked(target, wams.uuid)) {
+            moveElement(target, touches[t].pageX, touches[t].pageY);
+         }
       }
    }
    function onRemoteDrag(data) {
       data.element.forEach(function(element) {
          var ball = $('#' + element.id);
-         moveElement(ball, element.x, element.y);
+         if (isUnlocked(ball, data.source)) {
+            moveElement(ball, element.x, element.y);
+         }
       });
+   }
+   function onRelease(ev) {
+      var touches = ev.originalEvent.gesture.touches;
+      for (var t = 0, len = touches.length; t < len; t++) {
+         var target = $(touches[t].target);
+         if (isUnlocked(target, wams.uuid)) {
+            unlock(target);
+         }
+      }
+   }
+   function onRemoteRelease(data) {
+      data.element.forEach(function(element) {
+         var ball = $('#' + element.id);
+         if (isUnlocked(ball, data.source)) {
+            unlock(ball);
+         }
+      })
    }
 
    function liftZindex(elem) {
@@ -91,5 +120,15 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
             top: y - elem.height() / 2
          });
       }
+   }
+   function lock(elem, uuid) {
+      elem.attr('data-lock', uuid || wams.uuid);
+   }
+   function unlock(elem) {
+      elem.attr('data-lock', "");
+   }
+   function isUnlocked(elem, uuid) {
+      return (elem.attr('data-lock') === "") ||
+         (elem.attr("data-lock") === uuid);
    }
 });

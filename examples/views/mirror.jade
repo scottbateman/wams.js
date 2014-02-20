@@ -8,7 +8,7 @@ block content
   a(href='/') Root
 
   - for (var i = 1; i <= 4; i++)
-    div(class='drag', class='ball' + i, id='ball' + i)
+    div(class='drag', class='ball' + i, id='ball' + i, data-lock="")
       p.id #{i}
 
   script(data-main='/js/mirror.js', src='/js/require.js')
