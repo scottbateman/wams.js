@@ -61,6 +61,8 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
          if (isUnlocked(target, wams.uuid)) {
             lock(target);
             liftZindex(target, 10);
+            target.attr('data-touchX', touches[t].pageX - target.offset().left);
+            target.attr('data-touchY', touches[t].pageY - target.offset().top);
          }
       }
    }
@@ -70,6 +72,8 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
          if (isUnlocked(ball, data.source)) {
             lock(ball, data.source);
             liftZindex(ball, 5);
+            ball.attr('data-touchX', element.x - ball.offset().left);
+            ball.attr('data-touchY', element.y - ball.offset().top);
          }
       });
    }
@@ -98,6 +102,8 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
          if (isUnlocked(target, wams.uuid)) {
             unlock(target);
             lowerZindex(target);
+            target.attr('data-touchX', "");
+            target.attr('data-touchY', "");
          }
       }
    }
@@ -107,6 +113,8 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
          if (isUnlocked(ball, data.source)) {
             unlock(ball);
             lowerZindex(ball);
+            ball.attr('data-touchX', "");
+            ball.attr('data-touchY', "");
          }
       })
    }
@@ -127,8 +135,8 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
    function moveElement(elem, x, y) {
       if (elem.hasClass('drag')) {
          elem.css({
-            left: x - elem.width() / 2,
-            top: y - elem.height() / 2
+            left: x - +elem.attr('data-touchX'),
+            top: y - +elem.attr('data-touchY')
          });
       }
    }

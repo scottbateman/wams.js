@@ -99,6 +99,8 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
          var target = $(touches[t].target);
          $('.drag').css({ zIndex: 5 });
          target.css({ zIndex: 10 });
+         target.attr('data-touchX', touches[t].pageX - target.offset().left);
+         target.attr('data-touchY', touches[t].pageY - target.offset().top);
       }
    }
    function onDrag(ev) {
@@ -109,8 +111,8 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
 
          if (target.hasClass('drag')) {
             target.css({
-               left: touches[t].pageX - target.width() / 2,
-               top: touches[t].pageY - target.height() / 2
+               left: touches[t].pageX - +target.attr('data-touchX'),
+               top: touches[t].pageY - +target.attr('data-touchY')
             });
          }
       }
@@ -120,6 +122,9 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
 //      console.log(touches.length);
       for (var t = 0; t < touches.length; t++) {
          var target = $(touches[t].target);
+         target.attr('data-touchX', "");
+         target.attr('data-touchY', "");
+
          if (target.hasClass('drag')) {
             var targetCenter = {
                x: target.offset().left + target.width() / 2,
