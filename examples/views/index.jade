@@ -3,5 +3,6 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  a(href='/share') Share mode
-  a(href='/mirror') Mirror mode
+  ul
+    li: a(href='/share') Share mode
+    li: a(href='/mirror') Mirror mode
