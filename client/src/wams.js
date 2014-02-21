@@ -252,14 +252,17 @@ function all() {
                         };
                      for (var i = 0; i < touches.length; i++) {
                         var touch = touches[i];
-                        event.element.push({
+                        var elementMetadata = {
                            tag: touch.target.tagName,
-                           id: touch.target.id,
-                           className: touch.target.className,
+                           attributes: {},
                            innerHTML: touch.target.innerHTML,
                            x: touch.pageX,
                            y: touch.pageY
-                        });
+                        };
+                        for (var j = 0, attrs = touch.target.attributes; j < attrs.length; j++) {
+                           elementMetadata.attributes[attrs.item(j).nodeName] = attrs.item(j).nodeValue;
+                        }
+                        event.element.push(elementMetadata);
                      }
                      self.emit(type, event);
 
