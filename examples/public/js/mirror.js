@@ -68,7 +68,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
    }
    function onRemoteTouch(data) {
       data.element.forEach(function(element) {
-         var ball = $('#' + element.id);
+         var ball = $('#' + element.attributes.id);
          if (isUnlocked(ball, data.source)) {
             lock(ball, data.source);
             liftZindex(ball, 5);
@@ -89,7 +89,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
    }
    function onRemoteDrag(data) {
       data.element.forEach(function(element) {
-         var ball = $('#' + element.id);
+         var ball = $('#' + element.attributes.id);
          if (isUnlocked(ball, data.source)) {
             moveElement(ball, element.x, element.y);
          }
@@ -109,7 +109,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
    }
    function onRemoteRelease(data) {
       data.element.forEach(function(element) {
-         var ball = $('#' + element.id);
+         var ball = $('#' + element.attributes.id);
          if (isUnlocked(ball, data.source)) {
             unlock(ball);
             lowerZindex(ball);
