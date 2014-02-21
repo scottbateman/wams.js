@@ -145,16 +145,19 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
                }
             }
             if (typeof where === 'string') {
-               wams.sendMSG([where], {
+               var msg = {
                   action: 'new_element',
                   element: {
                      tag: target[0].tagName,
-                     id: target[0].id,
-                     className: target[0].className,
+                     attributes: {},
                      innerHTML: target[0].innerHTML,
                      relHeight: ( targetCenter.y / $(window).height() )
                   }
-               });
+               };
+               for (var j = 0, attrs = target[0].attributes; j < attrs.length; j++) {
+                  msg.element.attributes[attrs.item(j).nodeName] = attrs.item(j).nodeValue;
+               }
+               wams.sendMSG([where], msg);
                target.remove();
             }
          }
@@ -162,9 +165,10 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
    }
    function new_element(metadata) {
       var newElem = $(document.createElement(metadata.tag));
-      newElem.addClass(metadata.className);
-      newElem.attr('id', metadata.id);
       newElem.html(metadata.innerHTML);
+      for (var attribute in metadata.attributes) {
+         newElem.attr(attribute, metadata.attributes[attribute]);
+      }
 
       $("body").append(newElem);
       wams.addMT(newElem);
