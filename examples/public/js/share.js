@@ -122,13 +122,15 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
 //      console.log(touches.length);
       for (var t = 0; t < touches.length; t++) {
          var target = $(touches[t].target);
+         var touchX = +target.attr('data-touchX');
+         var touchY = +target.attr('data-touchY');
          target.attr('data-touchX', "");
          target.attr('data-touchY', "");
 
          if (target.hasClass('drag')) {
             var targetCenter = {
-               x: target.offset().left + target.width() / 2,
-               y: target.offset().top + target.height() / 2
+               x: target.offset().left + touchX,
+               y: target.offset().top + touchY
             };
             var where;
             var dropAreas = $('#drop-area').find('div');
