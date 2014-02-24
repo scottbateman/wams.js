@@ -149,7 +149,7 @@ function all() {
          if (self.otherClients.length > 0) {
             var toDelete = -1, i;
             for (i = 0; i < self.otherClients.length && toDelete === -1; i++) {
-               if (self.otherClients[i].uuid === data.data.client.uuid) {toDelete = i;}
+               if (self.otherClients[i].uuid === data.data.client) {toDelete = i;}
             }
             if (toDelete != -1) {
                self.otherClients.splice(toDelete, 1);
