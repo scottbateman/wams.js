@@ -134,7 +134,7 @@ function all() {
       this.socket.emit(io_send_calls.new_connection, {
          description: clientDescription
       });
-      this.socket.once(io_recv_calls.connection_ok, function(data) {
+      this.socket.on(io_recv_calls.connection_ok, function(data) {
          self.uuid = data.data.uuid;
          self.otherClients = data.data.otherClients;
 
