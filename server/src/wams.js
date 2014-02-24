@@ -103,7 +103,7 @@ exports.listen = function(server, options, callback) {
          socket.once('disconnect', function() {
             socket.broadcast.emit(server_io_send_calls.user_disconnected, {
                data: {
-                  client: newUser.copy()
+                  client: newUser.uuid
                }
             });
             users.pop(newUser);
