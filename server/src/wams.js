@@ -39,9 +39,10 @@ var MTEvents = [
  * @type {Storage}
  */
 var users = new Storage();
+var io;
 
 exports.listen = function(server, options, callback) {
-   var io = socket_io.listen(server, options, callback);
+   io = socket_io.listen(server, options, callback);
 
    io.sockets.on('connection', function(socket) {
       socket.on(server_io_recv_calls.new_connection, function(data) {
