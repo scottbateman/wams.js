@@ -1,17 +1,27 @@
 /**
+ * Generates random UUID string
+ * @returns {string} UUID
+ */
+var generateUUID = function() {
+   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+   });
+};
+
+/**
  * Create new user
- * @param {string} uuid
  * @param {socket_io.Socket} socket
  * @param {string} mode Mode set for user
  * @param {{}} description Description object of the user
  * @constructor
  */
-var user = function(uuid, socket, mode, description) {
+var user = function(socket, mode, description) {
    /**
     * Unique identifier of {@linkcode user}
     * @type {string}
     */
-   this.uuid = uuid;
+   this.uuid = generateUUID();
    /**
     * Socket to this client
     * @type {socket_io.Socket}

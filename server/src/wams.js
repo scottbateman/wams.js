@@ -35,17 +35,6 @@ var MTEvents = [
 ];
 
 /**
- * Generates random UUID string
- * @returns {string} UUID
- */
-var getUUID = function() {
-   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-   });
-};
-
-/**
  * User storage
  * @type {Storage}
  */
@@ -56,7 +45,7 @@ exports.listen = function(server, options, callback) {
 
    io.sockets.on('connection', function(socket) {
       socket.on(server_io_recv_calls.new_connection, function(data) {
-         var newUser = new User(getUUID(), socket, "", data.description);
+         var newUser = new User(socket, "", data.description);
          users.push(newUser);
 
          socket.emit(server_io_send_calls.connection_ok, {
