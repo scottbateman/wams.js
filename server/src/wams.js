@@ -1,5 +1,5 @@
 var socket_io = require('socket.io')
-  , Storage = require('./storage')
+  , Storage = require('./vault')
   , User = require('./user')
   ;
 
