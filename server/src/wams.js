@@ -52,7 +52,7 @@ exports.listen = function(server, options, callback) {
          socket.emit(server_io_send_calls.connection_ok, {
             data: {
                uuid: newUser.uuid,
-               otherClients: users.exportExcept(newUser)
+               otherClients: users.networkExportExcept(newUser)
             }
          });
 
@@ -64,7 +64,7 @@ exports.listen = function(server, options, callback) {
 
          socket.broadcast.emit(server_io_send_calls.user_connected, {
             data: {
-               client: newUser.copy()
+               client: newUser.copyForNetwork()
             }
          });
 

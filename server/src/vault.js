@@ -45,15 +45,15 @@ vault.prototype.pop = function(user) {
 
 /**
  * Export list of significant data from {@linkcode user} objects except specified user.
- * Uses {@linkcode user#copy} to export data
+ * Uses {@linkcode user#copyForNetwork} to export data
  * @param {user} user {@link user|User} object to exclude
  * @returns {Array} Array of objects with important data from {@linkcode user} except specified user
  */
-vault.prototype.exportExcept = function(user) {
+vault.prototype.networkExportExcept = function(user) {
    var list = [];
    for (var i = 0; i < this.length; i++) {
       if (!this[i].equals(user)) {
-         list.push(this[i].copy());
+         list.push(this[i].copyForNetwork());
       }
    }
    return list;
@@ -61,13 +61,13 @@ vault.prototype.exportExcept = function(user) {
 
 /**
  * Export list of significant data from {@linkcode user} objects.
- * Uses {@linkcode user#copy} to export data
+ * Uses {@linkcode user#copyForNetwork} to export data
  * @returns {Array} Array of objects with important data from {@linkcode user}
  */
-vault.prototype.exportAll = function() {
+vault.prototype.networkExportAll = function() {
    var list = [];
    for (var i = 0; i < this.length; i++) {
-      list.push(this[i].copy());
+      list.push(this[i].copyForNetwork());
    }
    return list;
 };

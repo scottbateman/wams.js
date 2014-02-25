@@ -62,10 +62,10 @@ user.prototype.subscribe = function(event) {
 };
 
 /**
- * Export object with significant data that can be JSON.stringified
+ * Export object with significant data that can be sent over network
  * @returns {{}} Significant data of current {@link user user}
  */
-user.prototype.copy = function() {
+user.prototype.copyForNetwork = function() {
    var result = {};
 
    result.uuid = this.uuid;
