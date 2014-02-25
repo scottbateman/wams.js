@@ -1,5 +1,5 @@
 var socket_io = require('socket.io')
-  , Storage = require('./vault')
+  , Vault = require('./vault')
   , User = require('./user')
   ;
 
@@ -35,10 +35,10 @@ var MTEvents = [
 ];
 
 /**
- * User storage
- * @type {Storage}
+ * User vault
+ * @type {Vault}
  */
-var users = new Storage();
+var users = new Vault();
 var io;
 
 exports.listen = function(server, options, callback) {
