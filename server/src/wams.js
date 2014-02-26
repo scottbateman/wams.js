@@ -38,7 +38,7 @@ var MTEvents = [
  * User vault
  * @type {Vault}
  */
-var users = new Vault();
+var users = exports.users = new Vault();
 var io;
 
 exports.listen = function(server, options, callback) {
