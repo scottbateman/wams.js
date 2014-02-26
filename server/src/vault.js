@@ -60,19 +60,6 @@ vault.prototype.networkExportExcept = function(user) {
 };
 
 /**
- * Export list of significant data from {@linkcode user} objects.
- * Uses {@linkcode user#copyForNetwork} to export data
- * @returns {Array} Array of objects with important data from {@linkcode user}
- */
-vault.prototype.networkExportAll = function() {
-   var list = [];
-   for (var i = 0; i < this.length; i++) {
-      list.push(this[i].copyForNetwork());
-   }
-   return list;
-};
-
-/**
  * Get {@linkcode user} object by {@linkcode user#uuid|uuid}
  * @param {string} uuid Identifier of {@linkcode user}
  * @returns {user|undefined} {@linkcode user} object or undefined
