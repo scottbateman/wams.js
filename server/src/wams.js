@@ -38,7 +38,7 @@ var MTEvents = [
  * User vault
  * @type {Vault}
  */
-var users = exports.users = new Vault();
+var users = new Vault();
 var io;
 
 exports.listen = function(server, options, callback) {
@@ -111,4 +111,12 @@ exports.listen = function(server, options, callback) {
          });
       });
    });
+};
+
+/**
+ * Returns snapshot of vault. This snapshot is not updated, when vault is updated
+ * @returns {Array} Copies of users
+ */
+exports.getSnapshot = function() {
+   return users.localExport();
 };

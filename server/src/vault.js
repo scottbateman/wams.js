@@ -60,6 +60,18 @@ vault.prototype.networkExportExcept = function(user) {
 };
 
 /**
+ * Returns snapshot of vault. This snapshot is not updated, when vault is updated
+ * @returns {Array} Array of user copies
+ */
+vault.prototype.localExport = function() {
+   var obj = [];
+   for (var i = 0; i < this.length; i++) {
+      obj.push(this[i].copyForLocal());
+   }
+   return obj;
+};
+
+/**
  * Get {@linkcode user} object by {@linkcode user#uuid|uuid}
  * @param {string} uuid Identifier of {@linkcode user}
  * @returns {user|undefined} {@linkcode user} object or undefined

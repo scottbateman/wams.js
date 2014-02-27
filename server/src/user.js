@@ -74,4 +74,12 @@ user.prototype.copyForNetwork = function() {
    return result;
 };
 
+/**
+ * Export user objects
+ * @returns {user} Current {@link user user}
+ */
+user.prototype.copyForLocal = function() {
+   return this;
+};
+
 module.exports = user;
