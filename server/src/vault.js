@@ -22,7 +22,7 @@ vault.prototype.push = function(user) {
 /**
  * Return and delete object from {@linkcode vault}
  * @param {user} user {@linkcode user|User} to pop
- * @returns {user} User object
+ * @returns {user|undefined} User object
  */
 vault.prototype.pop = function(user) {
    if (this.length === 0) {return undefined;}
