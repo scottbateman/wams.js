@@ -114,6 +114,101 @@ exports.listen = function(server, options, callback) {
 };
 
 /**
+ * Receive event from client
+ * @param {string} type Type of event
+ * @param {string|User} [source] From where should we expect event.
+ *    If not specified, expects from all clients.
+ * @param {function} callback Execute when event received
+ */
+exports.on = function(type, source, callback) {
+   if (typeof io === "undefined") {
+      throw new Error("WAMS has to be started first");
+   }
+
+   var socket;
+   switch (arguments.length) {
+      case 2:
+         callback = source;
+         source = undefined;
+         socket = '*';
+         break;
+      case 3:
+         console.log(typeof source);
+         console.log(source);
+         if (typeof source === 'string') {
+            var user = users.get(source);
+            if (typeof user === 'undefined') { throw new Error('Wrong uuid'); }
+            socket = user.socket;
+         } else if (source.socket) {
+            socket = source.socket;
+         } else if (source.on) {
+            socket = source;
+         } else {
+            throw new Error('Incorrect source');
+         }
+         break;
+      default:
+         throw new Error("Incorrect amount of arguments");
+         break;
+   }
+
+   if (socket === '*') {
+      io.sockets.on('connection', function(socket) {
+         socket.on(type, function(data) {
+            callback(data);
+         });
+      });
+   } else {
+      socket.on(type, function(data) {
+         callback(data);
+      });
+   }
+};
+
+/**
+ * Send event to client
+ * @param {string} type Type of event
+ * @param {string|User} [destination] Where should event happen. If not specified
+ *    this event is emitted to all clients
+ * @param {string|object} data Data sent alongside with event
+ */
+exports.emit = function(type, destination, data) {
+   var socket;
+   switch (arguments.length) {
+      case 2:
+         data = destination;
+         destination = undefined;
+         socket = '*';
+         break;
+      case 3:
+         if (typeof destination === 'string') {
+            var user = users.get(destination);
+            if (typeof user === 'undefined') { throw new Error('Wrong uuid'); }
+            socket = user.socket;
+         } else if (destination.socket) {
+            socket = destination.socket;
+         } else if (destination.emit) {
+            socket = destination;
+         } else {
+            throw new Error('Incorrect destination');
+         }
+         break;
+      default:
+         throw new Error("Incorrect amount of arguments");
+         break;
+   }
+
+   if (socket === "*") {
+      var i;
+      for (i = 0; i < users.length; i++) {
+         users[i].socket.emit(type, data);
+      }
+   } else {
+      socket.emit(type, data);
+   }
+};
+
+/**
  * Returns snapshot of vault. This snapshot is not updated, when vault is updated
  * @returns {Array} Copies of users
  */
