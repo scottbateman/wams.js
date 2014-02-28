@@ -11,7 +11,6 @@ var routes = require('./routes');
 var wams = require('wams.js-server');
 
 var app = express();
-var server = http.createServer(app);
 
 var iface = os.networkInterfaces()['wlp3s0'];
 var IP;
@@ -43,6 +42,7 @@ app.get('/', routes.index);
 app.get('/share', routes.share);
 app.get('/mirror', routes.mirror);
 
+var server = http.createServer(app);
 server.listen(app.get('port'), function(){
   console.log('Express server listening on ' + app.get('ip') +  ':' + app.get('port'));
 });
