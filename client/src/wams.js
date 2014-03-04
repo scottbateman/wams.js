@@ -400,6 +400,9 @@ function all() {
       var Hammer = require('hammerjs');
       var io = require('socket.io-client');
 
+      if (!WAMS.modules) {
+         WAMS.modules = {};
+      }
       WAMS.modules.$ = $;
       WAMS.modules.Hammer = Hammer;
       WAMS.modules.io = io;
@@ -408,6 +411,9 @@ function all() {
    }
    // If we have no plugins
    else {
+      if (!WAMS.modules) {
+         WAMS.modules = {};
+      }
       WAMS.modules.$ = window.jQuery;
       WAMS.modules.Hammer = window.Hammer;
       WAMS.modules.io = window.io;
