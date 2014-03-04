@@ -48,3 +48,10 @@ server.listen(app.get('port'), function(){
 });
 
 wams.listen(server);
+
+wams.on("my_hello_324", function(data) {console.log(data)});
+wams.on('CONN', function(data) {
+   wams.emit("my_hello_325", wams.getSnapshot()[0], {hello1: "data1"});
+//   wams.emit("my_hello_325", wams.getSnapshot()[0].socket, {hello: "data"});
+});
+

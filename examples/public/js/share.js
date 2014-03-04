@@ -184,6 +184,10 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
       });
    }
 
+   wams.emit('my_hello_324', {data: "hello"});
+   wams.on('my_hello_325', function(data) {
+      console.log(data);
+   });
 //   wams.onRemote('drag', function(data) {
 //      console.log(data);
 //   });
