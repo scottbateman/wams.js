@@ -42,22 +42,10 @@ var users = new Vault();
 var io;
 
 /**
- * Start server
- * @param {number} Port number on which the server listens for incoming requests
- * @param {function} [optional] Function that serves web-content
- * @param
- * @param {function} Callback executed after server is established
+ * Start server (method follows Socket.io.listen(..) convention)
  */
-exports.listen = function(serverPort, serverFunc, options, callback) {
-	// ServerFunc is only required for serving (web-) content to browsers (e.g., HTML-pages).
-	// Since at least the initial development will use browsers as front-end, I changed the
-	// .listen-function to make setup-up more convenient.
-	if (typeof serverFunc == 'undefined') {
-		io = socket_io.listen(serverPort, options, callback);
-	}
-	else if (typeof serverFunc == 'function') {
-		io = socket_io.listen(require('http').createServer(serverFunc).listen(serverPort));
-	}
+exports.listen = function(server, options, callback) {
+   io = socket_io.listen(server, options, callback);
 
    io.sockets.on('connection', function(socket) {
       socket.on(server_io_recv_calls.new_connection, function(data) {
