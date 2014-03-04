@@ -97,6 +97,9 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
       var touches = ev.originalEvent.gesture.touches;
       for (var t = 0, len = touches.length; t < len; t++) {
          var target = $(touches[t].target);
+         if (target[0].tagName.toLowerCase() === 'textarea') {
+            target.focus();
+         }
          $('.drag').css({ zIndex: 5 });
          target.css({ zIndex: 10 });
          target.attr('data-touchX', touches[t].pageX - target.offset().left);
