@@ -42,7 +42,7 @@ var serverFunc = function (req, res) {
 //////////// WAMS section
 
 // Set up HTTP-server: listen on port 8080 and use serverFunc (see above) to serve files to clients.
-var httpServer = http.createServer(serverFunc).listen(8080);+
+var httpServer = http.createServer(serverFunc).listen(8080);
 
 // Start WAMS using the HTTP-server
 WAMS.listen(httpServer);
