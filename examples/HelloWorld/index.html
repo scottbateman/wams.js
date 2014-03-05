@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+
+<head>
+	<title>WAMS: Hello, world!</title>
+	<script src="/socket.io/socket.io.js"></script> <!-- REQUIRED! WAMS uses Socket.IO for communication between server and clients. -->
+	<script src="/libs/wams-client.js"></script> <!-- REQUIRED! Import main WAMS-library -->
+</head>
+
+<body>
+	<h1>WAMS: Hello world!</h1>
+	<p>I (<span id='my_username'></span>) said: <span id='my_greeting'></span></p>
+	<p>Server said: <span id='server_response'><span></p>
+
+	<script>
+		var myUsername = "Client_" + Math.floor(Math.random()*100); // Generate a random client user id
+		var myGreeting = "Hello, Server!"; // Message body that gets send to the server
+		
+		document.getElementById('my_username').innerHTML = myUsername; // Show client user id on page
+		document.getElementById('my_greeting').innerHTML = myGreeting; // Show message body on page
+		
+		// Create new WAMS object
+		var WAMS = new WAMS(); 
+		
+		// Register callback onResponse when WAMP receives "response"-message
+		WAMS.on("response", onResponse);
+		
+		// Send greeting to server, using an JSON object that contains the client user id and the message body
+		WAMS.emit("greeting", { from: myUsername, message: myGreeting } ); 
+		
+		function onResponse(data) {
+			// Upon receiving a "response"-message, show server message on page
+			document.getElementById('server_response').innerHTML = data;
+		};
+	</script>
+</body>
+
+</html>
