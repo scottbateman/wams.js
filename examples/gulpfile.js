@@ -15,7 +15,7 @@ var server, supervisor,
 
 gulp.task('style', function() {
    return gulp.src(paths.styl)
-      .pipe(stylus({set:['compress']}))
+      .pipe(stylus())
       .pipe(gulp.dest('public/css'))
       // .pipe(notify({message: "Styles compiled"}))
       ;
