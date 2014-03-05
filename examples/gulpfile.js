@@ -24,13 +24,8 @@ gulp.task('style', function() {
 gulp.task('reloaders', function() {
    server = livereload();
 
-   supervisor = spawn('supervisor', ['-i', './public,./views', 'app.js']);
-   supervisor.stdout.on('data', function(data) {
-      process.stdout.write(data);
-   });
-   supervisor.stderr.on('data', function(data) {
-      process.stderr.write(data);
-   });
+   supervisor = spawn('supervisor', ['-i', './public,./views', 'app.js'],
+      { stdio: 'inherit' });
 });
 
 gulp.task('watch', ['reloaders'], function() {
