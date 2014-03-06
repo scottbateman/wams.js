@@ -8,7 +8,7 @@ var socket_io = require('socket.io')
  *
  * @type {{new_connection: string, subscribe_mt_event: string, send_message: string, broadcast_message: string}}
  */
-var server_io_recv_calls = {
+var server_io_recv_calls = exports.when = {
    new_connection:       "CONN"
    , subscribe_mt_event: "MT_EVENT_SUBSCRIBE"
    , send_message:       "SEND_MSG"
