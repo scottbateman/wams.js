@@ -38,7 +38,7 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/', routes.index);
+app.get('/', routes.share);
 app.get('/share', routes.share);
 app.get('/mirror', routes.mirror);
 
