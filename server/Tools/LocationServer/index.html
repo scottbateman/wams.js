@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+
+<head>
+	<title>WAMS: (Mock) Location Server</title>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="/jquery-2.1.0.js"></script>
+	<script src="/jqueryui-1.10.4.js"></script>
+	<link rel="stylesheet" href="/jqueryui-1.10.4.css"></link>
+</head>
+
+<body>
+	<h1>WAMS: (Mock) Location Server</h1>
+	<div id="environment">
+		<div><img src="/floorplan.png" /></div>
+		<div id="active_object" style="left:450px;top:125px;position:absolute;"><img src="/active.png" /></div>
+		<div id="client_1" style="left:125px;top:475px;position:absolute;opacity:0.8;background-color:#00FFFF;"><img src="/client.png" /></div>
+		<div id="client_2" style="left:370px;top:360px;position:absolute;opacity:0.8;background-color:#FF00FF;"><img src="/client.png" /></div>
+	</div>
+	<script>
+		var socket = io.connect('http://10.81.7.208:8082');
+		console.log($("#active_object").position());
+		socket.emit("update", { id: "active_object", coords: { pos: { x: $("#active_object").position().left, y: $("#active_object").position().top, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
+		socket.emit("update", { id: "client_1", coords: { pos: { x: $("#client_1").position().left, y: $("#client_1").position().top, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
+		socket.emit("update", { id: "client_2", coords: { pos: { x: $("#client_2").position().left, y: $("#client_2").position().top, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
+		
+		$("#active_object").draggable({
+			drag: function(event, ui) {
+				socket.emit("update", { id: "active_object", coords: { pos: { x: event.clientX, y: event.clientY, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
+			}
+		});
+		$("#client_1").draggable({
+			drag: function(event, ui) {
+				socket.emit("update", { id: "client_1", coords: { pos: { x: event.clientX, y: event.clientY, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
+			}
+		});
+		$("#client_2").draggable({
+			drag: function(event, ui) {
+				socket.emit("update", { id: "client_2", coords: { pos: { x: event.clientX, y: event.clientY, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
+			}
+		});
+	</script>
+</body>
+
+</html>
