@@ -19,7 +19,7 @@
 		<div id="client_2" style="left:370px;top:360px;position:absolute;opacity:0.8;background-color:#FF00FF;"><img src="/client.png" /></div>
 	</div>
 	<script>
-		var socket = io.connect('http://10.81.7.208:8082');
+		var socket = io.connect();
 		console.log($("#active_object").position());
 		socket.emit("update", { id: "active_object", coords: { pos: { x: $("#active_object").position().left, y: $("#active_object").position().top, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
 		socket.emit("update", { id: "client_1", coords: { pos: { x: $("#client_1").position().left, y: $("#client_1").position().top, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
