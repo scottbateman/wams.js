@@ -54,7 +54,6 @@ wams.listen(server);
 
 var shareJS_options = {
    staticpath: '/js/lib/sharejs'
-   , socketio: {}
    , db: {type: 'none'}
 };
 

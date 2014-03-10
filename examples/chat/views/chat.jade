@@ -5,32 +5,12 @@ block content
   h2 User tag:
     span#userID
 
-  a(href='/') Root
-
-  //- for (var i = 1; i <= 4; i++)
-  //  div(class='drag chattable', id='box' + i, data-source='')
-  //    p.id #{i}
-  //    textarea.shareable(id='editor' + i)
-
-  .drag.chattable#box1(data-source='')
-    p.id
-    textarea.shareable#editor1
-  .drag.chattable#box2(data-source='')
-    p.id
-    .shareable#editor2
-
-  .drag.chattable#box3(data-source='')
-    p.id
-    textarea.shareable#editor3
-  .drag.chattable#box4(data-source='')
-    p.id
-    textarea.shareable#editor4
+  - for (var i = 1; i <= 4; i++)
+    div(class='drag chattable', id='box' + i, data-chat-id='', data-chat='')
+      p.id #{i}
+      textarea.shareable(id='editor' + i)
 
   textarea#main-chat
   #drop-area
 
   script(data-main='/js/chat.js', src='/js/require.js')
-  //script(src="/js/lib/ace-builds/src/ace.js")
-  //script(src="/channel/bcsocket.js")
-  //script(src='/js/lib/sharejs/share.js')
-  //script(src='/js/lib/sharejs/ace.js')

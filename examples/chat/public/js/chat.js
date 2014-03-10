@@ -34,9 +34,14 @@ requirejs.config({
 });
 
 //requirejs(['jquery', 'wams', 'ace/ace', 'shareJS', 'bcsocket', 'shareJS_ace'],
-requirejs(['jquery', 'wams', 'shareJS', "ace/ace",
-   'bcsocket', 'sharejs_ace', 'sharejs_textarea'],
-   function($, WAMS, sharejs, ace) {
+requirejs(['jquery', 'wams', 'shareJS', 'bcsocket', 'sharejs_textarea'],
+   function($, WAMS, sharejs) {
+      var generateUUID = function() {
+         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+         });
+      };
       var rndColor = function() {
          var bg_colour = Math.floor(Math.random() * 16777215).toString(16);
          bg_colour = "#"+("000000" + bg_colour).slice(-6);
@@ -67,9 +72,6 @@ requirejs(['jquery', 'wams', 'shareJS', "ace/ace",
          name: name,
          path: window.location.pathname
       });
-      setTimeout(function() {
-         $('.chattable').attr('data-source', wams.uuid);
-      }, 100);
 
       function updateBar() {
          var dropArea = $('#drop-area');
@@ -109,9 +111,9 @@ requirejs(['jquery', 'wams', 'shareJS', "ace/ace",
          var touches = ev.originalEvent.gesture.touches;
          for (var t = 0, len = touches.length; t < len; t++) {
             var target = $(touches[t].target);
-//            if (target[0].tagName.toLowerCase() === 'textarea') {
-//               target.focus();
-//            }
+            if (target[0].tagName.toLowerCase() === 'textarea') {
+               target.focus();
+            }
             $('.drag').css({ zIndex: 5 });
             target.css({ zIndex: 10 });
             target.attr('data-touchX', touches[t].pageX - target.offset().left);
@@ -164,6 +166,7 @@ requirejs(['jquery', 'wams', 'shareJS', "ace/ace",
                   }
                }
                if (typeof where === 'string') {
+                  target.attr('data-chat', '');
                   var msg = {
                      action: 'new_element',
                      element: {
@@ -177,7 +180,24 @@ requirejs(['jquery', 'wams', 'shareJS', "ace/ace",
                      msg.element.attributes[attrs.item(j).nodeName] = attrs.item(j).nodeValue;
                   }
                   wams.sendMSG([where], msg);
+
+                  var chatID = target.attr('data-chat-id'), index;
                   target.remove();
+
+                  if (index = existingChats.indexOf(chatID) > 0) {
+                     existingChats.splice(index, 1);
+                     var moreChats = $('div[data-chat-id=' + chatID + ']');
+                     if (moreChats.length > 0) {
+                        var chat = $(moreChats[0]);
+                        if (chat.attr('data-chat') !== 'open') {
+                           var editor = chat.find('textarea')[0];
+                           sharejs.open(chatID, 'text', function(error, doc) {
+                              doc.attach_textarea(editor);
+                              existingChats.push(chatID);
+                           });
+                        }
+                     }
+                  }
                }
             }
          }
@@ -201,26 +221,28 @@ requirejs(['jquery', 'wams', 'shareJS', "ace/ace",
             top: ( metadata.relHeight * $(window).height() - newElem.height() / 2 ),
             left: ( $(window).width() - $('#drop-area').width() - newElem.width() + rndLeft )
          });
+
+         var chatID = metadata.attributes['data-chat-id'];
+         if (existingChats.indexOf(chatID) === -1) {
+            existingChats.push(chatID);
+            newElem.attr('data-chat', 'open');
+            var editor = newElem.find('textarea')[0];
+            sharejs.open(chatID, 'text', function(error, doc) {
+               doc.attach_textarea(editor);
+            });
+         }
       }
 
-      var editor1 = document.getElementById('editor1');
-      sharejs.open('hello', 'text', function(error, doc) {
-            doc.attach_textarea(editor1);
+      var chatIdentifier = generateUUID();
+      var existingChats = [];
+
+      $(document).ready(function() {
+         $('.chattable').attr('data-chat-id', chatIdentifier);
       });
 
-      var editor2 = ace.edit('editor2');
-      sharejs.open('hello2', 'text', function(error, doc) {
-         doc.attach_ace(editor2);
+      var main_chat = document.getElementById('main-chat');
+      sharejs.open(chatIdentifier, 'text', function(error, doc) {
+         existingChats.push(chatIdentifier);
+         doc.attach_textarea(main_chat);
       });
-
-//         var editor3 = ace.edit('ta3');
-//         var editor4 = ace.edit('ta4');
-//         sharejs.open('hello', 'text', function(error, doc) {
-//            doc.attach_ace(editor3);
-//         });
-//         sharejs.open('hello', 'text', function(error, doc) {
-//            doc.attach_ace(editor4);
-//         });
-//      }, 10000);
-
 });
