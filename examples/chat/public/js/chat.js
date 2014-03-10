@@ -10,7 +10,6 @@ requirejs.config({
       , "hammer": "hammer"
       , "socket.io": "/socket.io/socket.io"
       , "shake": "shake"
-      , "ace": "ace/lib/ace"
       , "bcsocket": "/channel/bcsocket"
       , "shareJS": "sharejs/share"
       , "sharejs_textarea": "sharejs/textarea"
@@ -27,13 +26,9 @@ requirejs.config({
       , "sharejs_textarea": {
          deps: ["shareJS"]
       }
-      , "sharejs_ace": {
-         deps: ["ace/ace", "shareJS"]
-      }
    }
 });
 
-//requirejs(['jquery', 'wams', 'ace/ace', 'shareJS', 'bcsocket', 'shareJS_ace'],
 requirejs(['jquery', 'wams', 'shareJS', 'bcsocket', 'sharejs_textarea'],
    function($, WAMS, sharejs) {
       var generateUUID = function() {
