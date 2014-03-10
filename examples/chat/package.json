@@ -1,0 +1,22 @@
+{
+  "name": "application-name",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "*",
+    "jade": "*",
+    "stylus": "*",
+    "share": "^0.6.3"
+  },
+  "devDependencies": {
+    "gulp": "*",
+    "gulp-livereload": "*",
+    "gulp-stylus": "*",
+    "gulp-notify": "*",
+    "gulp-util": "*",
+    "gulp-clean": "*"
+  }
+}
