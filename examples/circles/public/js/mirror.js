@@ -55,7 +55,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
    wams.onRemote('release', onRemoteRelease);
 
    function onTouch(ev) {
-      var touches = ev.originalEvent.gesture.touches;
+      var touches = ev.gesture.touches;
       for (var t = 0, len = touches.length; t < len; t++) {
          var target = $(touches[t].target);
          if (isUnlocked(target, wams.uuid)) {
@@ -78,7 +78,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
       });
    }
    function onDrag(ev) {
-      var touches = ev.originalEvent.gesture.touches;
+      var touches = ev.gesture.touches;
       for (var t = 0, len = touches.length; t < len; t++) {
          var target = $(touches[t].target);
 //         var target = $(ev.target);
@@ -96,7 +96,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
       });
    }
    function onRelease(ev) {
-      var touches = ev.originalEvent.gesture.touches;
+      var touches = ev.gesture.touches;
       for (var t = 0, len = touches.length; t < len; t++) {
          var target = $(touches[t].target);
          if (isUnlocked(target, wams.uuid)) {

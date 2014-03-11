@@ -103,7 +103,7 @@ requirejs(['jquery', 'wams', 'shareJS', 'bcsocket', 'sharejs_textarea'],
       });
 
       function onTouch(ev) {
-         var touches = ev.originalEvent.gesture.touches;
+         var touches = ev.gesture.touches;
          for (var t = 0, len = touches.length; t < len; t++) {
             var target = $(touches[t].target);
             if (target[0].tagName.toLowerCase() === 'textarea') {
@@ -116,7 +116,7 @@ requirejs(['jquery', 'wams', 'shareJS', 'bcsocket', 'sharejs_textarea'],
          }
       }
       function onDrag(ev) {
-         var touches = ev.originalEvent.gesture.touches;
+         var touches = ev.gesture.touches;
          for (var t = 0, len = touches.length; t < len; t++) {
    //         var target = $(touches[t].target);
             var target = $(ev.target);
@@ -130,7 +130,7 @@ requirejs(['jquery', 'wams', 'shareJS', 'bcsocket', 'sharejs_textarea'],
          }
       }
       function onRelease(ev) {
-         var touches = ev.originalEvent.gesture.touches;
+         var touches = ev.gesture.touches;
    //      console.log(touches.length);
          for (var t = 0; t < touches.length; t++) {
             var target = $(touches[t].target);

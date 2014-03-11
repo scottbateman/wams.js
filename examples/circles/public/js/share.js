@@ -94,7 +94,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
    });
 
    function onTouch(ev) {
-      var touches = ev.originalEvent.gesture.touches;
+      var touches = ev.gesture.touches;
       for (var t = 0, len = touches.length; t < len; t++) {
          var target = $(touches[t].target);
          if (target[0].tagName.toLowerCase() === 'textarea') {
@@ -107,7 +107,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
       }
    }
    function onDrag(ev) {
-      var touches = ev.originalEvent.gesture.touches;
+      var touches = ev.gesture.touches;
       for (var t = 0, len = touches.length; t < len; t++) {
 //         var target = $(touches[t].target);
          var target = $(ev.target);
@@ -121,7 +121,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
       }
    }
    function onRelease(ev) {
-      var touches = ev.originalEvent.gesture.touches;
+      var touches = ev.gesture.touches;
 //      console.log(touches.length);
       for (var t = 0; t < touches.length; t++) {
          var target = $(touches[t].target);
@@ -208,7 +208,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
 
       var centerX = +target.css('width').split('').slice(0,-2).join('') / 2 + +target.offset().left;
       var centerY = +target.css('height').split('').slice(0,-2).join('') / 2+ +target.offset().top;
-      var scale = ev.originalEvent.gesture.scale;
+      var scale = ev.gesture.scale;
       var newWidth = +target.css('width').split('').slice(0,-2).join('') * (1 + scale / 50);
       var newHeight = +target.css('height').split('').slice(0,-2).join('') * (1 + scale / 50);
       var newPosX = centerX - newWidth / 2;
@@ -228,7 +228,7 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
 
       var centerX = +target.css('width').split('').slice(0,-2).join('') / 2 + +target.offset().left;
       var centerY = +target.css('height').split('').slice(0,-2).join('') / 2+ +target.offset().top;
-      var scale = ev.originalEvent.gesture.scale;
+      var scale = ev.gesture.scale;
       var newWidth = +target.css('width').split('').slice(0,-2).join('') * (1 - scale / 20);
       var newHeight = +target.css('height').split('').slice(0,-2).join('') * (1 - scale / 20);
       var newPosX = centerX - newWidth / 2;
