@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1 Drag pictures and drop them to other devices
+  h2 User tag:
+    span#userID
+
+  - for (var i = 1; i <= 4; i++)
+    img.drag(src='/img/img' + i + '.jpg', id='img' + i)
+
+  #drop-area
+
+  script(data-main='/js/picShare.js', src='/js/require.js')
