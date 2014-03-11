@@ -185,15 +185,24 @@ function all() {
 
       /**
        * Specify on which element multitouch is started
-       * @param {HTMLCollection|jQuery} elem HTML collection or jQuery array of elements
+       * @param {HTMLElement|HTMLCollection|jQuery} elem HTML collection or jQuery array of elements
        */
       addMT: function(elem) {
-         for (var i = 0, len = elem.length; i < len; i++) {
-            var newMTObj = new WAMS.modules.Hammer(elem[i], {
+         var self = this, newMTObj;
+         if (elem.length) {
+            for (var i = 0, len = elem.length; i < len; i++) {
+               newMTObj = new WAMS.modules.Hammer(elem[i], {
+                  prevent_default: true,
+                  no_mouseevents: true
+               });
+               self.MTObjects.push(newMTObj);
+            }
+         } else {
+            newMTObj = new WAMS.modules.Hammer(elem, {
                prevent_default: true,
                no_mouseevents: true
             });
-            this.MTObjects.push(newMTObj);
+            self.MTObjects.push(newMTObj);
          }
       },
 
