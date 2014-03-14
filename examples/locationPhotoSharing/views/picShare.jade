@@ -11,12 +11,14 @@ block content
       h2 User tag:
         span#userID
       table#locator
-        - for (var i = 0; i < 2; i++)
+        - var rows = 2, columns = 2
+        - for (var i = 0; i < rows; i++)
           tr
-            - for (var j = 0; j < 2; j++)
-              - var val = 2 * i + j + 1
-              td(id = 'quadrant-' + val)= val
+            - for (var j = 0; j < columns; j++)
+              - var val = columns * i + j
+              td(id = 'quadrant-' + val)
                 img(src='/img/position-' + val + '.png')
+                span #{val}
     .drop-area.right#drop3
 
   #footer
