@@ -16,12 +16,13 @@ block content
             - for (var j = 0; j < 2; j++)
               - var val = 2 * i + j + 1
               td(id = 'quadrant-' + val)= val
+                img(src='/img/position-' + val + '.png')
     .drop-area.right#drop3
 
   #footer
     .drop-area.footer-content#drop4
 
-  - for (var i = 1; i <= 4; i++)
+  - for (var i = 0; i < 4; i++)
     img.drag(src='/img/img' + i + '.jpg', id='img-' + i)
 
   script(data-main='/js/picShare.js', src='/js/require.js')

@@ -42,28 +42,26 @@ div {
 .drop {
   display: block;
 }
-img {
+.drag {
+  z-index: 5;
+  position: absolute;
   margin: 5px;
   width: auto;
   height: 150px;
 }
-.drag {
-  z-index: 5;
-  position: absolute;
-}
-#img-1 {
+#img-0 {
   top: 250px;
   left: 100px;
 }
-#img-2 {
+#img-1 {
   top: 350px;
   left: 450px;
 }
-#img-3 {
+#img-2 {
   top: 500px;
   left: 150px;
 }
-#img-4 {
+#img-3 {
   top: 600px;
   left: 400px;
 }
@@ -79,4 +77,9 @@ img {
   text-align: right;
   vertical-align: bottom;
   font-size: 10px;
+  position: relative;
+}
+#locator td img {
+  width: auto;
+  height: 32px;
 }
