@@ -58,12 +58,9 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
          var target = $(ev.target);
 
          if (target.hasClass('drag')) {
-            var left = touches[t].pageX - +target.attr('data-touchX'),
-                  top = touches[t].pageY - +target.attr('data-touchY');
-            console.log(left, top);
             target.css({
-               left: left,
-               top: top
+               left: touches[t].pageX - +target.attr('data-touchX'),
+               top: touches[t].pageY - +target.attr('data-touchY')
             });
          }
       }
