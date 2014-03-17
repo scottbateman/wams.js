@@ -38,6 +38,60 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
    });
 
    wams.addMT(document.getElementsByClassName('drag'));
+   wams.on(WAMS.when.connection_ok, function() {
+      var pos = $('#quadrant-' + wams.position);
+      pos.css({ background: color });
+   });
+
+   wams.on([WAMS.when.connection_ok,
+      WAMS.when.user_connected,
+      WAMS.when.user_disconnected].join(" "), redraw_bars);
+
+   function redraw_bars() {
+      wams.left(redraw_left_bar);
+      wams.right(redraw_right_bar);
+      wams.front(redraw_front_bar);
+      wams.behind(redraw_behind_bar);
+   }
+
+   function redraw_left_bar(users) {
+      var dropArea = $('#drop2');
+      redraw_bar(dropArea, users);
+   }
+
+   function redraw_right_bar(users) {
+      var dropArea = $('#drop3');
+      redraw_bar(dropArea, users);
+   }
+
+   function redraw_front_bar(users) {
+      var dropArea = $('#drop1');
+      redraw_bar(dropArea, users);
+   }
+
+   function redraw_behind_bar(users) {
+      var dropArea = $('#drop4');
+      redraw_bar(dropArea, users);
+   }
+
+   function redraw_bar(dropArea, users) {
+      dropArea.find('div').remove();
+      for (var i = 0, len = users.length; i < len; i++) {
+         var newUserDropArea = $(document.createElement('div'));
+         newUserDropArea.addClass('drop');
+         newUserDropArea.attr('data-target', users[i]);
+         newUserDropArea.css({ background: wams.getDescription(users[i]).color });
+
+         var newUserText = $(document.createElement('span'));
+         newUserText.text(wams.getDescription(users[i]).name);
+         newUserDropArea.append(newUserText);
+
+         dropArea.append(newUserDropArea);
+      }
+      var useHeight = (100 / users.length) + '%';
+      dropArea.find('div').css({ height: useHeight });
+   }
+
    wams.on('touch', onTouch);
    wams.on('drag', onDrag);
    wams.on('release', onRelease);
