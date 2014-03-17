@@ -127,6 +127,72 @@ requirejs(['jquery', 'wams'], function($, WAMS) {
          var touchY = +target.attr('data-touchY');
          target.attr('data-touchX', "");
          target.attr('data-touchY', "");
+         sendElement(target, touchX, touchY);
       }
+   }
+   wams.on(WAMS.when.message_received, function(data) {
+      switch (data.action) {
+         case "new_element":
+            new_element(data.element);
+            break;
+      }
+   });
+   function sendElement(target, touchX, touchY) {
+      if (target.hasClass('drag')) {
+         var targetCenter = {
+            x: target.offset().left + touchX,
+            y: target.offset().top + touchY
+         };
+         var where;
+         var dropAreas = $('.drop-area').find('div');
+         for (var i = 0; i < dropAreas.length
+            && typeof where === 'undefined'; i++) {
+            var drop = $(dropAreas[i]);
+            if (drop.offset().left <= targetCenter.x &&
+               targetCenter.x <= drop.offset().left + drop.width() &&
+               drop.offset().top <= targetCenter.y &&
+               targetCenter.y <= drop.offset().top + drop.height()) {
+               where = drop.attr("data-target");
+            }
+         }
+         if (typeof where === 'string') {
+            var msg = {
+               action: 'new_element',
+               element: {
+                  tag: target[0].tagName,
+                  attributes: {},
+                  innerHTML: target[0].innerHTML,
+                  relHeight: ( targetCenter.y / $(window).height() )
+               }
+            };
+            for (var j = 0, attrs = target[0].attributes; j < attrs.length; j++) {
+               msg.element.attributes[attrs.item(j).nodeName] = attrs.item(j).nodeValue;
+            }
+            wams.sendMSG([where], msg);
+            target.remove();
+         }
+      }
+   }
+   function new_element(metadata) {
+      var newElem = $(document.createElement(metadata.tag));
+      newElem.html(metadata.innerHTML);
+      for (var attribute in metadata.attributes) {
+         if (metadata.attributes.hasOwnProperty(attribute)) {
+            newElem.attr(attribute, metadata.attributes[attribute]);
+         }
+      }
+
+      $("body").append(newElem);
+      wams.addMT(newElem);
+      wams.on('touch', onTouch);
+      wams.on('drag', onDrag);
+      wams.on('release', onRelease);
+
+      var fuzziness = 1 + 25;
+      var rndLeft = Math.floor(Math.random() * fuzziness - 5);
+      newElem.css({
+         top: ( metadata.relHeight * $(window).height() - newElem.height() / 2 ),
+         left: ( $(window).width() - $('#drop-area').width() - newElem.width() + rndLeft )
+      });
    }
 });
