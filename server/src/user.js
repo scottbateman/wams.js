@@ -38,6 +38,11 @@ var user = function(socket, mode, description) {
     * @type {Array}
     */
    this.MTSubscription = [];
+   /**
+    *
+    * @type {string}
+    */
+   this.position = '';
 };
 
 /**
@@ -70,6 +75,7 @@ user.prototype.copyForNetwork = function() {
 
    result.uuid = this.uuid;
    result.description = this.description;
+   result.position = this.position;
 
    return result;
 };
