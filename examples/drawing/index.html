@@ -160,7 +160,7 @@
 
 	WAMS.on("newCard", onNewCard);
 	
-	function onNewCard(data) {}
+	function onNewCard(data) {
 		var newCard = new Card(data.data.x, data.data.y, data.data.h, data.data.w);
 		cards.push(newCard);
 		myView.draw();
