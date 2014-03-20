@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Canvas Testing</title>
+
+	<script src="/socket.io/socket.io.js"></script> <!-- REQUIRED! WAMS uses Socket.IO for communication between server and clients. -->
+	<script src="/libs/wams-client.js"></script> <!-- REQUIRED! Import main WAMS-library -->
+	<style>
+		* { margin: 0px; padding: 0px; }
+		html, body { width: 100%; height: 100px; }
+		canvas { display:block; background-color: red; }
+	</style>
+</head>
+
+<body>
+	<canvas id='main'></canvas>
+	<script>
+
+	// Card class
+	// This will be the items in our simple array model
+	function Card(x, y, w, h) {
+		// Just a rectangle
+		this.x = x;
+		this.y = y;
+		this.w = w;
+		this.h = h;
+	}
+	// It can draw itself for now
+	Card.prototype.draw = function () {
+		ctx.fillStyle="black";
+		ctx.fillRect(this.x, this.y, this.w, this.h);
+	}
+
+	// Map Class
+	// The map of the workspace. A rectangle with a model.
+	function Map(w, h, model) {
+		this.w = w;
+		this.h = h;
+		this.model = model;
+	}
+
+	function View(map) {
+		// The default view starts at the top left and fills the screen
+		this.x = 0;
+		this.y = 0;
+		this.w = window.innerWidth;
+		this.h = window.innerHeight;
+		this.map = map;
+	}
+	View.prototype.move = function(dx, dy) {
+		// Moves the View about the Map
+		// If the view will stay in bounds, then make the change
+		var newx = this.x + dx;
+		var newy = this.y + dy;
+		var newr = newx + this.w;
+		var newb = newy + this.h;
+		if ( ( newx >= 0 ) && ( newr <= this.map.w ) &&
+		   ( newy >= 0 ) && ( newb <= this.map.w ) ) {
+			this.x += dx;
+			this.y += dy;
+		} else {
+			console.log('Hit the boundaries');
+		}
+		// Resize the canvas, since we may have left the border area
+		resizeCanvas();
+		// Redraw view
+		myView.draw();
+	}
+	View.prototype.draw = function() {
+		// Grab the model
+		var model = myView.map.model;
+		// Clear the canvas
+		ctx.clearRect(0, 0, myView.w, myView.h);
+		// Draw the model
+		ctx.save();
+		// Translate the view to the model coordinates
+		ctx.translate(-this.x, -this.y);
+		// Draw all the cards in the model
+		for (var i = 0; i < model.length; i++) {
+			model[i].draw();
+		}
+		ctx.restore();
+	}
+
+	function resizeCanvas() {
+		// Resize the view and canvas to the window
+		// Dont set the view larger than there is map to show
+		myView.w = Math.min(window.innerWidth, myView.map.w - myView.x);
+		myView.h = Math.min(window.innerHeight, myView.map.h - myView.y);
+		canvas.width = myView.w;
+		canvas.height = myView.h;
+		// Redraw view
+		myView.draw();
+	}
+
+	function onWindowLoad() {
+		// Make the model and populate it
+		cards = new Array();
+		cards[0] = new Card(50, 50, 20, 20);
+		cards[1] = new Card(10, 50, 10, 20);
+		cards[2] = new Card(50, 80, 10, 10);
+		cards[3] = new Card(100, 100, 200, 200);
+
+		// Set up the Map with the model
+		myMap = new Map(2000,2000, cards);
+
+		// Set up the View on the Map
+		myView = new View(myMap);
+
+		// Set up the canvas
+		canvas = document.getElementById('main');
+		ctx = canvas.getContext('2d');
+
+		// Set up listener for window resize
+		window.addEventListener('resize', resizeCanvas, false);
+		// Resize it to start
+		resizeCanvas();
+
+		// Attach a click listener to the canvas
+		canvas.addEventListener('click', canvasClick, false);
+
+		// Redraw the view
+		myView.draw();
+	}
+
+	function handleInput(e) {
+		var KeyCode = {LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40};
+		switch (e.keyCode) {
+			case KeyCode.UP:
+				myView.move(0, -10);
+				break;
+			case KeyCode.LEFT:
+				myView.move(-10, 0);
+				break;
+			case KeyCode.RIGHT:
+				myView.move(10, 0);
+				break;
+			case KeyCode.DOWN:
+				myView.move(0, 10);
+				break;
+		}
+	}
+
+	function canvasClick(e) {
+		// Make a card at the mouse coords and add it to the model
+		var x = e.x + myView.x;
+		var y = e.y + myView.y;
+		var newCard = new Card(x, y, 10, 10);
+		WAMS.emit("newCard", newCard);
+		cards.push(newCard);
+		myView.draw();
+	}
+	
+	window.addEventListener('load', onWindowLoad, false);
+	window.addEventListener("keydown", handleInput, false);
+
+	// Create new WAMS object
+	var WAMS = new WAMS(); 
+
+	WAMS.on("newCard", onNewCard);
+	
+	function onNewCard(data) {}
+		var newCard = new Card(data.data.x, data.data.y, data.data.h, data.data.w);
+		cards.push(newCard);
+		myView.draw();
+	};
+
+	</script>
+</body>
+</html>
