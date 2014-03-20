@@ -66,6 +66,8 @@
 		resizeCanvas();
 		// Redraw view
 		myView.draw();
+		// Report possible change to server
+		myView.reportView();
 	}
 	View.prototype.draw = function() {
 		// Grab the model
@@ -80,7 +82,26 @@
 		for (var i = 0; i < model.length; i++) {
 			model[i].draw();
 		}
+		// And draw the other user's viewport boundaries
+		for (var i = 0, len = WAMS.otherClients.length; i < len; i++) {
+			var otherView = WAMS.otherClients[i].view;
+			console.log(typeof otherView);
+			if (typeof otherView !== "undefined") {
+				var color = WAMS.otherClients[i].description.color;
+				ctx.beginPath();
+				ctx.strokeStyle = color;
+				ctx.lineWidth = "2";
+				ctx.rect(otherView.x, otherView.y, otherView.w, otherView.h);
+				ctx.stroke();
+				console.log("Drawing user view #" + i);
+			}
+		}
 		ctx.restore();
+	}
+	View.prototype.reportView = function() {
+		// Tell the server about my view
+		var newview = {x: this.x, y: this.y, w: this.w, h: this.h};
+		WAMS.emit("updateUserView", newview);
 	}
 
 	function resizeCanvas() {
@@ -92,6 +113,8 @@
 		canvas.height = myView.h;
 		// Redraw view
 		myView.draw();
+		// Report possible change to server
+		myView.reportView();
 	}
 
 	function onWindowLoad() {
@@ -149,22 +172,48 @@
 		var newCard = new Card(x, y, 10, 10);
 		WAMS.emit("newCard", newCard);
 		cards.push(newCard);
+		// Redraw view
 		myView.draw();
 	}
 	
 	window.addEventListener('load', onWindowLoad, false);
 	window.addEventListener("keydown", handleInput, false);
 
+	// Generate a random color to assign to this user
+	var rndColor = function() {
+      var bg_colour = Math.floor(Math.random() * 16777215).toString(16);
+      bg_colour = "#"+("000000" + bg_colour).slice(-6);
+      return bg_colour;
+   	};
+   	var color = rndColor();
+
 	// Create new WAMS object
-	var WAMS = new WAMS(); 
+	var WAMS = new WAMS({color: color}); 
 
 	WAMS.on("newCard", onNewCard);
+	WAMS.on("updateUserView", onUpdateUserView)
 	
 	function onNewCard(data) {
 		var newCard = new Card(data.data.x, data.data.y, data.data.h, data.data.w);
 		cards.push(newCard);
+		// Redraw view
 		myView.draw();
 	};
+
+	function onUpdateUserView(data) {
+		// Look through the list of other clients until we find the one who sent the message
+		// Then update their view object
+		for (var i = 0, len = WAMS.otherClients.length; i < len; i++) {
+			if (WAMS.otherClients[i].uuid == data.source) {
+				console.log("found user");
+				WAMS.otherClients[i].view = data.data;
+				console.log(WAMS.otherClients[i].view);
+				break;
+			}
+		}
+		// Redraw view
+		myView.draw();
+	}
 
 	</script>
 </body>

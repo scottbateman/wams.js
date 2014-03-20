@@ -48,7 +48,12 @@ var httpServer = http.createServer(serverFunc).listen(8080);
 WAMS.listen(httpServer);
 
 WAMS.on("newCard", onNewCard);
+WAMS.on("updateUserView", onUpdateUserView);
 
 function onNewCard(data) {
 	WAMS.emit("newCard", data);
+}
+
+function onUpdateUserView(data) {
+	WAMS.emit("updateUserView", data);
 }
