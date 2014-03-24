@@ -1,24 +1,28 @@
 var socket_io = require('socket.io')
   , Vault = require('./vault')
   , User = require('./user')
-  , locator = require('./locationServer')
+  , Locator = require('./locationConnection')
   ;
 
 //All events that sent to server
 /**
  *
- * @type {{new_connection: string, subscribe_mt_event: string, send_message: string, broadcast_message: string}}
+ * @type {{new_connection: string, subscribe_mt_event: string, send_message: string, broadcast_message: string, ask_front: string, ask_back: string, ask_left: string, ask_right: string}}
  */
 var server_io_recv_calls = exports.when = {
    new_connection:       "CONN"
    , subscribe_mt_event: "MT_EVENT_SUBSCRIBE"
    , send_message:       "SEND_MSG"
    , broadcast_message:  "SEND_BROADCAST"
+   , ask_front:          "ASK_FRONT"
+   , ask_back:           "ASK_BACK"
+   , ask_left:           "ASK_LEFT"
+   , ask_right:          "ASK_RIGHT"
 };
 //All events that received from server
 /**
  *
- * @type {{connection_ok: string, user_connected: string, user_disconnected: string, receive_message: string, receive_broadcast: string}}
+ * @type {{connection_ok: string, user_connected: string, user_disconnected: string, receive_message: string, receive_broadcast: string, get_front: string, get_back: string, get_left: string, get_right: string}}
  */
 var server_io_send_calls = {
    connection_ok:        "CONN_OK"
@@ -26,6 +30,10 @@ var server_io_send_calls = {
    , user_disconnected:  "DEL_USER"
    , receive_message:    "RECV_MSG"
    , receive_broadcast:  "RECV_BROADCAST"
+   , get_front:          "RECV_FRONT"
+   , get_back:           "RECV_BACK"
+   , get_left:           "RECV_LEFT"
+   , get_right:          "RECV_RIGHT"
 };
 
 var MTEvents = [
@@ -40,6 +48,7 @@ var MTEvents = [
  * @type {Vault}
  */
 var users = new Vault();
+var locator = new Locator();
 var io;
 
 /**
@@ -51,11 +60,13 @@ exports.listen = function(server, options, callback) {
    io.sockets.on('connection', function(socket) {
       socket.on(server_io_recv_calls.new_connection, function(data) {
          var newUser = new User(socket, "", data.description);
+         newUser.position = locator.addClient(newUser.uuid);
          users.push(newUser);
 
          socket.emit(server_io_send_calls.connection_ok, {
             data: {
                uuid: newUser.uuid,
+               position: newUser.position,
                otherClients: users.networkExportExcept(newUser)
             }
          });
@@ -105,7 +116,32 @@ exports.listen = function(server, options, callback) {
             });
          });
 
+         socket.on(server_io_recv_calls.ask_left, function(data) {
+            socket.emit(server_io_send_calls.get_left, {
+               data: locator.toLeftFrom(newUser.position)
+            });
+         });
+
+         socket.on(server_io_recv_calls.ask_right, function(data) {
+            socket.emit(server_io_send_calls.get_right, {
+               data: locator.toRightFrom(newUser.position)
+            });
+         });
+
+         socket.on(server_io_recv_calls.ask_front, function(data) {
+            socket.emit(server_io_send_calls.get_front, {
+               data: locator.inFrontOf(newUser.position)
+            });
+         });
+
+         socket.on(server_io_recv_calls.ask_back, function(data) {
+            socket.emit(server_io_send_calls.get_back, {
+               data: locator.behind(newUser.position)
+            });
+         });
+
          socket.once('disconnect', function() {
+            locator.deleteClient(newUser.position);
             socket.broadcast.emit(server_io_send_calls.user_disconnected, {
                data: {
                   client: newUser.uuid
