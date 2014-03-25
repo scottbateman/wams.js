@@ -56,7 +56,7 @@
 		var newr = newx + this.w;
 		var newb = newy + this.h;
 		if ( ( newx >= 0 ) && ( newr <= this.map.w ) &&
-		   ( newy >= 0 ) && ( newb <= this.map.w ) ) {
+		   ( newy >= 0 ) && ( newb <= this.map.h ) ) {
 			this.x += dx;
 			this.y += dy;
 		} else {
@@ -65,15 +65,15 @@
 		// Resize the canvas, since we may have left the border area
 		resizeCanvas();
 		// Redraw view
-		myView.draw();
+		this.draw();
 		// Report possible change to server
-		myView.reportView();
+		this.reportView();
 	}
 	View.prototype.draw = function() {
 		// Grab the model
-		var model = myView.map.model;
+		var model = this.map.model;
 		// Clear the canvas
-		ctx.clearRect(0, 0, myView.w, myView.h);
+		ctx.clearRect(0, 0, this.w, this.h);
 		// Draw the model
 		ctx.save();
 		// Translate the view to the model coordinates
@@ -83,11 +83,12 @@
 			model[i].draw();
 		}
 		// And draw the other user's viewport boundaries
-		for (var i = 0, len = WAMS.otherClients.length; i < len; i++) {
-			var otherView = WAMS.otherClients[i].view;
+		for (var i = 0, len = wams.otherClients.length; i < len; i++) {
+			var otherView = wams.otherClients[i].view;
+			console.log(wams.otherClients[i]);
 			console.log(typeof otherView);
 			if (typeof otherView !== "undefined") {
-				var color = WAMS.otherClients[i].description.color;
+				var color = wams.otherClients[i].description.color;
 				ctx.beginPath();
 				ctx.strokeStyle = color;
 				ctx.lineWidth = "2";
@@ -101,7 +102,8 @@
 	View.prototype.reportView = function() {
 		// Tell the server about my view
 		var newview = {x: this.x, y: this.y, w: this.w, h: this.h};
-		WAMS.emit("updateUserView", newview);
+		console.log(wams);
+		wams.emit("updateUserView", newview);
 	}
 
 	function resizeCanvas() {
@@ -170,7 +172,7 @@
 		var x = e.x + myView.x;
 		var y = e.y + myView.y;
 		var newCard = new Card(x, y, 10, 10);
-		WAMS.emit("newCard", newCard);
+		wams.emit("newCard", newCard);
 		cards.push(newCard);
 		// Redraw view
 		myView.draw();
@@ -188,10 +190,10 @@
    	var color = rndColor();
 
 	// Create new WAMS object
-	var WAMS = new WAMS({color: color}); 
+	var wams = new WAMS({color: color}); 
 
-	WAMS.on("newCard", onNewCard);
-	WAMS.on("updateUserView", onUpdateUserView)
+	wams.on("newCard", onNewCard);
+	wams.on("updateUserView", onUpdateUserView)
 	
 	function onNewCard(data) {
 		var newCard = new Card(data.data.x, data.data.y, data.data.h, data.data.w);
@@ -203,14 +205,15 @@
 	function onUpdateUserView(data) {
 		// Look through the list of other clients until we find the one who sent the message
 		// Then update their view object
-		for (var i = 0, len = WAMS.otherClients.length; i < len; i++) {
-			if (WAMS.otherClients[i].uuid == data.source) {
+		for (var i = 0, len = wams.otherClients.length; i < len; i++) {
+			if (wams.otherClients[i].uuid == data.source) {
 				console.log("found user");
-				WAMS.otherClients[i].view = data.data;
-				console.log(WAMS.otherClients[i].view);
+				wams.otherClients[i].view = data.data;
+				console.log(wams.otherClients[i].view);
 				break;
 			}
 		}
+		console.log("Didnt find user");
 		// Redraw view
 		myView.draw();
 	}
