@@ -2,15 +2,29 @@ all();
 function all() {
    /**
     * Function is alias to {@link WAMS.init}
-    * @param {string} [host] Host socket.io is connecting to
+    * @param {object} [settings] Settings for wams library
     * @param {object} clientDescription User specified description of client
     * @returns {WAMS.init} Instance of session
     *
     * @alias WAMS
     * @constructor
     */
-   var WAMS = function(host, clientDescription) {
-      return new WAMS.init(host, clientDescription);
+   var WAMS = function(settings, clientDescription) {
+      var cases = {
+         0: function() {
+            throw new Error("Wrong amount of arguments");
+         },
+         1: function() {
+            clientDescription = settings;
+            settings = {};
+            return undefined;
+         },
+         2: function() {
+            return undefined;
+         }
+      };
+      cases[arguments.length] && cases[arguments.length]();
+      return new WAMS.init(settings, clientDescription);
    };
 
    /**
@@ -103,18 +117,14 @@ function all() {
 
    /**
     * Function initializes new session instance
-    * @param {string} [host] Host socket.io is connecting to
+    * @param {object} [settings] Settings for wams library
     * @param {object} clientDescription User specified description of client
     * @returns {WAMS.init} Instance of session
     *
     * @constructor
     */
-   WAMS.init = function(host, clientDescription) {
-      if (typeof host !== "string") {
-         clientDescription = host;
-         host = undefined;
-      }
-      var self = this;
+   WAMS.init = function(settings, clientDescription) {
+      var self = this, host = settings.host;
 
       /**
        * Description of client for current session
