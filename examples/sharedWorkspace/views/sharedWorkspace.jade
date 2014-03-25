@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1 #{title} - Drag balls on all your connected screens
+  p#description
+    span#userID
+    span.separator  - 
+    span#mode
+
+  script(src='/js/lib/jquery-1.10.2.js')
+  script(src='/js/lib/hammer.js')
+  script(src='/socket.io/socket.io.js')
+  script(src='/js/lib/wams.js')
+  script(src='/js/sharedWorkspace.js')
