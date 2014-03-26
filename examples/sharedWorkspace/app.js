@@ -8,6 +8,8 @@ var http = require('http');
 var path = require('path');
 var os = require('os');
 var wams = require('wams.js-server');
+var WorkspaceManager = require('./workspaceManager');
+var Workspace = require('./workspace');
 
 var app = express();
 
@@ -49,6 +51,47 @@ server.listen(app.get('port'), function(){
   console.log('Express server listening on ' + app.get('ip') + ':' + app.get('port'));
 });
 
-wams.listen(server);
+function drop4balls(uuid) {
+   for (var i = 1; i <= 4; i++) {
+      wams.emit('RECV_MSG', uuid, {
+         source: '',
+         data: {
+            action: 'new_element',
+            element: {
+               tag: 'div',
+               attributes: {
+                  id: 'ball' + i,
+                  class: 'ball'
+               }
+            }
+         }
+      });
+   }
+}
 
+wams.listen(server);
+var workspaceManager = new WorkspaceManager(wams);
+wams.on(wams.when.new_connection, function(data) {
+   var screen = Workspace.decode(data.description.screen);
+   var users = wams.getSnapshot();
+   var uuid = users[users.length - 1].uuid;
+   var adjustedScreen = workspaceManager.addScreen(uuid, screen);
+
+   if (adjustedScreen.x === 0 && adjustedScreen.y === 0) {
+      drop4balls(uuid);
+   }
+
+   wams.emit('adjust_workspace', uuid, {
+      screen: Workspace.encode(adjustedScreen)
+   });
+
+   wams.on('resize_screen', uuid, function(data) {
+      var screen = Workspace.decode(data.data.screen);
+      workspaceManager.resize(uuid, screen.width, screen.height);
+   });
+
+   wams.on('disconnect', uuid, function() {
+      workspaceManager.deleteScreen(uuid);
+   });
+});
 

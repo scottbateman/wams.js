@@ -15,3 +15,27 @@ a {
   position: absolute;
   z-index: 5;
 }
+#ball1 {
+  background: rgba(0,128,0,0.5);
+  color: #000;
+  top: 250px;
+  left: 50px;
+}
+#ball2 {
+  background: rgba(255,0,0,0.5);
+  color: #000;
+  top: 250px;
+  left: 175px;
+}
+#ball3 {
+  background: rgba(0,0,255,0.5);
+  color: #fff;
+  top: 375px;
+  left: 50px;
+}
+#ball4 {
+  background: rgba(255,255,0,0.5);
+  color: #000;
+  top: 375px;
+  left: 175px;
+}
