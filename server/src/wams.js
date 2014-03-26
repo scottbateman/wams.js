@@ -1,7 +1,8 @@
 var socket_io = require('socket.io')
   , Vault = require('./vault')
   , User = require('./user')
-  , Locator = require('./locationConnection')
+  , Locator = exports.Locator = require('./locator')
+  , LocationConn = require('./locationConnection')
   ;
 
 //All events that sent to server
@@ -48,7 +49,7 @@ var MTEvents = [
  * @type {Vault}
  */
 var users = new Vault();
-var locator = new Locator();
+var locationConn = new LocationConn();
 var io;
 
 /**
@@ -60,8 +61,9 @@ exports.listen = function(server, options, callback) {
    io.sockets.on('connection', function(socket) {
       socket.on(server_io_recv_calls.new_connection, function(data) {
          var newUser = new User(socket, "", data.description);
-         newUser.position = locator.addClient(newUser.uuid);
+         newUser.position = locationConn.addClient(newUser.uuid);
          users.push(newUser);
+		 Locator.artifact_conneced(newUser); // Tells location-server that artifact has connected.
 
          socket.emit(server_io_send_calls.connection_ok, {
             data: {
@@ -118,30 +120,31 @@ exports.listen = function(server, options, callback) {
 
          socket.on(server_io_recv_calls.ask_left, function(data) {
             socket.emit(server_io_send_calls.get_left, {
-               data: locator.toLeftFrom(newUser.position)
+               data: locationConn.toLeftFrom(newUser.position)
             });
          });
 
          socket.on(server_io_recv_calls.ask_right, function(data) {
             socket.emit(server_io_send_calls.get_right, {
-               data: locator.toRightFrom(newUser.position)
+               data: locationConn.toRightFrom(newUser.position)
             });
          });
 
          socket.on(server_io_recv_calls.ask_front, function(data) {
             socket.emit(server_io_send_calls.get_front, {
-               data: locator.inFrontOf(newUser.position)
+               data: locationConn.inFrontOf(newUser.position)
             });
          });
 
          socket.on(server_io_recv_calls.ask_back, function(data) {
             socket.emit(server_io_send_calls.get_back, {
-               data: locator.behind(newUser.position)
+               data: locationConn.behind(newUser.position)
             });
          });
 
          socket.once('disconnect', function() {
-            locator.deleteClient(newUser.position);
+            locationConn.deleteClient(newUser.position);
+			Locator.user_disconneced(newUser); // Tells location-server that artifact has disconnected.
             socket.broadcast.emit(server_io_send_calls.user_disconnected, {
                data: {
                   client: newUser.uuid
@@ -255,3 +258,12 @@ exports.emit = function(type, destination, data) {
 exports.getSnapshot = function() {
    return users.localExport();
 };
+
+/**
+ * Lets the server change the behavior of Socket.IO-sockets.
+ * @param {string} Key
+ * @param {string} Value
+ */
+exports.set = function(key, value) {
+	io.set(key, value);
+}

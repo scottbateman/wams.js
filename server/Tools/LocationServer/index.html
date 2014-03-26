@@ -14,31 +14,36 @@
 	<h1>WAMS: (Mock) Location Server</h1>
 	<div id="environment">
 		<div><img src="/floorplan.png" /></div>
-		<div id="active_object" style="left:450px;top:125px;position:absolute;"><img src="/active.png" /></div>
-		<div id="client_1" style="left:125px;top:475px;position:absolute;opacity:0.8;background-color:#00FFFF;"><img src="/client.png" /></div>
-		<div id="client_2" style="left:370px;top:360px;position:absolute;opacity:0.8;background-color:#FF00FF;"><img src="/client.png" /></div>
 	</div>
 	<script>
-		var socket = io.connect();
-		console.log($("#active_object").position());
-		socket.emit("update", { id: "active_object", coords: { pos: { x: $("#active_object").position().left, y: $("#active_object").position().top, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
-		socket.emit("update", { id: "client_1", coords: { pos: { x: $("#client_1").position().left, y: $("#client_1").position().top, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
-		socket.emit("update", { id: "client_2", coords: { pos: { x: $("#client_2").position().left, y: $("#client_2").position().top, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
+		// list of all possible location events
+		var location_events = {
+			artifact_conneced: "ART_CON",
+			artifact_disconneced: "ART_DIS",
+			artifact_event: "ART_EVT"
+		};
 		
-		$("#active_object").draggable({
-			drag: function(event, ui) {
-				socket.emit("update", { id: "active_object", coords: { pos: { x: event.clientX, y: event.clientY, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
-			}
+		var socket = io.connect();
+		
+		// if new artifact is connected
+		socket.on(location_events.artifact_conneced, function(data) {
+			// Split uuid for later use (label and color).
+			var uuid = /([0-9a-f]*)-([0-9a-f]{2})*-([0-9a-f]{2})*([0-9a-f]{2})/.exec(data.uuid);
+			// Create new div for each newly connected artifact
+			$("#environment").append('<div id="' + data.uuid + '" style="left:300px;top:300px;position:absolute;opacity:0.8;background-color:#' + uuid[2] + uuid[3] + uuid[4] + ';">' + uuid[1] + '</div>');
+			// Make div draggable and send a message when div is dragged.
+			$("#" + data.uuid).draggable({
+				drag: function(event, ui) {
+					socket.emit(location_events.artifact_event, { id: data.uuid, coords: { pos: { x: event.clientX, y: event.clientY, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
+				}
+			});
+			// Sends initial position to location-server.
+			socket.emit(location_events.artifact_event, { id: data.uuid, coords: { pos: { x: $("#" + data.uuid).position().left, y: $("#" + data.uuid).position().top, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
 		});
-		$("#client_1").draggable({
-			drag: function(event, ui) {
-				socket.emit("update", { id: "client_1", coords: { pos: { x: event.clientX, y: event.clientY, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
-			}
-		});
-		$("#client_2").draggable({
-			drag: function(event, ui) {
-				socket.emit("update", { id: "client_2", coords: { pos: { x: event.clientX, y: event.clientY, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
-			}
+		
+		// if existing artifact is disconnected
+		socket.on(location_events.artifact_disconneced, function(data) {
+			$("#" + data.uuid).remove();
 		});
 	</script>
 </body>

@@ -6,6 +6,7 @@ var url = require('url'),
 	http = require('http'),
 	socketio = require('socket.io');
 
+///////////////////////////////
 //////////// web server section
 
 // Set up required variables
@@ -42,7 +43,7 @@ var httpServerFunc = function (req, res) {
 		}
 	});
 };
-
+/////////////////////////////
 //////////// location section
 
 // This is a mock-up version of a future location server.
@@ -73,44 +74,83 @@ var httpServerFunc = function (req, res) {
 
 // In this mock-up-version, the input comes from a web page, on which users can drag objects to simulate movement.
 
+// list of all possible location events
+var location_events = {
+	artifact_conneced: "ART_CON",
+	artifact_disconneced: "ART_DIS",
+	artifact_event: "ART_EVT"
+};
+
+var wamsServerSocket, websiteSocket;
+
+/////////////////////////////////////////
+////// communication with the WAMS-server
+
 // Creates a TCP-connection to the WAMS server for pushing location information.
-var wamsServer = new net.Socket();
-wamsServer.connect(8081, "localhost", function() {
-	console.log("Connected to WAMS: 127.0.0.1:8081");
+wamsServerSocket = net.createConnection(8081, function() {
+
+	console.log("Connected to WAMS at 127.0.0.1:8081");
+	
+	wamsServerSocket.on('data', function(data) {
+		data = JSON.parse(data.toString()); // reconstructs JSON-object
+
+		if (data.event == location_events.artifact_conneced) {
+		}
+		else if (data.event == location_events.artifact_disconneced) {
+			delete coords[data.uuid]; // cleans up storage
+		}
+
+		if (websiteSocket != 'undefined') websiteSocket.emit(data.event, data); // forwards JSON-object to web page
+	});
 });
+
+//////////////////////////////////////
+////// communication with the web page
+
+// Creates a connection to the web page on which users can drag objects around.
+io = socketio.listen(http.createServer(httpServerFunc).listen(8082));
+io.set('log level', 1);
+
+io.sockets.on('connection', function(socket) {
+	websiteSocket = socket; // stores socket from web site for future use (see above)
+	
+	socket.on(location_events.artifact_event, function(data) {
+		coords[data.id] = data.coords; // stores the newly received location information
+
+		for (var id in coords) { // checks if in proximity to other artifacts ...
+			if (data.id != id) { // ... except yourself
+				var ids = [id, data.id].sort(); // sort ids to avoid duplicates
+				var currentProximity = isInProximity(coords[ids[0]], coords[ids[1]]); // determine proximity between artifacts
+				if (currentProximity != proximities[ids[0] + ids[1]]) { // if proximity-status changed ...
+					proximities[ids[0] + ids[1]] = currentProximity; // ... store new status ... 
+					wamsServerSocket.write(JSON.stringify( { type: "proximity", value: currentProximity, time: Date.now(), pair: [ids[0], ids[1]] } )); // ... and notify WAMS.
+				}
+			}
+		}
+
+	});
+});
+
+////// internal location-server stuff
 
 // Stores the coordinates for all tracked objects.
 var coords = new Object();
+
+//////////////
+//// proximity
 
 // Stores all proximity information between objects tracked.
 var proximities = new Object();
 // The threshold (in pixels) under which two objects are being in proximity to each other.
 var proximityThreshold = 100;
-
-// Creates a connection to the web page on which users can drag objects around.
-io = socketio.listen(http.createServer(httpServerFunc).listen(8082));
-io.sockets.on('connection', function(socket) {
-	socket.on('update', function(data) {
-		// Stores the newly received location information
-		coords[data.id] = data.coords;
-		if (data.id !== "active_object") {
-			// Check if the recently moved client is close to the active object.
-			var currentProximity = isInProximity(coords["active_object"], coords[data.id]);
-			// Check if proximity-status has changed.
-			if (currentProximity != proximities["active_object" + data.id]) {
-				proximities["active_object" + data.id] = currentProximity;
-				// If so, notify the WAMS-server.
-				wamsServer.write(JSON.stringify( { type: "proximity", value: currentProximity, time: Date.now(), pair: ["active_object", data.id] } ));
-			}
-		}
-	});
-});
-
 // Helper function that checks if two objects are in proximity to each other.
 function isInProximity(a, b) {
 	if (typeof(a) == 'undefined' || typeof(b) == 'undefined') return false;
 	else return distance(a, b) < proximityThreshold;
 }
+
+////////////////////////////
+//// general helper function
 
 // Helper function that calculates Euclidean distances.
 function distance(a, b) {
