@@ -185,24 +185,25 @@ function all() {
 
       /**
        * Specify on which element multitouch is started
-       * @param {jQuery} elem Jquery array of elements
+       * @param {HTMLElement|HTMLCollection|jQuery} elem HTML collection or jQuery array of elements
        */
       addMT: function(elem) {
-         //TODO make hammer start on body and move items only with certain classes
-         //FIXME --bug 1--
-         // when we pass clean js array of html elements (not $),
-         // and we push each element into MTObjects array, inside "on" function
-         // callback on elements is not called.
-         // Also. When in MTObjects was pushed instance of Hammer, "on" function
-         // was not calling callback on elements. (On github wiki it is working)
-         for (var i = 0, len = elem.length; i < len; i++) {
-            var newMTObj = new WAMS.modules.Hammer(elem[i], {
+         var self = this, newMTObj;
+         if (elem.length) {
+            for (var i = 0, len = elem.length; i < len; i++) {
+               newMTObj = new WAMS.modules.Hammer(elem[i], {
+                  prevent_default: true,
+                  no_mouseevents: true
+               });
+               self.MTObjects.push(newMTObj);
+            }
+         } else {
+            newMTObj = new WAMS.modules.Hammer(elem, {
                prevent_default: true,
                no_mouseevents: true
             });
-//            this.MTObjects.push(newMTObj);
+            self.MTObjects.push(newMTObj);
          }
-         this.MTObjects.push(elem);
       },
 
       // TODO check on idea of starting MT on body and only allowing
@@ -245,7 +246,7 @@ function all() {
             } else if (self.MTEvents.indexOf(type) != -1) { // if this event is from hammer
                self.MTObjects.forEach(function (MTObj) { // to all mt objects we attach listener
                   MTObj.on(type, function (ev) { //listener callback
-                     var touches = ev.originalEvent.gesture.touches;
+                     var touches = ev.gesture.touches;
                      var event = {
                            type: type,
                            element: []
@@ -266,10 +267,6 @@ function all() {
                      }
                      self.emit(type, event);
 
-                     //FIXME --bug 1-- continued
-                     // cont from higher - this callback is not called when event is
-                     // generated. Right before callback any console.log is called,
-                     // but right inside this callback none of console.log are called
                      callback(ev);
                   });
                });

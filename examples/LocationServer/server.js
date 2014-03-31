@@ -59,3 +59,8 @@ function onGreeting(data) {
 	// Upon receiving a "greeting"-message, send out a "response"-message to all clients
 	WAMS.emit("response", "Welcome, " + data.data.from + "!");
 }
+
+// Register callback when WAMS receives a new locator-event.
+WAMS.Locator.on(WAMS.Locator.when.artifact_event, function(data) {
+	console.log(data);
+});
