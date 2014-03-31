@@ -93,14 +93,16 @@ wamsServerSocket = net.createConnection(8081, function() {
 	
 	wamsServerSocket.on('data', function(data) {
 		data = JSON.parse(data.toString()); // reconstructs JSON-object
+		var locData = { "uuid": data.uuid, "coords": { "pos": { "x": 0, "y": 0, "z": 0 }, "ori": { "y": 0, "p": 0, "r": 0} } }; // create some fake location-data for artifact
 
 		if (data.event == location_events.artifact_conneced) {
+			onLocationEvent(locData); // register new object in location storage
 		}
 		else if (data.event == location_events.artifact_disconneced) {
-			delete coords[data.uuid]; // cleans up storage
+			delete coords[data.uuid]; // cleans up location storage
 		}
 
-		if (websiteSocket != 'undefined') websiteSocket.emit(data.event, data); // forwards JSON-object to web page
+		if (typeof websiteSocket !== 'undefined') websiteSocket.emit(data.event, locData); // forwards JSON-object to web page, if web page is loaded
 	});
 });
 
@@ -113,40 +115,74 @@ io.set('log level', 1);
 
 io.sockets.on('connection', function(socket) {
 	websiteSocket = socket; // stores socket from web site for future use (see above)
-	
-	socket.on(location_events.artifact_event, function(data) {
-		coords[data.id] = data.coords; // stores the newly received location information
+	for (var uuid in coords) { // forwards existing artifact to web page
+		websiteSocket.emit(location_events.artifact_conneced, { "uuid": uuid, "coords": coords[uuid] });
+	}
+	socket.on(location_events.artifact_event, onLocationEvent);
+});
 
-		for (var id in coords) { // checks if in proximity to other artifacts ...
-			if (data.id != id) { // ... except yourself
-				var ids = [id, data.id].sort(); // sort ids to avoid duplicates
-				var currentProximity = isInProximity(coords[ids[0]], coords[ids[1]]); // determine proximity between artifacts
-				if (currentProximity != proximities[ids[0] + ids[1]]) { // if proximity-status changed ...
-					proximities[ids[0] + ids[1]] = currentProximity; // ... store new status ... 
-					wamsServerSocket.write(JSON.stringify( { type: "proximity", value: currentProximity, time: Date.now(), pair: [ids[0], ids[1]] } )); // ... and notify WAMS.
-				}
+// processes changes in artifact location
+function onLocationEvent(data) {
+	coords[data.uuid] = data.coords; // stores the newly received location information
+
+	var locationChanges = [], i = 0; // aggregates all potential changes in location since we cannot send them out in multiple socket.write(..) calls.
+	for (var uuid in coords) { // checks if in proximity to other artifacts ...
+		if (data.uuid != uuid) { // ... except yourself
+			var currentIsAboveAB = isAbove(coords[data.uuid], coords[uuid]); // determine "above-y-ness between" two artifacts; first: is A on top of B?
+			if (currentIsAboveAB != aboveyness[data.uuid + uuid]) { // if "above-y-ness"-status changed ...
+				aboveyness[data.uuid + uuid] = currentIsAboveAB; // ... store new status ... 
+				locationChanges[i++] = { type: "above", value: currentIsAboveAB, time: Date.now(), pair: [data.uuid, uuid] }; // ... and aggregate change information.
+			}
+			var currentIsAboveBA = isAbove(coords[uuid], coords[data.uuid]); // determine "above-y-ness" between two artifacts: is B on top of A?
+			if (currentIsAboveBA != aboveyness[uuid + data.uuid]) { // if "above-y-ness"-status changed ...
+				aboveyness[uuid + data.uuid] = currentIsAboveBA; // ... store new status ... 
+				locationChanges[i++] = { type: "above", value: currentIsAboveBA, time: Date.now(), pair: [uuid, data.uuid] }; // ... and aggregate change information.
+			}
+			
+			var ids = [uuid, data.uuid].sort(); // sort ids to avoid duplicates for commutative relationships, such as proximity.
+			
+			var currentProximity = isInProximity(coords[ids[0]], coords[ids[1]]); // determine proximity between artifacts
+			if (currentProximity != proximities[ids[0] + ids[1]]) { // if proximity-status changed ...
+				proximities[ids[0] + ids[1]] = currentProximity; // ... store new status ... 
+				locationChanges[i++] = { type: "proximity", value: currentProximity, time: Date.now(), pair: [ids[0], ids[1]] }; // ... and aggregate change information.
 			}
 		}
-
-	});
-});
+	}
+	if (locationChanges.length !== 0) {
+		wamsServerSocket.write(JSON.stringify(locationChanges)); // sends out aggregated changes.
+	}
+}
 
 ////// internal location-server stuff
 
-// Stores the coordinates for all tracked objects.
+// Stores the coordinates for all tracked artifacts.
 var coords = new Object();
 
 //////////////
 //// proximity
 
-// Stores all proximity information between objects tracked.
+// Stores all proximity information between tracked artifacts.
 var proximities = new Object();
-// The threshold (in pixels) under which two objects are being in proximity to each other.
+// The threshold (in pixels) under which two artifacts are being in proximity to each other.
 var proximityThreshold = 100;
-// Helper function that checks if two objects are in proximity to each other.
+// Helper function that checks if two artifacts are in proximity to each other.
 function isInProximity(a, b) {
 	if (typeof(a) == 'undefined' || typeof(b) == 'undefined') return false;
 	else return distance(a, b) < proximityThreshold;
+}
+
+
+///////////////////
+//// "above-y-ness"
+
+// Stores all "above-y-ness" information between tracked artifacts.
+var aboveyness = new Object();
+// The horizontal threshold (in pixels) under which two artifacts are considered vertically aligned.
+var horizontalThreshold = 10;
+// Helper function that checks if an artifact is on top of another one.
+function isAbove(a, b) {
+	if (typeof(a) == 'undefined' || typeof(b) == 'undefined') return false;
+	else return a.pos.y < b.pos.y && Math.abs(a.pos.x - b.pos.x) < horizontalThreshold;
 }
 
 ////////////////////////////

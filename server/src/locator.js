@@ -14,8 +14,11 @@ require('net').createServer(function(socket) {
 	console.log("Connected to location-server at " + socket.remoteAddress + ":" + socket.remotePort);
 
 	socket.on('data', function(data) {
-		// Invokes the callback to the server if data from the location-server is received.
-		callbacks[location_events.artifact_event](JSON.parse(data.toString()));
+		var locationChanges = JSON.parse(data.toString());
+		for(var i in locationChanges) {
+			// Invokes the callback to the server if data from the location-server is received.
+			callbacks[location_events.artifact_event](locationChanges[i]);
+		}
 	});
 
 	socket.on('close', function(data) {
@@ -34,15 +37,15 @@ exports.on = function(type, callback) {
 
 // WAMS has detected a new artifact.
 exports.artifact_conneced = function(user) {
-	if (locationSocket != 'undefined') {
-		locationSocket.write(JSON.stringify({ event: location_events.artifact_conneced, uuid: user.uuid }));
+	if (typeof locationSocket !== 'undefined') {
+		locationSocket.write(JSON.stringify( { event: location_events.artifact_conneced, uuid: user.uuid } ));
 	}
 }
 
 // WAMS has detected that an existing artifact was removed.
 exports.user_disconneced = function(user) {
-	if (locationSocket != 'undefined') {
-		locationSocket.write(JSON.stringify({ event: location_events.artifact_disconneced, uuid: user.uuid }));
+	if (typeof locationSocket !== 'undefined') {
+		locationSocket.write(JSON.stringify( { event: location_events.artifact_disconneced, uuid: user.uuid } ));
 	}
 }
 

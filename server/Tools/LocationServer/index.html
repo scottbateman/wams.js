@@ -30,15 +30,13 @@
 			// Split uuid for later use (label and color).
 			var uuid = /([0-9a-f]*)-([0-9a-f]{2})*-([0-9a-f]{2})*([0-9a-f]{2})/.exec(data.uuid);
 			// Create new div for each newly connected artifact
-			$("#environment").append('<div id="' + data.uuid + '" style="left:300px;top:300px;position:absolute;opacity:0.8;background-color:#' + uuid[2] + uuid[3] + uuid[4] + ';">' + uuid[1] + '</div>');
-			// Make div draggable and send a message when div is dragged.
+			$("#environment").append('<div id="' + data.uuid + '" style="left:' + data.coords.pos.x + 'px;top:' + data.coords.pos.y + 'px;position:absolute;opacity:0.8;background-color:#' + uuid[2] + uuid[3] + uuid[4] + ';">' + uuid[1] + '</div>');
+			// Make div draggable and send a artifact-event when div is dragged.
 			$("#" + data.uuid).draggable({
 				drag: function(event, ui) {
-					socket.emit(location_events.artifact_event, { id: data.uuid, coords: { pos: { x: event.clientX, y: event.clientY, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
+					socket.emit(location_events.artifact_event, { uuid: data.uuid, coords: { pos: { x: event.clientX, y: event.clientY, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
 				}
 			});
-			// Sends initial position to location-server.
-			socket.emit(location_events.artifact_event, { id: data.uuid, coords: { pos: { x: $("#" + data.uuid).position().left, y: $("#" + data.uuid).position().top, z: 0 }, ori: { y: 0, p: 0, r: 0} } } );
 		});
 		
 		// if existing artifact is disconnected
