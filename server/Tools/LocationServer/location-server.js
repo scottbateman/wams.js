@@ -14,7 +14,9 @@ var homeDir = path.resolve(process.cwd(), '.');
 
 // HTTP-server main function (handle incoming requests and serves files)
 var httpServerFunc = function (req, res) {
+
 	var uri = url.parse(req.url).pathname;
+	if (uri == "/") uri = "/index.html";
 	file = fs.readFile(path.join(homeDir, uri), function (err, data) {	
 		if (err) { // If file doesn't exist, serve 404 error.
 			res.writeHead(404, {'Content-Type': 'text/plain', 'Content-Length': 0});
