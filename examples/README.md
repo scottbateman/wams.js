@@ -6,14 +6,14 @@ This repo contains examples how to use
 
 ## Usage
 
-How to install and run each specific example is exaplained in
+How to install and run each specific example is explained in
 [wiki](https://github.com/scottbateman/wams.js-examples/wiki)
 
 Direct links:
    * [circles](https://github.com/scottbateman/wams.js-examples/wiki/Circles)
    * [Hello World](https://github.com/scottbateman/wams.js-examples/wiki/Hello-World)
+   * [Location Server](https://github.com/scottbateman/wams.js-examples/wiki/Location-Server)
    * [chat](https://github.com/scottbateman/wams.js-examples/wiki/Chat)
-
 
 ## Contribution
 
