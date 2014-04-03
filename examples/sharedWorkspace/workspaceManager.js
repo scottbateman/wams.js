@@ -76,4 +76,17 @@ WorkspaceManager.prototype.under = function(x, y) {
    return result;
 };
 
+WorkspaceManager.prototype.allExcept = function(list) {
+   var result = [], i, len;
+
+   for (i = 0, len = this._vault.length; i < len; i++) {
+      var uuid = this._vault[i].uuid;
+      if (list.indexOf(uuid) === -1) {
+         result.push(uuid);
+      }
+   }
+
+   return result;
+};
+
 module.exports = exports = WorkspaceManager;
