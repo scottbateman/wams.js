@@ -1,12 +1,12 @@
-var workspace = function(uuid, screen) {
+var Workspace = function(uuid, screen) {
    this.uuid = uuid;
    if (typeof screen === 'string') {
-      screen = workspace.decode(screen);
+      screen = Workspace.decode(screen);
    }
    this.screen = screen;
 };
 
-workspace.prototype.equals = function(workspace) {
+Workspace.prototype.equals = function(workspace) {
    if (typeof workspace === 'string') {
       return this.uuid === workspace;
    } else {
@@ -14,13 +14,13 @@ workspace.prototype.equals = function(workspace) {
    }
 };
 
-workspace.encode = function(screen) {
+Workspace.encode = function(screen) {
    return screen.width + ':' + screen.height + ':' +
       screen.x + ':' + screen.y + ':' +
       screen.scale;
 };
 
-workspace.decode = function(str) {
+Workspace.decode = function(str) {
    var splittedStr = str.split(':');
 
    return {
@@ -32,4 +32,4 @@ workspace.decode = function(str) {
    }
 };
 
-module.exports = workspace;
+module.exports = Workspace;
