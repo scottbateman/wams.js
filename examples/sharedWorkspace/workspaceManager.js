@@ -61,4 +61,19 @@ WorkspaceManager.prototype.deleteScreen = function(uuid) {
    }
 };
 
+WorkspaceManager.prototype.under = function(x, y) {
+   var result = [];
+
+   for (var i = 0; i < this._vault.length; i++) {
+      var uuid = this._vault[i].uuid;
+      var screen = this._vault[i].screen;
+      if (screen.x <= x && x <= screen.x + screen.width &&
+         screen.y <= y && y <= screen.y + screen.height) {
+         result.push(uuid);
+      }
+   }
+
+   return result;
+};
+
 module.exports = exports = WorkspaceManager;
