@@ -74,10 +74,6 @@ wams.on('adjust_workspace', function(data) {
    screen = data;
 });
 
-//wams.on(WAMS.when.connection_ok, function() {
-//
-//});
-
 function appendElement(data) {
    var elem = document.createElement(data.tag);
    for (attr in data.attributes) {
