@@ -93,5 +93,44 @@ wams.on(wams.when.new_connection, function(data) {
    wams.on('disconnect', uuid, function() {
       workspaceManager.deleteScreen(uuid);
    });
+
+   wams.on('drag', uuid, function(data) {
+      var elem = data.data.element[0], corner = [{}, {}, {}, {}], i, len,
+         enableRemoteList = [], disableRemoteList = [],
+         screen = workspaceManager.getScreen(uuid);
+      elem.x += screen.x;
+      elem.y += screen.y;
+      corner[0].x = elem.x - +elem.attributes['data-touchx'];
+      corner[0].y = elem.y - +elem.attributes['data-touchy'];
+      corner[1].x = corner[0].x + elem.w;
+      corner[1].y = corner[0].y;
+      corner[2].x = corner[0].x;
+      corner[2].y = corner[0].y + elem.h;
+      corner[3].x = corner[0].x + elem.w;
+      corner[3].y = corner[0].y + elem.h;
+
+      for (i = 0, len = corner.length; i < len; i++) {
+         var under = workspaceManager.under(corner[i].x, corner[i].y);
+         under.forEach(function(el) {
+            if (enableRemoteList.indexOf(el) === -1) {
+               enableRemoteList.push(el);
+            }
+         });
+      }
+
+      disableRemoteList = workspaceManager.allExcept(enableRemoteList);
+      if (enableRemoteList) {
+         enableRemoteList.forEach(function(listUUID) {
+            if (uuid !== listUUID) {
+               wams.emit('enable_remote', listUUID, data);
+            }
+         });
+      }
+      if (disableRemoteList) {
+         disableRemoteList.forEach(function(listUUID) {
+            wams.emit('disable_remote', listUUID, data);
+         });
+      }
+   });
 });
 
