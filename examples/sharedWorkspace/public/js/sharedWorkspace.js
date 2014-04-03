@@ -213,3 +213,12 @@ function onRemoteRelease(data) {
       }
    })
 }
+
+wams.on('disable_remote', function(data) {
+   var elements = data.data.element,
+      i, len;
+   for (i = 0, len = elements.length; i < len; i++) {
+      var element = elements[i];
+      deleteElement('#' + element.attributes.id);
+   }
+});
