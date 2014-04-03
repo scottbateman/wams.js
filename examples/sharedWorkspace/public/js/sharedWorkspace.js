@@ -214,6 +214,28 @@ function onRemoteRelease(data) {
    })
 }
 
+wams.on('enable_remote', function(data) {
+   var elements = data.data.element,
+      type = data.data.type,
+      i, len;
+   for (i = 0, len = elements.length; i < len; i++) {
+      var element = elements[i];
+      if (!document.getElementById(element.attributes.id)) {
+         appendElement(element);
+         var left = element.x - screen.x,
+            top = element.y - screen.y;
+         moveElement('#' + element.attributes.id, left, top);
+      }
+      if (type === 'touch') {
+         onRemoteTouch(data.data);
+      } else if (type === 'drag') {
+         onRemoteDrag(data.data);
+      } else if (type === 'release') {
+         onRemoteRelease(data.data);
+      }
+   }
+});
+
 wams.on('disable_remote', function(data) {
    var elements = data.data.element,
       i, len;
