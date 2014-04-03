@@ -91,6 +91,11 @@ function appendElement(data) {
    wams.addMT(elem);
 }
 
+function deleteElement(elem) {
+   elem = $(elem);
+   elem.remove();
+}
+
 var messageTypes = {
    new_element: appendElement
 };
@@ -98,3 +103,44 @@ var messageTypes = {
 wams.on(WAMS.when.message_received, function(data) {
    messageTypes[data.action] && messageTypes[data.action](data.element);
 });
+
+function liftZindex(elem, num) {
+   elem = $(elem);
+   elem.css({ zIndex: num || 10 });
+}
+function lowerZindex(elem, num) {
+   elem = $(elem);
+   elem.css({ zIndex: num || 1 });
+}
+function moveElement(elem, x, y) {
+   elem = $(elem);
+   if (elem.hasClass('ball')) {
+      elem.css({
+         left: x - +elem.attr('data-touchX'),
+         top: y - +elem.attr('data-touchY')
+      });
+   }
+}
+function fixTouchPoint(elem, x, y) {
+   elem = $(elem);
+   elem.attr('data-touchX', x - elem.offset().left);
+   elem.attr('data-touchY', y - elem.offset().top);
+}
+function clearTouchPoint(elem) {
+   elem = $(elem);
+   elem.attr('data-touchX', '');
+   elem.attr('data-touchY', '');
+}
+function lock(elem, uuid) {
+   elem = $(elem);
+   elem.attr('data-lock', uuid || wams.uuid);
+}
+function unlock(elem) {
+   elem = $(elem);
+   elem.attr('data-lock', "");
+}
+function unlocked(elem, uuid) {
+   elem = $(elem);
+   return (elem.attr('data-lock') === "") ||
+      (elem.attr("data-lock") === uuid || wams.uuid);
+}
