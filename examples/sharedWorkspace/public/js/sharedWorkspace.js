@@ -69,7 +69,9 @@ $(window).resize(function() {
 });
 
 wams.on('adjust_workspace', function(data) {
-   displayScreenMode(decodeScreen(data.screen));
+   data = decodeScreen(data.screen);
+   displayScreenMode(data);
+   screen = data;
 });
 
 //wams.on(WAMS.when.connection_ok, function() {
