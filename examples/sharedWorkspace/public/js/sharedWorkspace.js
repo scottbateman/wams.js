@@ -91,6 +91,10 @@ function appendElement(data) {
    body[0].appendChild(elem);
 
    wams.addMT(elem);
+
+   wams.on('touch', onTouch);
+   wams.on('drag', onDrag);
+   wams.on('release', onRelease);
 }
 
 function deleteElement(elem) {
@@ -145,4 +149,36 @@ function unlocked(elem, uuid) {
    elem = $(elem);
    return (elem.attr('data-lock') === "") ||
       (elem.attr("data-lock") === uuid || wams.uuid);
+}
+
+function onTouch(ev) {
+   var touches = ev.gesture.touches;
+   for (var t = 0, len = touches.length; t < len; t++) {
+      var target = ev.target;
+      if (unlocked(target, wams.uuid)) {
+         lock(target);
+         liftZindex(target);
+         fixTouchPoint(target, touches[t].pageX, touches[t].pageY);
+      }
+   }
+}
+
+function onDrag(ev) {
+   var touches = ev.gesture.touches;
+   for (var t = 0, len = touches.length; t < len; t++) {
+      var target = ev.target;
+      moveElement(target, touches[t].pageX, touches[t].pageY);
+   }
+}
+
+function onRelease(ev) {
+   var touches = ev.gesture.touches;
+   for (var t = 0, len = touches.length; t < len; t++) {
+      var target = ev.target;
+      if (unlocked(target, wams.uuid)) {
+         unlock(target);
+         lowerZindex(target);
+         clearTouchPoint(target);
+      }
+   }
 }
