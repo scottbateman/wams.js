@@ -22,6 +22,11 @@ WorkspaceManager.prototype.addScreen = function(uuid, screen) {
    return workspace.screen;
 };
 
+WorkspaceManager.prototype.getScreen = function(uuid) {
+   var workspace = this._vault.get(uuid);
+   return workspace.screen;
+};
+
 WorkspaceManager.prototype.resize = function(uuid, width, height) {
    var workspace = this._vault.get(uuid),
       workspaceX = workspace.screen.x,
