@@ -182,3 +182,34 @@ function onRelease(ev) {
       }
    }
 }
+
+function onRemoteTouch(data) {
+   data.element.forEach(function(element) {
+      var target = document.getElementById(element.attributes.id);
+      if (unlocked(target, data.source)) {
+         lock(target, data.source);
+         liftZindex(target, 5);
+         fixTouchPoint(target, element.x, element.y);
+      }
+   });
+}
+
+function onRemoteDrag(data) {
+   data.element.forEach(function(element) {
+      var target = document.getElementById(element.attributes.id);
+      if (unlocked(target, data.source)) {
+         moveElement(target, element.x - screen.x, element.y - screen.y);
+      }
+   })
+}
+
+function onRemoteRelease(data) {
+   data.element.forEach(function(element) {
+      var target = document.getElementById(element.attributes.id);
+      if (unlocked(target, data.source)) {
+         unlock(target);
+         lowerZindex(target);
+         clearTouchPoint(target);
+      }
+   })
+}
