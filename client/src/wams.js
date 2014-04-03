@@ -279,7 +279,9 @@ function all() {
                            attributes: {},
                            innerHTML: touch.target.innerHTML,
                            x: touch.pageX,
-                           y: touch.pageY
+                           y: touch.pageY,
+                           w: touch.target.offsetWidth,
+                           h: touch.target.offsetHeight
                         };
                         for (var j = 0, attrs = touch.target.attributes; j < attrs.length; j++) {
                            elementMetadata.attributes[attrs.item(j).nodeName] = attrs.item(j).nodeValue;
