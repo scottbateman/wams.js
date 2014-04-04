@@ -94,7 +94,7 @@ wams.on(wams.when.new_connection, function(data) {
       workspaceManager.deleteScreen(uuid);
    });
 
-   wams.on('drag', uuid, function(data) {
+   var handler = function(data) {
       if (!data.data.element.length) {
          return;
       }
@@ -142,6 +142,10 @@ wams.on(wams.when.new_connection, function(data) {
             wams.emit('disable_remote', listUUID, data);
          });
       }
-   });
+   };
+
+   wams.on('touch', uuid, handler);
+   wams.on('drag', uuid, handler);
+   wams.on('release', uuid, handler);
 });
 
