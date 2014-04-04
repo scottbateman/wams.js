@@ -422,6 +422,17 @@ function all() {
             left: left,
             top: top
          };
+      },
+
+      isDraggable: function(element) {
+         if (!element || !element.attributes || !element.attributes.item(0)) {
+            return false;
+         }
+         var i, attrs, classes;
+         for (i = 0; element.attributes.item(i).nodeName !== 'class'; i++) {
+         }
+         classes = element.attributes.item(i).nodeValue;
+         return (classes.indexOf('ball') > -1);
       }
    };
 
