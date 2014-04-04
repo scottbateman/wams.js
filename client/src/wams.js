@@ -410,6 +410,9 @@ function all() {
       }
    };
 
+   WAMS.util = {
+   };
+
    /*
     //Shared dic
     var dic = {};
