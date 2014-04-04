@@ -122,8 +122,8 @@ function moveElement(elem, x, y) {
    elem = $(elem);
    if (elem.hasClass('ball')) {
       elem.css({
-         left: x - +elem.attr('data-touchX'),
-         top: y - +elem.attr('data-touchY')
+         left: x,
+         top: y
       });
    }
 }
@@ -166,7 +166,8 @@ function onDrag(ev) {
    var touches = ev.gesture.touches;
    for (var t = 0, len = touches.length; t < len; t++) {
       var target = ev.target;
-      moveElement(target, touches[t].pageX, touches[t].pageY);
+      moveElement(target, touches[t].pageX - touchPoint.x,
+         touches[t].pageY - touchPoint.y);
    }
 }
 
