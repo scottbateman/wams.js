@@ -411,6 +411,18 @@ function all() {
    };
 
    WAMS.util = {
+      offset: function(object) {
+         var left = object.offsetLeft,
+            top = object.offsetTop;
+         while (object = object.offsetParent) {
+            left += object.offsetLeft;
+            top += object.offsetTop;
+         }
+         return {
+            left: left,
+            top: top
+         };
+      }
    };
 
    /*
