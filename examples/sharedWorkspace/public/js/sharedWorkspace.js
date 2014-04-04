@@ -188,7 +188,6 @@ function onRemoteTouch(data) {
       if (unlocked(target, data.source)) {
          lock(target, data.source);
          liftZindex(target, 5);
-         fixTouchPoint(target, element.x, element.y);
       }
    });
 }
@@ -208,7 +207,6 @@ function onRemoteRelease(data) {
       if (unlocked(target, data.source)) {
          unlock(target);
          lowerZindex(target);
-         clearTouchPoint(target);
       }
    })
 }
