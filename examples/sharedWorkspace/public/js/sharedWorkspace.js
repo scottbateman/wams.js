@@ -49,6 +49,10 @@ var screen = {
    y: 0,
    scale: 1
 };
+var touchPoint = {
+   x: 0,
+   y: 0
+};
 
 var wams = new WAMS({screen: encodeScreen(screen), name: name, color: color});
 
@@ -125,13 +129,12 @@ function moveElement(elem, x, y) {
 }
 function fixTouchPoint(elem, x, y) {
    elem = $(elem);
-   elem.attr('data-touchX', x - elem.offset().left);
-   elem.attr('data-touchY', y - elem.offset().top);
+   touchPoint.x = x - elem.offset().left;
+   touchPoint.y = y - elem.offset().top;
 }
 function clearTouchPoint(elem) {
-   elem = $(elem);
-   elem.attr('data-touchX', '');
-   elem.attr('data-touchY', '');
+   touchPoint.x = 0;
+   touchPoint.y = 0;
 }
 function lock(elem, uuid) {
    elem = $(elem);
