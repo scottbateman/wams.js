@@ -125,7 +125,15 @@ wams.on(wams.when.new_connection, function(data) {
       if (enableRemoteList) {
          enableRemoteList.forEach(function(listUUID) {
             if (uuid !== listUUID) {
+               var abs = {
+                  x: elem.x,
+                  y: elem.y
+               };
+               elem.x -= workspaceManager.getScreen(listUUID).x;
+               elem.y -= workspaceManager.getScreen(listUUID).y;
                wams.emit('enable_remote', listUUID, data);
+               elem.x = abs.x;
+               elem.y = abs.y;
             }
          });
       }

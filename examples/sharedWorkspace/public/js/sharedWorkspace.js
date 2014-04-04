@@ -194,7 +194,7 @@ function onRemoteDrag(data) {
    data.element.forEach(function(element) {
       var target = document.getElementById(element.attributes.id);
       if (unlocked(target, data.source)) {
-         moveElement(target, element.x - screen.x, element.y - screen.y);
+         moveElement(target, element.x, element.y);
       }
    })
 }
@@ -218,9 +218,7 @@ wams.on('enable_remote', function(data) {
       var element = elements[i];
       if (!document.getElementById(element.attributes.id)) {
          appendElement(element);
-         var left = element.x - screen.x,
-            top = element.y - screen.y;
-         moveElement('#' + element.attributes.id, left, top);
+         moveElement('#' + element.attributes.id, element.x, element.y);
       }
       if (type === 'touch') {
          onRemoteTouch(data.data);
