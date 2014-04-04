@@ -278,8 +278,8 @@ function all() {
                            tag: touch.target.tagName,
                            attributes: {},
                            innerHTML: touch.target.innerHTML,
-                           x: touch.pageX,
-                           y: touch.pageY,
+                           x: WAMS.util.offset(touch.target).left,
+                           y: WAMS.util.offset(touch.target).top,
                            w: touch.target.offsetWidth,
                            h: touch.target.offsetHeight
                         };
