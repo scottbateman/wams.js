@@ -103,8 +103,8 @@ wams.on(wams.when.new_connection, function(data) {
          screen = workspaceManager.getScreen(uuid);
       elem.x += screen.x;
       elem.y += screen.y;
-      corner[0].x = elem.x - +elem.attributes['data-touchx'];
-      corner[0].y = elem.y - +elem.attributes['data-touchy'];
+      corner[0].x = elem.x;
+      corner[0].y = elem.y;
       corner[1].x = corner[0].x + elem.w;
       corner[1].y = corner[0].y;
       corner[2].x = corner[0].x;
