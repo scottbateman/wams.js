@@ -95,6 +95,9 @@ wams.on(wams.when.new_connection, function(data) {
    });
 
    wams.on('drag', uuid, function(data) {
+      if (!data.data.element.length) {
+         return;
+      }
       var elem = data.data.element[0], corner = [{}, {}, {}, {}], i, len,
          enableRemoteList = [], disableRemoteList = [],
          screen = workspaceManager.getScreen(uuid);
