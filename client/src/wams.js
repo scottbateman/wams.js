@@ -274,19 +274,21 @@ function all() {
                         };
                      for (var i = 0; i < touches.length; i++) {
                         var touch = touches[i];
-                        var elementMetadata = {
-                           tag: touch.target.tagName,
-                           attributes: {},
-                           innerHTML: touch.target.innerHTML,
-                           x: WAMS.util.offset(touch.target).left,
-                           y: WAMS.util.offset(touch.target).top,
-                           w: touch.target.offsetWidth,
-                           h: touch.target.offsetHeight
-                        };
-                        for (var j = 0, attrs = touch.target.attributes; j < attrs.length; j++) {
-                           elementMetadata.attributes[attrs.item(j).nodeName] = attrs.item(j).nodeValue;
+                        if (WAMS.util.isDraggable(touch.target)) {
+                           var elementMetadata = {
+                              tag: touch.target.tagName,
+                              attributes: {},
+                              innerHTML: touch.target.innerHTML,
+                              x: WAMS.util.offset(touch.target).left,
+                              y: WAMS.util.offset(touch.target).top,
+                              w: touch.target.offsetWidth,
+                              h: touch.target.offsetHeight
+                           };
+                           for (var j = 0, attrs = touch.target.attributes; j < attrs.length; j++) {
+                              elementMetadata.attributes[attrs.item(j).nodeName] = attrs.item(j).nodeValue;
+                           }
+                           event.element.push(elementMetadata);
                         }
-                        event.element.push(elementMetadata);
                      }
                      self.emit(type, event);
 
