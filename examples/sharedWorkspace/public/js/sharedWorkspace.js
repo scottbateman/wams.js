@@ -199,7 +199,7 @@ function onRemoteDrag(data) {
       if (unlocked(target, data.source)) {
          moveElement(target, element.x, element.y);
       }
-   })
+   });
 }
 
 function onRemoteRelease(data) {
@@ -209,7 +209,7 @@ function onRemoteRelease(data) {
          unlock(target);
          lowerZindex(target);
       }
-   })
+   });
 }
 
 wams.on('enable_remote', function(data) {
