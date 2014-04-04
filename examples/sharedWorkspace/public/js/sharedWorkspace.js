@@ -223,10 +223,13 @@ wams.on('enable_remote', function(data) {
          moveElement('#' + element.attributes.id, element.x, element.y);
       }
       if (type === 'touch') {
+         data.data.source = data.source;
          onRemoteTouch(data.data);
       } else if (type === 'drag') {
+         data.data.source = data.source;
          onRemoteDrag(data.data);
       } else if (type === 'release') {
+         data.data.source = data.source;
          onRemoteRelease(data.data);
       }
    }
