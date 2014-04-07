@@ -133,12 +133,27 @@ function onLocationEvent(data) {
 			var currentIsAboveAB = isAbove(coords[data.uuid], coords[uuid]); // determine "above-y-ness between" two artifacts; first: is A on top of B?
 			if (currentIsAboveAB != aboveyness[data.uuid + uuid]) { // if "above-y-ness"-status changed ...
 				aboveyness[data.uuid + uuid] = currentIsAboveAB; // ... store new status ... 
-				locationChanges[i++] = { type: "above", value: currentIsAboveAB, time: Date.now(), pair: [data.uuid, uuid] }; // ... and aggregate change information.
+				locationChanges[i++] = { type: "above", value: currentIsAboveAB, time: Date.now(), pair: [data.uuid, uuid] };
+				locationChanges[i++] = { type: "below", value: currentIsAboveAB, time: Date.now(), pair: [uuid, data.uuid] };// ... and aggregate change information.
 			}
 			var currentIsAboveBA = isAbove(coords[uuid], coords[data.uuid]); // determine "above-y-ness" between two artifacts: is B on top of A?
 			if (currentIsAboveBA != aboveyness[uuid + data.uuid]) { // if "above-y-ness"-status changed ...
 				aboveyness[uuid + data.uuid] = currentIsAboveBA; // ... store new status ... 
-				locationChanges[i++] = { type: "above", value: currentIsAboveBA, time: Date.now(), pair: [uuid, data.uuid] }; // ... and aggregate change information.
+				locationChanges[i++] = { type: "above", value: currentIsAboveBA, time: Date.now(), pair: [uuid, data.uuid] };
+				locationChanges[i++] = { type: "below", value: currentIsAboveBA, time: Date.now(), pair: [data.uuid, uuid] }; // ... and aggregate change information.
+			}
+			
+			var currentIsLeftAB = isLeft(coords[data.uuid], coords[uuid]); // determine "left-y-ness between" two artifacts; first: is A left of B?
+			if (currentIsLeftAB != leftyness[data.uuid + uuid]) { // if "left-y-ness"-status changed ...
+				leftyness[data.uuid + uuid] = currentIsLeftAB; // ... store new status ... 
+				locationChanges[i++] = { type: "left", value: currentIsLeftAB, time: Date.now(), pair: [data.uuid, uuid] };
+				locationChanges[i++] = { type: "right", value: currentIsLeftAB, time: Date.now(), pair: [uuid, data.uuid] };// ... and aggregate change information.
+			}
+			var currentIsLeftBA = isLeft(coords[uuid], coords[data.uuid]); // determine "left-y-ness" between two artifacts: is B left of A?
+			if (currentIsLeftBA != leftyness[uuid + data.uuid]) { // if "left-y-ness"-status changed ...
+				leftyness[uuid + data.uuid] = currentIsLeftBA; // ... store new status ... 
+				locationChanges[i++] = { type: "left", value: currentIsLeftBA, time: Date.now(), pair: [uuid, data.uuid] };
+				locationChanges[i++] = { type: "right", value: currentIsLeftBA, time: Date.now(), pair: [data.uuid, uuid] }; // ... and aggregate change information.
 			}
 			
 			var ids = [uuid, data.uuid].sort(); // sort ids to avoid duplicates for commutative relationships, such as proximity.
@@ -185,6 +200,19 @@ var horizontalThreshold = 10;
 function isAbove(a, b) {
 	if (typeof(a) == 'undefined' || typeof(b) == 'undefined') return false;
 	else return a.pos.y < b.pos.y && Math.abs(a.pos.x - b.pos.x) < horizontalThreshold;
+}
+
+///////////////////
+//// "left-y-ness"
+
+// Stores all "lefty-y-ness" information between tracked artifacts.
+var leftyness = new Object();
+// The vertical threshold (in pixels) under which two artifacts are considered horizontally aligned.
+var horizontalThreshold = 10;
+// Helper function that checks if an artifact is left of another one.
+function isLeft(a, b) {
+	if (typeof(a) == 'undefined' || typeof(b) == 'undefined') return false;
+	else return a.pos.x < b.pos.x && Math.abs(a.pos.y - b.pos.y) < horizontalThreshold;
 }
 
 ////////////////////////////
