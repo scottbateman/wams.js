@@ -76,6 +76,7 @@ wams.on(wams.when.new_connection, function(data) {
    var users = wams.getSnapshot();
    var uuid = users[users.length - 1].uuid;
    var adjustedScreen = workspaceManager.addScreen(uuid, screen);
+   var notifiedDisableRemoteList = [];
 
    if (adjustedScreen.x === 0 && adjustedScreen.y === 0) {
       drop4balls(uuid);
@@ -124,6 +125,11 @@ wams.on(wams.when.new_connection, function(data) {
       disableRemoteList = workspaceManager.allExcept(enableRemoteList);
       if (enableRemoteList) {
          enableRemoteList.forEach(function(listUUID) {
+            var indexOfNDRL = notifiedDisableRemoteList.indexOf(listUUID);
+            if (indexOfNDRL > -1) {
+               notifiedDisableRemoteList.splice(indexOfNDRL, 1);
+            }
+
             if (uuid !== listUUID) {
                var abs = {
                   x: elem.x,
@@ -139,17 +145,20 @@ wams.on(wams.when.new_connection, function(data) {
       }
       if (disableRemoteList) {
          disableRemoteList.forEach(function(listUUID) {
-            var msg = {
-               data: {
-                  element: [
-                     { attributes: { id:'' } }
-                  ]
+            if (notifiedDisableRemoteList.indexOf(listUUID) === -1) {
+               var msg = {
+                  data: {
+                     element: [
+                        { attributes: { id:'' } }
+                     ]
+                  }
+               }, i, len;
+               for (i = 0, len = data.data.element.length; i < len; i++) {
+                  msg.data.element[i].attributes.id = data.data.element[i].attributes.id;
                }
-            }, i, len;
-            for (i = 0, len = data.data.element.length; i < len; i++) {
-               msg.data.element[i].attributes.id = data.data.element[i].attributes.id;
+               wams.emit('disable_remote', listUUID, msg);
+               notifiedDisableRemoteList.push(listUUID);
             }
-            wams.emit('disable_remote', listUUID, msg);
          });
       }
    };
