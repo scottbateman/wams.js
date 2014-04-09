@@ -139,7 +139,17 @@ wams.on(wams.when.new_connection, function(data) {
       }
       if (disableRemoteList) {
          disableRemoteList.forEach(function(listUUID) {
-            wams.emit('disable_remote', listUUID, data);
+            var msg = {
+               data: {
+                  element: [
+                     { attributes: { id:'' } }
+                  ]
+               }
+            }, i, len;
+            for (i = 0, len = data.data.element.length; i < len; i++) {
+               msg.data.element[i].attributes.id = data.data.element[i].attributes.id;
+            }
+            wams.emit('disable_remote', listUUID, msg);
          });
       }
    };
