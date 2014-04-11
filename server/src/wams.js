@@ -176,8 +176,6 @@ exports.on = function(type, source, callback) {
          socket = '*';
          break;
       case 3:
-         console.log(typeof source);
-         console.log(source);
          if (typeof source === 'string') {
             var user = users.get(source);
             if (typeof user === 'undefined') { throw new Error('Wrong uuid'); }
