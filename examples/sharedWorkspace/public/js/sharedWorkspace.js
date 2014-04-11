@@ -102,12 +102,21 @@ function deleteElement(elem) {
    elem.remove();
 }
 
+function adjustOtherWorkspace(uuid, screen) {
+   wams.getDescription(uuid).screen = screen;
+}
+
 var messageTypes = {
-   new_element: appendElement
+   new_element: function(data) {
+      appendElement(data.element);
+   },
+   adjust_other_workspace: function(data) {
+      adjustOtherWorkspace(data.metadata.uuid, data.metadata.screen);
+   }
 };
 
 wams.on(WAMS.when.message_received, function(data) {
-   messageTypes[data.action] && messageTypes[data.action](data.element);
+   messageTypes[data.action] && messageTypes[data.action](data);
 });
 
 function liftZindex(elem, num) {

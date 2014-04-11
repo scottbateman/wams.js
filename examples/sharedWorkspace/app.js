@@ -69,6 +69,25 @@ function drop4balls(uuid) {
    }
 }
 
+function notifyResize(uuid, screen) {
+   var users = wams.getSnapshot(), i, len, listUUID;
+   for (i = 0, len = users.length; i < len; i++) {
+      listUUID = users[i].uuid;
+      if (listUUID !== uuid) {
+         wams.emit('RECV_MSG', listUUID, {
+            source: '',
+            data: {
+               action: 'adjust_other_workspace',
+               metadata: {
+                  uuid: uuid,
+                  screen: screen
+               }
+            }
+         });
+      }
+   }
+}
+
 wams.listen(server);
 var workspaceManager = new WorkspaceManager(wams);
 wams.on(wams.when.new_connection, function(data) {
@@ -85,10 +104,13 @@ wams.on(wams.when.new_connection, function(data) {
    wams.emit('adjust_workspace', uuid, {
       screen: Workspace.encode(adjustedScreen)
    });
+   notifyResize(uuid, Workspace.encode(adjustedScreen));
 
    wams.on('resize_screen', uuid, function(data) {
       var screen = Workspace.decode(data.data.screen);
       workspaceManager.resize(uuid, screen.width, screen.height);
+
+      notifyResize(uuid, data.data.screen);
    });
 
    wams.on('disconnect', uuid, function() {
