@@ -209,21 +209,21 @@ function all() {
        * @param {HTMLElement|HTMLCollection|jQuery} elem HTML collection or jQuery array of elements
        */
       addMT: function(elem) {
-         var self = this, newMTObj;
-         if (elem.length) {
-            for (var i = 0, len = elem.length; i < len; i++) {
-               newMTObj = new WAMS.modules.Hammer(elem[i], {
+         var self = this, newMTObj, i, len,
+            addElement = function(elem) {
+               newMTObj = new WAMS.modules.Hammer(elem, {
                   prevent_default: true,
                   no_mouseevents: true
                });
                self.MTObjects.push(newMTObj);
+            };
+
+         if (elem.length) {
+            for (i = 0, len = elem.length; i < len; i++) {
+               addElement(elem[i]);
             }
          } else {
-            newMTObj = new WAMS.modules.Hammer(elem, {
-               prevent_default: true,
-               no_mouseevents: true
-            });
-            self.MTObjects.push(newMTObj);
+            addElement(elem);
          }
       },
 
