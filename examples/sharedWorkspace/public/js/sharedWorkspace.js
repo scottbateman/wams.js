@@ -39,7 +39,7 @@ function decodeScreen(str) {
       x : +screenSplitted[2],
       y : +screenSplitted[3],
       scale : +screenSplitted[4]
-   }
+   };
 }
 
 var screen = {
@@ -80,7 +80,7 @@ wams.on('adjust_workspace', function(data) {
 
 function appendElement(data) {
    var elem = document.createElement(data.tag);
-   for (attr in data.attributes) {
+   for (var attr in data.attributes) {
       if (data.attributes.hasOwnProperty(attr)) {
          elem.setAttribute(attr, data.attributes[attr]);
       }
