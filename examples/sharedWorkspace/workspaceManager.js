@@ -128,4 +128,35 @@ WorkspaceManager.prototype.allExcept = function(list) {
    return result;
 };
 
+/**
+ * Return width and height of the whole workspace
+ * @returns {{width: number, height: number}} maximum width and height of workspace
+ */
+WorkspaceManager.prototype.maxDimensions = function() {
+   var result = {}, i, len, screen;
+
+   if (!this._vault.length) {
+      return {
+         width: 0,
+         height: 0
+      };
+   }
+
+   screen = this._vault[0].screen;
+   result.width = screen.x + screen.width;
+   result.height = screen.y + screen.height;
+
+   for (i = 1, len = this._vault.length; i < len; i++) {
+      screen = this._vault[i].screen;
+      if (screen.x + screen.width > result.width) {
+         result.width = screen.x + screen.width;
+      }
+      if (screen.y + screen.height > result.height) {
+         result.height = screen.y + screen.height;
+      }
+   }
+
+   return result;
+};
+
 module.exports = exports = WorkspaceManager;
