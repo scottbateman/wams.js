@@ -51,11 +51,12 @@ WorkspaceManager.prototype.getScreen = function(uuid) {
 WorkspaceManager.prototype.resize = function(uuid, width, height) {
    var workspace = this._vault.get(uuid),
       workspaceX = workspace.screen.x,
-      workspaceWidth = workspace.screen.width;
+      workspaceWidth = workspace.screen.width,
+      i, len;
    workspace.screen.width = width;
    workspace.screen.height = height;
 
-   for (var i = 0; i < this._vault.length; i++) {
+   for (i = 0, len = this._vault.length; i < len; i++) {
       if (this._vault[i].screen.x >= workspaceX + workspaceWidth) {
          this._vault[i].screen.x -= workspaceWidth - width;
 
@@ -74,9 +75,10 @@ WorkspaceManager.prototype.resize = function(uuid, width, height) {
 WorkspaceManager.prototype.deleteScreen = function(uuid) {
    var toDelete = this._vault.pop(uuid),
       toDeleteWidth = toDelete.screen.width,
-      toDeleteX = toDelete.screen.x;
+      toDeleteX = toDelete.screen.x,
+      i, len;
 
-   for (var i = 0; i < this._vault.length; i++) {
+   for (i = 0, len = this._vault.length; i < len; i++) {
       if (this._vault[i].screen.x >= toDeleteX + toDeleteWidth) {
          this._vault[i].screen.x -= toDeleteWidth;
 
@@ -94,11 +96,11 @@ WorkspaceManager.prototype.deleteScreen = function(uuid) {
  * @returns {Array} workspaces under point
  */
 WorkspaceManager.prototype.under = function(x, y) {
-   var result = [];
+   var result = [], i, len, uuid, screen;
 
-   for (var i = 0; i < this._vault.length; i++) {
-      var uuid = this._vault[i].uuid;
-      var screen = this._vault[i].screen;
+   for (i = 0, len = this._vault.length; i < len; i++) {
+      uuid = this._vault[i].uuid;
+      screen = this._vault[i].screen;
       if (screen.x <= x && x <= screen.x + screen.width &&
          screen.y <= y && y <= screen.y + screen.height) {
          result.push(uuid);
@@ -114,10 +116,10 @@ WorkspaceManager.prototype.under = function(x, y) {
  * @returns {Array} filtered elements
  */
 WorkspaceManager.prototype.allExcept = function(list) {
-   var result = [], i, len;
+   var result = [], i, len, uuid;
 
    for (i = 0, len = this._vault.length; i < len; i++) {
-      var uuid = this._vault[i].uuid;
+      uuid = this._vault[i].uuid;
       if (list.indexOf(uuid) === -1) {
          result.push(uuid);
       }
