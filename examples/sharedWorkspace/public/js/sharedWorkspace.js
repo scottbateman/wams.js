@@ -90,7 +90,10 @@ function appendElement(data) {
    var body = document.getElementsByTagName('body');
    body[0].appendChild(elem);
 
-   wams.addMT(elem);
+   wams.dispose();
+
+   var elems = document.getElementsByClassName('ball');
+   wams.addMT(elems);
 
    wams.on('touch', onTouch);
    wams.on('drag', onDrag);
