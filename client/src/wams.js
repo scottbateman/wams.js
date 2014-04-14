@@ -326,6 +326,16 @@ function all() {
       },
 
       /**
+       * Destroy all multi-touch objects created with addMT()
+       */
+      dispose: function() {
+         var self = this;
+         self.MTObjects.forEach(function(MTObj) {
+            MTObj.dispose();
+         });
+      },
+
+      /**
        * Register callback on event type from remote server
        * @param {string|string[]} types On which types fire callback
        * @param {function} callback Function to execute
