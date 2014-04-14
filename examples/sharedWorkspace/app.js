@@ -61,7 +61,8 @@ function drop4balls(uuid) {
                tag: 'div',
                attributes: {
                   id: 'ball' + i,
-                  class: 'ball'
+                  class: 'ball',
+                  'data-lock': ''
                }
             }
          }

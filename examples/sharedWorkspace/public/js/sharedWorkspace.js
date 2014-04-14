@@ -156,7 +156,7 @@ function unlock(elem) {
 function unlocked(elem, uuid) {
    elem = $(elem);
    return (elem.attr('data-lock') === "") ||
-      (elem.attr("data-lock") === uuid || wams.uuid);
+      (elem.attr('data-lock') === uuid);
 }
 
 function onTouch(ev) {
@@ -175,8 +175,10 @@ function onDrag(ev) {
    var touches = ev.gesture.touches;
    for (var t = 0, len = touches.length; t < len; t++) {
       var target = ev.target;
-      moveElement(target, touches[t].pageX - touchPoint.x,
-         touches[t].pageY - touchPoint.y);
+      if (unlocked(target, wams.uuid)) {
+         moveElement(target, touches[t].pageX - touchPoint.x,
+            touches[t].pageY - touchPoint.y);
+      }
    }
 }
 
