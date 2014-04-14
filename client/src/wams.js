@@ -265,34 +265,34 @@ function all() {
                   callback(data.data);
                });
             } else if (self.MTEvents.indexOf(type) != -1) { // if this event is from hammer
-                  var handler = function (ev) { //listener callback
-                     var touches = ev.gesture.touches;
-                     var event = {
-                           type: type,
-                           element: []
+               var handler = function (ev) { //listener callback
+                  var touches = ev.gesture.touches;
+                  var event = {
+                        type: type,
+                        element: []
+                     };
+                  for (var i = 0; i < touches.length; i++) {
+                     var touch = touches[i];
+                     if (WAMS.util.isDraggable(touch.target)) {
+                        var elementMetadata = {
+                           tag: touch.target.tagName,
+                           attributes: {},
+                           innerHTML: touch.target.innerHTML,
+                           x: WAMS.util.offset(touch.target).left,
+                           y: WAMS.util.offset(touch.target).top,
+                           w: touch.target.offsetWidth,
+                           h: touch.target.offsetHeight
                         };
-                     for (var i = 0; i < touches.length; i++) {
-                        var touch = touches[i];
-                        if (WAMS.util.isDraggable(touch.target)) {
-                           var elementMetadata = {
-                              tag: touch.target.tagName,
-                              attributes: {},
-                              innerHTML: touch.target.innerHTML,
-                              x: WAMS.util.offset(touch.target).left,
-                              y: WAMS.util.offset(touch.target).top,
-                              w: touch.target.offsetWidth,
-                              h: touch.target.offsetHeight
-                           };
-                           for (var j = 0, attrs = touch.target.attributes; j < attrs.length; j++) {
-                              elementMetadata.attributes[attrs.item(j).nodeName] = attrs.item(j).nodeValue;
-                           }
-                           event.element.push(elementMetadata);
+                        for (var j = 0, attrs = touch.target.attributes; j < attrs.length; j++) {
+                           elementMetadata.attributes[attrs.item(j).nodeName] = attrs.item(j).nodeValue;
                         }
+                        event.element.push(elementMetadata);
                      }
-                     self.emit(type, event);
+                  }
+                  self.emit(type, event);
 
-                     callback(ev);
-                  };
+                  callback(ev);
+               };
 
                self.MTObjects.forEach(function (MTObj) { // to all mt objects we attach listener
                   MTObj.on(type, handler);
