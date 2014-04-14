@@ -265,8 +265,7 @@ function all() {
                   callback(data.data);
                });
             } else if (self.MTEvents.indexOf(type) != -1) { // if this event is from hammer
-               self.MTObjects.forEach(function (MTObj) { // to all mt objects we attach listener
-                  MTObj.on(type, function (ev) { //listener callback
+                  var handler = function (ev) { //listener callback
                      var touches = ev.gesture.touches;
                      var event = {
                            type: type,
@@ -293,7 +292,10 @@ function all() {
                      self.emit(type, event);
 
                      callback(ev);
-                  });
+                  };
+
+               self.MTObjects.forEach(function (MTObj) { // to all mt objects we attach listener
+                  MTObj.on(type, handler);
                });
             } else {
                self.socket.on(type, function (data) {
