@@ -118,6 +118,10 @@ wams.on(wams.when.new_connection, function(data) {
       notifyResize(uuid, data.data.screen);
    });
 
+   wams.on('request_workspace_dimensions', uuid, function(data) {
+      wams.emit('workspace_dimensions', uuid, workspaceManager.maxDimensions());
+   });
+
    wams.on('disconnect', uuid, function() {
       workspaceManager.deleteScreen(uuid);
    });

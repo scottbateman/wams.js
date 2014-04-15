@@ -71,6 +71,7 @@ $(window).resize(function() {
    wams.description.screen = encodeScreen(screen);
    displayScreenMode(screen);
    wams.emit('resize_screen', {screen: encodeScreen(screen)});
+   drawMinimap();
 });
 
 wams.on('adjust_workspace', function(data) {
@@ -111,6 +112,44 @@ function adjustOtherWorkspace(uuid, screen) {
    wams.getDescription(uuid).screen = screen;
 }
 
+function drawMinimap() {
+   wams.emit('request_workspace_dimensions', '');
+   var canvas = document.getElementById('minimap'),
+      ctx = canvas.getContext("2d");
+
+   ctx.translate(0.5, 0.5);
+
+   wams.on('workspace_dimensions', function(data) {
+      var canvas = document.getElementById('minimap');
+         MAX_CANVAS_WIDTH = 250, scale = MAX_CANVAS_WIDTH / data.width,
+         canvas_height = data.height * scale, screen, color;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.width = MAX_CANVAS_WIDTH;
+      canvas.height = canvas_height;
+
+      wams.otherClients.forEach(function(client) {
+         screen = decodeScreen(client.description.screen);
+         color = client.description.color;
+         ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.setLineDash([7, 3]);
+            ctx.rect(screen.x * scale + 1, screen.y * scale + 1,
+              screen.width * scale - 2, screen.height * scale - 2);
+         ctx.stroke();
+      });
+
+      screen = decodeScreen(wams.description.screen);
+      color = wams.description.color;
+      ctx.beginPath();
+         ctx.strokeStyle = color;
+         ctx.setLineDash([7, 3]);
+         ctx.rect(screen.x * scale + 1, screen.y * scale + 1,
+           screen.width * scale - 2, screen.height * scale - 2);
+      ctx.stroke();
+   });
+}
+
 var messageTypes = {
    new_element: function(data) {
       appendElement(data.element);
@@ -124,6 +163,17 @@ wams.on(WAMS.when.message_received, function(data) {
    messageTypes[data.action] && messageTypes[data.action](data);
 });
 
+wams.on([WAMS.when.connection_ok,
+   WAMS.when.user_connected,
+   WAMS.when.user_disconnected,
+   'adjust_workspace'].join(' '), function(ev) {
+      drawMinimap();
+});
+
+function resize(elem, w, h) {
+   elem = $(elem);
+   elem.css({ width: w, height: h });
+}
 function liftZindex(elem, num) {
    elem = $(elem);
    elem.css({ zIndex: num || 10 });
