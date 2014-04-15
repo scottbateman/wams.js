@@ -94,9 +94,12 @@ var workspaceManager = new WorkspaceManager(wams);
 wams.on(wams.when.new_connection, function(data) {
    var screen = Workspace.decode(data.description.screen);
    var users = wams.getSnapshot();
-   var uuid = users[users.length - 1].uuid;
+   var user = users[users.length - 1];
+   var uuid = user.uuid;
    var adjustedScreen = workspaceManager.addScreen(uuid, screen);
    var notifiedDisableRemoteList = [];
+
+   user.description.screen = Workspace.encode(adjustedScreen);
 
    if (adjustedScreen.x === 0 && adjustedScreen.y === 0) {
       drop4balls(uuid);

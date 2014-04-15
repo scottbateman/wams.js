@@ -68,11 +68,13 @@ $(window).resize(function() {
    screen.width = window.innerWidth;
    screen.height = window.innerHeight;
 
+   wams.description.screen = encodeScreen(screen);
    displayScreenMode(screen);
    wams.emit('resize_screen', {screen: encodeScreen(screen)});
 });
 
 wams.on('adjust_workspace', function(data) {
+   wams.description.screen = data.screen;
    data = decodeScreen(data.screen);
    displayScreenMode(data);
    screen = data;
