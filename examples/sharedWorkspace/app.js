@@ -113,6 +113,7 @@ wams.on(wams.when.new_connection, function(data) {
    wams.on('resize_screen', uuid, function(data) {
       var screen = Workspace.decode(data.data.screen);
       workspaceManager.resize(uuid, screen.width, screen.height);
+      user.description.screen = data.data.screen;
 
       notifyResize(uuid, data.data.screen);
    });
