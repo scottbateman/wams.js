@@ -131,9 +131,17 @@ wams.on('workspace_dimensions', function(data) {
    scale = MAX_CANVAS_WIDTH / data.width;
    canvas_height = data.height * scale;
 
-   ctx.clearRect(0, 0, canvas.width, canvas.height);
    canvas.width = MAX_CANVAS_WIDTH;
    canvas.height = canvas_height;
+
+   ctx.clearRect(0, 0, canvas.width, canvas.height);
+   drawClients();
+});
+
+function drawClients() {
+   var canvas = document.getElementById('minimap'),
+      ctx = canvas.getContext('2d'),
+      screen, color;
 
    wams.otherClients.forEach(function(client) {
       screen = decodeScreen(client.description.screen);
@@ -154,7 +162,7 @@ wams.on('workspace_dimensions', function(data) {
       ctx.rect(screen.x * scale + 1, screen.y * scale + 1,
         screen.width * scale - 2, screen.height * scale - 2);
    ctx.stroke();
-});
+}
 
 var messageTypes = {
    new_element: function(data) {
