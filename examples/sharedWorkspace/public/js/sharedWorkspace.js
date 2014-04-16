@@ -53,10 +53,20 @@ var touchPoint = {
    x: 0,
    y: 0
 };
-var MAX_CANVAS_WIDTH = 250,
+var BALLS_ON_MINIMAP,
+   MAX_CANVAS_WIDTH = 250,
    scale;
 
 var wams = new WAMS({screen: encodeScreen(screen), name: name, color: color});
+
+if (BALLS_ON_MINIMAP === undefined) {
+   wams.on(WAMS.when.connection_ok, function() {
+      wams.emit('request_balls_on_minimap', '');
+   });
+   wams.on('response_balls_on_minimap', function(data) {
+      BALLS_ON_MINIMAP = data;
+   });
+}
 
 $(document).ready(function() {
    var userID = $('#userID');
@@ -134,8 +144,21 @@ wams.on('workspace_dimensions', function(data) {
    canvas.width = MAX_CANVAS_WIDTH;
    canvas.height = canvas_height;
 
+   if (BALLS_ON_MINIMAP) {
+      wams.emit('request_balls_position', '');
+   } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawClients();
+   }
+});
+
+wams.on('response_balls_position', function(data) {
+   var canvas = document.getElementById('minimap'),
+      ctx = canvas.getContext('2d');
+
    ctx.clearRect(0, 0, canvas.width, canvas.height);
    drawClients();
+   drawBalls(data);
 });
 
 function drawClients() {
@@ -150,7 +173,7 @@ function drawClients() {
          ctx.strokeStyle = color;
          ctx.setLineDash([7, 3]);
          ctx.rect(screen.x * scale + 1, screen.y * scale + 1,
-           screen.width * scale - 2, screen.height * scale - 2);
+            screen.width * scale - 2, screen.height * scale - 2);
       ctx.stroke();
    });
 
@@ -160,8 +183,50 @@ function drawClients() {
       ctx.strokeStyle = color;
       ctx.setLineDash([7, 3]);
       ctx.rect(screen.x * scale + 1, screen.y * scale + 1,
-        screen.width * scale - 2, screen.height * scale - 2);
+         screen.width * scale - 2, screen.height * scale - 2);
    ctx.stroke();
+}
+
+function drawBalls(metadata) {
+   var canvas = document.getElementById('minimap'),
+      ctx = canvas.getContext('2d'),
+      color, id, x, y;
+
+   for (id in metadata) {
+      if (metadata.hasOwnProperty(id)) {
+         color = extractColor(metadata[id]);
+         ctx.beginPath();
+            ctx.fillStyle = color;
+            x = metadata[id].x + metadata[id].w / 2;
+            y = metadata[id].y + metadata[id].w / 2;
+            ctx.arc(x * scale, y * scale,
+               metadata[id].w / 2 * scale, 0, 360);
+         ctx.fill();
+      }
+   }
+}
+
+function extractColor(data) {
+   var needToDelete = false, elem = $('#' + data.attributes.id);
+
+   // object does not exist
+   if (!elem.length) {
+      needToDelete = true;
+
+      elem = document.createElement(data.tag);
+      elem.setAttribute('id', data.attributes.id);
+
+      var body = document.getElementsByTagName('body');
+      body[0].appendChild(elem);
+
+      elem = $(elem);
+   }
+
+   var color = elem.css('background-color');
+   if (needToDelete) {
+      elem.remove();
+   }
+   return color;
 }
 
 var messageTypes = {
@@ -230,6 +295,9 @@ function unlocked(elem, uuid) {
 }
 
 function onTouch(ev) {
+   if (BALLS_ON_MINIMAP) {
+      drawMinimap();
+   }
    var touches = ev.gesture.touches;
    for (var t = 0, len = touches.length; t < len; t++) {
       var target = ev.target;
@@ -242,6 +310,9 @@ function onTouch(ev) {
 }
 
 function onDrag(ev) {
+   if (BALLS_ON_MINIMAP) {
+      drawMinimap();
+   }
    var touches = ev.gesture.touches;
    for (var t = 0, len = touches.length; t < len; t++) {
       var target = ev.target;
@@ -253,6 +324,9 @@ function onDrag(ev) {
 }
 
 function onRelease(ev) {
+   if (BALLS_ON_MINIMAP) {
+      drawMinimap();
+   }
    var touches = ev.gesture.touches;
    for (var t = 0, len = touches.length; t < len; t++) {
       var target = ev.target;
@@ -265,6 +339,9 @@ function onRelease(ev) {
 }
 
 function onRemoteTouch(data) {
+   if (BALLS_ON_MINIMAP) {
+      drawMinimap();
+   }
    data.element.forEach(function(element) {
       var target = document.getElementById(element.attributes.id);
       if (unlocked(target, data.source)) {
@@ -275,6 +352,9 @@ function onRemoteTouch(data) {
 }
 
 function onRemoteDrag(data) {
+   if (BALLS_ON_MINIMAP) {
+      drawMinimap();
+   }
    data.element.forEach(function(element) {
       var target = document.getElementById(element.attributes.id);
       if (unlocked(target, data.source)) {
@@ -284,6 +364,9 @@ function onRemoteDrag(data) {
 }
 
 function onRemoteRelease(data) {
+   if (BALLS_ON_MINIMAP) {
+      drawMinimap();
+   }
    data.element.forEach(function(element) {
       var target = document.getElementById(element.attributes.id);
       if (unlocked(target, data.source)) {

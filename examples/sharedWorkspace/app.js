@@ -89,6 +89,9 @@ function notifyResize(uuid, screen) {
    }
 }
 
+var BALLS_ON_MINIMAP = true,
+   balls = {};
+
 wams.listen(server);
 var workspaceManager = new WorkspaceManager(wams);
 wams.on(wams.when.new_connection, function(data) {
@@ -122,6 +125,16 @@ wams.on(wams.when.new_connection, function(data) {
       wams.emit('workspace_dimensions', uuid, workspaceManager.maxDimensions());
    });
 
+   wams.on('request_balls_on_minimap', uuid, function() {
+      wams.emit('response_balls_on_minimap', uuid, BALLS_ON_MINIMAP);
+   });
+
+   if (BALLS_ON_MINIMAP) {
+      wams.on('request_balls_position', uuid, function() {
+         wams.emit('response_balls_position', uuid, balls);
+      });
+   }
+
    wams.on('disconnect', uuid, function() {
       workspaceManager.deleteScreen(uuid);
    });
@@ -143,6 +156,15 @@ wams.on(wams.when.new_connection, function(data) {
       corner[2].y = corner[0].y + elem.h;
       corner[3].x = corner[0].x + elem.w;
       corner[3].y = corner[0].y + elem.h;
+
+      if (BALLS_ON_MINIMAP) {
+         balls[elem.attributes.id] = elem;
+         wams.getSnapshot().forEach(function(client) {
+            if (client.uuid !== uuid) {
+               wams.emit('response_balls_position', client.uuid, balls);
+            }
+         });
+      }
 
       for (i = 0, len = corner.length; i < len; i++) {
          var under = workspaceManager.under(corner[i].x, corner[i].y);
