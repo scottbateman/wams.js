@@ -53,6 +53,8 @@ var touchPoint = {
    x: 0,
    y: 0
 };
+var MAX_CANVAS_WIDTH = 250,
+   scale;
 
 var wams = new WAMS({screen: encodeScreen(screen), name: name, color: color});
 
@@ -124,8 +126,10 @@ function drawMinimap() {
 wams.on('workspace_dimensions', function(data) {
    var canvas = document.getElementById('minimap'),
       ctx = canvas.getContext('2d'),
-      MAX_CANVAS_WIDTH = 250, scale = MAX_CANVAS_WIDTH / data.width,
-      canvas_height = data.height * scale, screen, color;
+      canvas_height, screen, color;
+
+   scale = MAX_CANVAS_WIDTH / data.width;
+   canvas_height = data.height * scale;
 
    ctx.clearRect(0, 0, canvas.width, canvas.height);
    canvas.width = MAX_CANVAS_WIDTH;
