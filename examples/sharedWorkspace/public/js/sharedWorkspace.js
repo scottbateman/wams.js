@@ -156,6 +156,7 @@ var messageTypes = {
    },
    adjust_other_workspace: function(data) {
       adjustOtherWorkspace(data.metadata.uuid, data.metadata.screen);
+      drawMinimap();
    }
 };
 
