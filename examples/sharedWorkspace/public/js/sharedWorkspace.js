@@ -113,34 +113,27 @@ function adjustOtherWorkspace(uuid, screen) {
 }
 
 function drawMinimap() {
-   wams.emit('request_workspace_dimensions', '');
    var canvas = document.getElementById('minimap'),
       ctx = canvas.getContext("2d");
 
    ctx.translate(0.5, 0.5);
 
-   wams.on('workspace_dimensions', function(data) {
-      var canvas = document.getElementById('minimap');
-         MAX_CANVAS_WIDTH = 250, scale = MAX_CANVAS_WIDTH / data.width,
-         canvas_height = data.height * scale, screen, color;
+   wams.emit('request_workspace_dimensions', '');
+}
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      canvas.width = MAX_CANVAS_WIDTH;
-      canvas.height = canvas_height;
+wams.on('workspace_dimensions', function(data) {
+   var canvas = document.getElementById('minimap'),
+      ctx = canvas.getContext('2d'),
+      MAX_CANVAS_WIDTH = 250, scale = MAX_CANVAS_WIDTH / data.width,
+      canvas_height = data.height * scale, screen, color;
 
-      wams.otherClients.forEach(function(client) {
-         screen = decodeScreen(client.description.screen);
-         color = client.description.color;
-         ctx.beginPath();
-            ctx.strokeStyle = color;
-            ctx.setLineDash([7, 3]);
-            ctx.rect(screen.x * scale + 1, screen.y * scale + 1,
-              screen.width * scale - 2, screen.height * scale - 2);
-         ctx.stroke();
-      });
+   ctx.clearRect(0, 0, canvas.width, canvas.height);
+   canvas.width = MAX_CANVAS_WIDTH;
+   canvas.height = canvas_height;
 
-      screen = decodeScreen(wams.description.screen);
-      color = wams.description.color;
+   wams.otherClients.forEach(function(client) {
+      screen = decodeScreen(client.description.screen);
+      color = client.description.color;
       ctx.beginPath();
          ctx.strokeStyle = color;
          ctx.setLineDash([7, 3]);
@@ -148,7 +141,16 @@ function drawMinimap() {
            screen.width * scale - 2, screen.height * scale - 2);
       ctx.stroke();
    });
-}
+
+   screen = decodeScreen(wams.description.screen);
+   color = wams.description.color;
+   ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.setLineDash([7, 3]);
+      ctx.rect(screen.x * scale + 1, screen.y * scale + 1,
+        screen.width * scale - 2, screen.height * scale - 2);
+   ctx.stroke();
+});
 
 var messageTypes = {
    new_element: function(data) {
