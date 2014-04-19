@@ -3,19 +3,44 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Canvas Testing</title>
+	<!-- Adding this line makes the mobile viewport locked same scale as desktop... -->
+	<!-- <meta name="viewport" content="width=device-width;initial-scale=1;maximum-scale=1;minimum-scale=1" /> -->
 
-	<script src="/socket.io/socket.io.js"></script> <!-- REQUIRED! WAMS uses Socket.IO for communication between server and clients. -->
-	<script src="/libs/wams-client.js"></script> <!-- REQUIRED! Import main WAMS-library -->
+	<script src="/socket.io/socket.io.js"></script> <!-- REQUIRED! Import Socket IO -->
+	<script src="/libs/hammer.js"></script> <!-- REQUIRED! Import Hammer  -->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script> <!-- Jquery -->
+	<script src="/libs/wams.js"></script> <!-- REQUIRED! Import WAMS (depends on SocketIO and Hammer) -->
+	
 	<style>
 		* { margin: 0px; padding: 0px; }
-		html, body { width: 100%; height: 100px; }
-		canvas { display:block; background-color: red; }
+		html, body { width: 100%; height: 100%; }
+		canvas { display:block; background-color: grey; }
 	</style>
 </head>
 
 <body>
 	<canvas id='main'></canvas>
 	<script>
+
+	// Generate a random name to assign to this user
+	var sampleNames = [
+		'Fe', 'Thomas', 'Kirstie', 'Wynell', 'Mario', 'Aretha', 'Cherryl', 'Ta',
+		'Lindy', 'Karina', 'Sacha', 'Latesha', 'Miki', 'Janel', 'Leola', 'Romeo',
+		'Roderick', 'Felica', 'Ilona', 'Nila', 'Patrina', 'Wes', 'Henry', 'Elvera',
+		'Karrie', 'Jacklyn', 'Alethea', 'Emogene', 'Alphonso', 'Chandra', 'Beryl',
+		'Lilly', 'Georgetta', 'Darrin', 'Deane', 'Rocio', 'Charissa', 'Simona',
+		'Don', 'Arianne', 'Esther', 'Leonia', 'Karma', 'Rosemarie', 'Carolyn',
+		'Miriam', 'Chastity', 'Vesta', 'Christian', 'Lashaun'
+	].sort();
+	var rndName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
+
+	// Generate a random color to assign to this user
+	var rndColor = function() {
+		var bg_colour = Math.floor(Math.random() * 16777215).toString(16);
+		bg_colour = "#"+("000000" + bg_colour).slice(-6);
+		return bg_colour;
+	};
+	var color = rndColor();
 
 	// Card class
 	// This will be the items in our simple array model
@@ -28,7 +53,8 @@
 	}
 	// It can draw itself for now
 	Card.prototype.draw = function () {
-		ctx.fillStyle="black";
+		ctx.strokeStyle = 'white';
+		ctx.fillStyle = 'white';
 		ctx.fillRect(this.x, this.y, this.w, this.h);
 	}
 
@@ -46,86 +72,153 @@
 		this.y = 0;
 		this.w = window.innerWidth;
 		this.h = window.innerHeight;
+		this.ew = window.innerWidth;
+		this.eh = window.innerHeight;
+		this.scale = 1;
+		this.color = rndColor();
+		this.name = rndName;
 		this.map = map;
 	}
 	View.prototype.move = function(dx, dy) {
+		console.log('Trying to move dx, dy: ' + dx + ', ' + dy);
+		// Filter out meaningless moves
+		if (dx == 0 && dy == 0 ) {
+			return;
+		}
 		// Moves the View about the Map
-		// If the view will stay in bounds, then make the change
+		// If the effective view will stay in bounds, then make the change
 		var newx = this.x + dx;
 		var newy = this.y + dy;
-		var newr = newx + this.w;
-		var newb = newy + this.h;
-		if ( ( newx >= 0 ) && ( newr <= this.map.w ) &&
-		   ( newy >= 0 ) && ( newb <= this.map.h ) ) {
+		var newer = newx + this.ew;
+		var neweb = newy + this.eh;
+		if ( ( newx >= 0 ) && ( newer <= this.map.w ) &&
+		   ( newy >= 0 ) && ( neweb <= this.map.h ) ) {
 			this.x += dx;
 			this.y += dy;
 		} else {
 			console.log('Hit the boundaries');
+			return;
 		}
-		// Resize the canvas, since we may have left the border area
-		resizeCanvas();
 		// Redraw view
 		this.draw();
-		// Report possible change to server
+		// Report change to server
 		this.reportView();
 	}
+	var drawCtr = 0;
 	View.prototype.draw = function() {
+		console.log('Draw counter: ' + drawCtr++);
 		// Grab the model
 		var model = this.map.model;
 		// Clear the canvas
 		ctx.clearRect(0, 0, this.w, this.h);
 		// Draw the model
 		ctx.save();
-		// Translate the view to the model coordinates
-		ctx.translate(-this.x, -this.y);
-		// Draw all the cards in the model
-		for (var i = 0; i < model.length; i++) {
-			model[i].draw();
-		}
-		// And draw the other user's viewport boundaries
-		for (var i = 0, len = wams.otherClients.length; i < len; i++) {
-			var otherView = wams.otherClients[i].view;
-			console.log(wams.otherClients[i]);
-			console.log(typeof otherView);
-			if (typeof otherView !== "undefined") {
-				var color = wams.otherClients[i].description.color;
-				ctx.beginPath();
-				ctx.strokeStyle = color;
-				ctx.lineWidth = "2";
-				ctx.rect(otherView.x, otherView.y, otherView.w, otherView.h);
-				ctx.stroke();
-				console.log("Drawing user view #" + i);
+			// Scale the view
+			ctx.scale(this.scale, this.scale);
+			// Translate the view to the model coordinates
+			ctx.translate(-this.x, -this.y);
+			// Draw all the cards in the model
+			for (var i = 0; i < model.length; i++) {
+				model[i].draw();
 			}
-		}
+			// And draw the other user's viewport boundaries
+			for (var i = 0, len = wams.otherClients.length; i < len; i++) {
+				var otherView = wams.otherClients[i].view;
+				if (typeof otherView !== "undefined") {
+					// Draw User Effective View and Real View
+					// Using their color
+					ctx.strokeStyle = otherView.color;
+					// TODO: Allow view attributes to affect linewidth, etc.
+					ctx.lineWidth = "5";
+
+					// Draw the effective viewport
+					ctx.beginPath();
+						ctx.rect(otherView.x, otherView.y, otherView.ew, otherView.eh);
+					ctx.stroke();
+
+					// Draw the real viewport
+					ctx.beginPath();
+						ctx.setLineDash([6]);
+						ctx.rect(otherView.x, otherView.y, otherView.w, otherView.h);
+					ctx.stroke();
+
+					// Draw their name
+					ctx.fillStyle = 'black';
+					ctx.font = "20px Georgia";
+					ctx.fillText(otherView.name, otherView.x + 20, otherView.y + 20);
+					console.log("Drawing view of: " + otherView.name + " ");
+				}
+			}
 		ctx.restore();
 	}
 	View.prototype.reportView = function() {
 		// Tell the server about my view
-		var newview = {x: this.x, y: this.y, w: this.w, h: this.h};
-		console.log(wams);
-		wams.emit("updateUserView", newview);
+		var newView = {
+			x : this.x,
+			y : this.y,
+			w : this.w,
+			h : this.h,
+			ew : this.ew,
+			eh : this.eh,
+			scale : this.scale,
+			color : this.color,
+			name : this.name
+		}; // TODO: Strip extra information from object more elegantly
+		wams.emit("updateUserView", newView);
 	}
-
-	function resizeCanvas() {
-		// Resize the view and canvas to the window
-		// Dont set the view larger than there is map to show
-		myView.w = Math.min(window.innerWidth, myView.map.w - myView.x);
-		myView.h = Math.min(window.innerHeight, myView.map.h - myView.y);
-		canvas.width = myView.w;
-		canvas.height = myView.h;
+	View.prototype.resize = function(nw, nh) {
+		console.log('Trying to resize nw, nh: ' + nw + ', ' + nh);
+		// Filter out meaningless resizes
+		if ( this.w == nw && this.h == nh ) {
+			return;
+		}
+		// Set the new dimensions
+		this.w = nw;
+		this.h = nh;
+		// Then set the effective view dimensions
+		this.ew = Math.floor(nw/this.scale);
+		this.eh = Math.floor(nh/this.scale);
+		// Redraw view
+		this.draw();
+		// Report possible change to server
+		this.reportView();
+	}
+	View.prototype.rescale = function(nscale) {
+		console.log('Trying to rescale: ' + nscale);
+		// Filter out meaningless scales
+		if ( this.scale == nscale ) {
+			return;
+		}
+		this.scale = nscale;
+		// Then set the effective view dimensions
+		this.ew = Math.floor(this.w/this.scale);
+		this.eh = Math.floor(this.h/this.scale);
+		// Resize the Canvas
+		resizeCanvas();
 		// Redraw view
 		myView.draw();
 		// Report possible change to server
 		myView.reportView();
 	}
 
+	function onResize() {
+		// Resize the Canvas
+		resizeCanvas();
+		// Update the view
+		myView.resize(canvas.width, canvas.height);
+	}
+	function resizeCanvas() {
+		// Resize the view and canvas to the window
+		// Dont set the view larger than there is map to show
+		var nw = Math.min(window.innerWidth, myView.scale*(myView.map.w - myView.x));
+		var nh = Math.min(window.innerHeight, myView.scale*(myView.map.h - myView.y));
+		canvas.width = nw;
+		canvas.height = nh;
+	}
+
 	function onWindowLoad() {
 		// Make the model and populate it
 		cards = new Array();
-		cards[0] = new Card(50, 50, 20, 20);
-		cards[1] = new Card(10, 50, 10, 20);
-		cards[2] = new Card(50, 80, 10, 10);
-		cards[3] = new Card(100, 100, 200, 200);
 
 		// Set up the Map with the model
 		myMap = new Map(2000,2000, cards);
@@ -138,84 +231,132 @@
 		ctx = canvas.getContext('2d');
 
 		// Set up listener for window resize
-		window.addEventListener('resize', resizeCanvas, false);
+		window.addEventListener('resize', onResize, false);
 		// Resize it to start
 		resizeCanvas();
 
-		// Attach a click listener to the canvas
-		canvas.addEventListener('click', canvasClick, false);
-
 		// Redraw the view
 		myView.draw();
-	}
 
-	function handleInput(e) {
-		var KeyCode = {LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40};
-		switch (e.keyCode) {
-			case KeyCode.UP:
-				myView.move(0, -10);
-				break;
-			case KeyCode.LEFT:
-				myView.move(-10, 0);
-				break;
-			case KeyCode.RIGHT:
-				myView.move(10, 0);
-				break;
-			case KeyCode.DOWN:
-				myView.move(0, 10);
-				break;
-		}
+		// Report the view when the WAMS connection is ok
+		wams.on(WAMS.when.connection_ok, function() { myView.reportView(); });
 	}
-
-	function canvasClick(e) {
-		// Make a card at the mouse coords and add it to the model
-		var x = e.x + myView.x;
-		var y = e.y + myView.y;
-		var newCard = new Card(x, y, 10, 10);
-		wams.emit("newCard", newCard);
-		cards.push(newCard);
-		// Redraw view
-		myView.draw();
-	}
-	
-	window.addEventListener('load', onWindowLoad, false);
-	window.addEventListener("keydown", handleInput, false);
-
-	// Generate a random color to assign to this user
-	var rndColor = function() {
-      var bg_colour = Math.floor(Math.random() * 16777215).toString(16);
-      bg_colour = "#"+("000000" + bg_colour).slice(-6);
-      return bg_colour;
-   	};
-   	var color = rndColor();
 
 	// Create new WAMS object
-	var wams = new WAMS({color: color}); 
+	var wams = new WAMS({
+		color: color,
+		name: name, 
+		path: window.location.pathname
+	});
+	
+	// Setup the load event and mouse wheel events
+	window.addEventListener('load', onWindowLoad, false);
+	window.addEventListener("mousewheel", onMouseScroll, false);
+	window.addEventListener("DOMMouseScroll", onMouseScroll, false);
+	function onMouseScroll(ev) {
+		var delta = Math.max(-1, Math.min(1, (ev.wheelDelta || -ev.detail)));
+		var newScale = myView.scale + delta*0.1;
+		myView.rescale(newScale);
+	}
 
+	// Add multitouch to the canvas
+	var canvas = document.getElementById('main');
+	wams.addMT(canvas);
+
+	// Setup multitouch events
+	wams.on('tap dragstart drag dragend transformstart transform transformend', handleMT);
+
+	var transforming = false;
+	var lastDeltaX = null;
+	var lastDeltaY = null;
+	var startScale = null;
+	function handleMT(ev) {
+		ev.preventDefault();
+		ev.gesture.preventDefault();
+
+		switch (ev.type) {
+			case 'tap':
+				var x = ev.gesture.center.pageX/myView.scale + myView.x;
+				var y = ev.gesture.center.pageY/myView.scale + myView.y;
+				var newCard = new Card(x, y, 10, 10);
+				wams.emit("newCard", newCard);
+				cards.push(newCard);
+				// TODO: Consider the case where server controlled permissions. 
+				// Add to our model, then leave or delete based on response
+				
+				// Redraw view
+				myView.draw();
+				break;
+			case 'dragstart':
+				lastDeltaX = 0;
+				lastDeltaY = 0;
+				break;
+			case 'drag':
+				// If we're transforming, don't drag
+				if (transforming) return;
+
+				var dx = Math.floor(lastDeltaX - ev.gesture.deltaX);
+				var dy = Math.floor(lastDeltaY - ev.gesture.deltaY);
+				lastDeltaX = ev.gesture.deltaX
+				lastDeltaY = ev.gesture.deltaY
+				myView.move(dx, dy);
+				break;
+			case 'dragend':
+				lastDeltaX = null;
+				lastDeltaY = null;
+				break;
+			case 'transformstart':
+				transforming = true;
+				startScale = myView.scale;
+				break;
+			case 'transform':
+				var scale = ev.gesture.scale;
+				var newScale = scale * startScale;
+				myView.rescale(newScale);
+				break;
+			case 'transformend':
+				startScale = null;
+				// Stop detecting the gesture to avoid extra drags (Doesnt seem to work)
+				ev.gesture.stopDetect();
+				// Avoid extra drags manually
+				setTimeout(function () {       
+					transforming = false;
+				}, 100);
+				break;
+		}
+
+	}
+
+	// Setup socket events
 	wams.on("newCard", onNewCard);
 	wams.on("updateUserView", onUpdateUserView)
 	
 	function onNewCard(data) {
+		// If it's from me, ignore it
+		// TODO: Don't let server send update info back to source
+		if (wams.uuid == data.source) return;
+
 		var newCard = new Card(data.data.x, data.data.y, data.data.h, data.data.w);
 		cards.push(newCard);
 		// Redraw view
 		myView.draw();
-	};
+	}
 
 	function onUpdateUserView(data) {
+		// If it's from me, ignore it
+		// TODO: Don't let server send update info back to source
+		if (wams.uuid == data.source) return;
+
 		// Look through the list of other clients until we find the one who sent the message
-		// Then update their view object
 		for (var i = 0, len = wams.otherClients.length; i < len; i++) {
 			if (wams.otherClients[i].uuid == data.source) {
-				console.log("found user");
+				// Then update their view object
 				wams.otherClients[i].view = data.data;
-				console.log(wams.otherClients[i].view);
-				break;
+				// Redraw view and end
+				myView.draw();
+				return;
 			}
 		}
-		console.log("Didnt find user");
-		// Redraw view
-		myView.draw();
 	}
 
 	</script>
