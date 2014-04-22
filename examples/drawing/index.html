@@ -44,18 +44,27 @@
 
 	// Card class
 	// This will be the items in our simple array model
-	function Card(x, y, w, h) {
+	function Card(x, y, w, h, color) {
 		// Just a rectangle
 		this.x = x;
 		this.y = y;
 		this.w = w;
 		this.h = h;
+		this.color = color;
 	}
 	// It can draw itself for now
 	Card.prototype.draw = function () {
 		ctx.strokeStyle = 'white';
 		ctx.fillStyle = 'white';
 		ctx.fillRect(this.x, this.y, this.w, this.h);
+	}
+	// Draw it as a ball
+	Card.prototype.drawBall = function () {
+		ctx.strokeStyle = 'white';
+		ctx.fillStyle = this.color;
+		ctx.beginPath();
+		ctx.arc(this.x, this.y, 20, 0, 2*Math.PI);
+		ctx.fill();
 	}
 
 	// Map Class
@@ -113,14 +122,18 @@
 		ctx.clearRect(0, 0, this.w, this.h);
 		// Draw the model
 		ctx.save();
-			// Scale the view
+			// Scale since we're drawing content
 			ctx.scale(this.scale, this.scale);
 			// Translate the view to the model coordinates
 			ctx.translate(-this.x, -this.y);
 			// Draw all the cards in the model
 			for (var i = 0; i < model.length; i++) {
-				model[i].draw();
+				model[i].drawBall();
 			}
+		ctx.restore();
+		ctx.save();
+			// Don't scale since we're drawing UI noq
+			ctx.translate(-this.x*this.scale, -this.y*this.scale);
 			// And draw the other user's viewport boundaries
 			for (var i = 0, len = wams.otherClients.length; i < len; i++) {
 				var otherView = wams.otherClients[i].view;
@@ -133,19 +146,19 @@
 
 					// Draw the effective viewport
 					ctx.beginPath();
-						ctx.rect(otherView.x, otherView.y, otherView.ew, otherView.eh);
+						ctx.rect(otherView.x*this.scale, otherView.y*this.scale, otherView.ew*this.scale, otherView.eh*this.scale);
 					ctx.stroke();
 
 					// Draw the real viewport
 					ctx.beginPath();
 						ctx.setLineDash([6]);
-						ctx.rect(otherView.x, otherView.y, otherView.w, otherView.h);
+						ctx.rect(otherView.x*this.scale, otherView.y*this.scale, otherView.w*this.scale, otherView.h*this.scale);
 					ctx.stroke();
 
 					// Draw their name
 					ctx.fillStyle = 'black';
-					ctx.font = "20px Georgia";
-					ctx.fillText(otherView.name, otherView.x + 20, otherView.y + 20);
+					ctx.font = "24px Georgia";
+					ctx.fillText(otherView.name, otherView.x*this.scale+20, otherView.y*this.scale+40);
 					console.log("Drawing view of: " + otherView.name + " ");
 				}
 			}
@@ -278,7 +291,7 @@
 			case 'tap':
 				var x = ev.gesture.center.pageX/myView.scale + myView.x;
 				var y = ev.gesture.center.pageY/myView.scale + myView.y;
-				var newCard = new Card(x, y, 10, 10);
+				var newCard = new Card(x, y, 10, 10, myView.color);
 				wams.emit("newCard", newCard);
 				cards.push(newCard);
 				// TODO: Consider the case where server controlled permissions. 
@@ -330,13 +343,13 @@
 	// Setup socket events
 	wams.on("newCard", onNewCard);
 	wams.on("updateUserView", onUpdateUserView)
-	
+
 	function onNewCard(data) {
 		// If it's from me, ignore it
 		// TODO: Don't let server send update info back to source
 		if (wams.uuid == data.source) return;
 
-		var newCard = new Card(data.data.x, data.data.y, data.data.h, data.data.w);
+		var newCard = new Card(data.data.x, data.data.y, data.data.h, data.data.w, data.data.color);
 		cards.push(newCard);
 		// Redraw view
 		myView.draw();
