@@ -1,5 +1,5 @@
 var Vault = require('./node_modules/wams.js-server/src/vault');
-var Workspace = require('./workspace');
+var Screen = require('./screen');
 
 /**
  * Start workspace manager
@@ -14,32 +14,32 @@ var WorkspaceManager = function(wams) {
 /**
  * Adds new screen to manager
  * @param {String} uuid UUID of workspace
- * @param {Workspace.screen} screen Screen parameters
- * @returns {Workspace.screen} Adjusted workspace
+ * @param {Screen.screen} screen Screen parameters
+ * @returns {Screen.screen} Adjusted workspace
  */
 WorkspaceManager.prototype.addScreen = function(uuid, screen) {
-   var workspace = new Workspace(uuid, screen);
+   var screen = new Screen(uuid, screen);
 
    if (this._vault.length >= 1) {
-      var lastWorkspace = this._vault[this._vault.length - 1],
-         lastWidth = lastWorkspace.screen.width,
-         lastX = lastWorkspace.screen.x;
+      var lastScreen = this._vault[this._vault.length - 1],
+         lastWidth = lastScreen.screen.width,
+         lastX = lastScreen.screen.x;
 
-      workspace.screen.x = lastX + lastWidth;
+      screen.screen.x = lastX + lastWidth;
    }
 
-   this._vault.push(workspace);
-   return workspace.screen;
+   this._vault.push(screen);
+   return screen.screen;
 };
 
 /**
- * Returns screen of given workspace
- * @param {String} uuid UUID of workspace
- * @returns {Workspace.screen} Screen object
+ * Returns dimensions of screen by UUID
+ * @param {String} uuid UUID of screen
+ * @returns {Screen.screen} Screen dimensions
  */
 WorkspaceManager.prototype.getScreen = function(uuid) {
-   var workspace = this._vault.get(uuid);
-   return workspace.screen;
+   var screen = this._vault.get(uuid);
+   return screen.screen;
 };
 
 /**
@@ -49,19 +49,19 @@ WorkspaceManager.prototype.getScreen = function(uuid) {
  * @param {number} height New height
  */
 WorkspaceManager.prototype.resize = function(uuid, width, height) {
-   var workspace = this._vault.get(uuid),
-      workspaceX = workspace.screen.x,
-      workspaceWidth = workspace.screen.width,
+   var screen = this._vault.get(uuid),
+      screenX = screen.screen.x,
+      screenWidth = screen.screen.width,
       i, len;
-   workspace.screen.width = width;
-   workspace.screen.height = height;
+   screen.screen.width = width;
+   screen.screen.height = height;
 
    for (i = 0, len = this._vault.length; i < len; i++) {
-      if (this._vault[i].screen.x >= workspaceX + workspaceWidth) {
-         this._vault[i].screen.x -= workspaceWidth - width;
+      if (this._vault[i].screen.x >= screenX + screenWidth) {
+         this._vault[i].screen.x -= screenWidth - width;
 
          this._wams.emit('adjust_workspace', this._vault[i].uuid, {
-            screen: Workspace.encode(this._vault[i].screen)
+            screen: Screen.encode(this._vault[i].screen)
          });
       }
    }
@@ -83,7 +83,7 @@ WorkspaceManager.prototype.deleteScreen = function(uuid) {
          this._vault[i].screen.x -= toDeleteWidth;
 
          this._wams.emit('adjust_workspace', this._vault[i].uuid, {
-            screen: Workspace.encode(this._vault[i].screen)
+            screen: Screen.encode(this._vault[i].screen)
          });
       }
    }

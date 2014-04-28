@@ -9,7 +9,7 @@ var path = require('path');
 var os = require('os');
 var wams = require('wams.js-server');
 var WorkspaceManager = require('./workspaceManager');
-var Workspace = require('./workspace');
+var Screen = require('./screen');
 
 var app = express();
 
@@ -95,26 +95,26 @@ var BALLS_ON_MINIMAP = true,
 wams.listen(server);
 var workspaceManager = new WorkspaceManager(wams);
 wams.on(wams.when.new_connection, function(data) {
-   var screen = Workspace.decode(data.description.screen);
+   var screen = Screen.decode(data.description.screen);
    var users = wams.getSnapshot();
    var user = users[users.length - 1];
    var uuid = user.uuid;
    var adjustedScreen = workspaceManager.addScreen(uuid, screen);
    var notifiedDisableRemoteList = [];
 
-   user.description.screen = Workspace.encode(adjustedScreen);
+   user.description.screen = Screen.encode(adjustedScreen);
 
    if (adjustedScreen.x === 0 && adjustedScreen.y === 0) {
       drop4balls(uuid);
    }
 
    wams.emit('adjust_workspace', uuid, {
-      screen: Workspace.encode(adjustedScreen)
+      screen: Screen.encode(adjustedScreen)
    });
-   notifyResize(uuid, Workspace.encode(adjustedScreen));
+   notifyResize(uuid, Screen.encode(adjustedScreen));
 
    wams.on('resize_screen', uuid, function(data) {
-      var screen = Workspace.decode(data.data.screen);
+      var screen = Screen.decode(data.data.screen);
       workspaceManager.resize(uuid, screen.width, screen.height);
       user.description.screen = data.data.screen;
 

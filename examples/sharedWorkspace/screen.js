@@ -4,24 +4,24 @@
  * @param {{width: number, height: number, x: number, y: number, scale: number}} screen Screen parameters
  * @constructor
  */
-var Workspace = function(uuid, screen) {
+var Screen = function(uuid, screen) {
    this.uuid = uuid;
    if (typeof screen === 'string') {
-      screen = Workspace.decode(screen);
+      screen = Screen.decode(screen);
    }
    this.screen = screen;
 };
 
 /**
  * Compares to workspaces by UUID
- * @param {String|Workspace} workspace UUID or Workspace that we want to compare to
+ * @param {String|Screen} screen UUID or Screen that we want to compare to
  * @returns {boolean} True if UUIDs are equal
  */
-Workspace.prototype.equals = function(workspace) {
-   if (typeof workspace === 'string') {
-      return this.uuid === workspace;
+Screen.prototype.equals = function(screen) {
+   if (typeof screen === 'string') {
+      return this.uuid === screen;
    } else {
-      return this.uuid === workspace.uuid;
+      return this.uuid === screen.uuid;
    }
 };
 
@@ -30,7 +30,7 @@ Workspace.prototype.equals = function(workspace) {
  * @param {{width: number, height: number, x: number, y: number, scale: number}} screen Screen parameters
  * @returns {string} Simplified string
  */
-Workspace.encode = function(screen) {
+Screen.encode = function(screen) {
    return screen.width + ':' + screen.height + ':' +
       screen.x + ':' + screen.y + ':' +
       screen.scale;
@@ -41,7 +41,7 @@ Workspace.encode = function(screen) {
  * @param {String} str Simplified string
  * @returns {{width: number, height: number, x: number, y: number, scale: number}} Decoded object
  */
-Workspace.decode = function(str) {
+Screen.decode = function(str) {
    var splittedStr = str.split(':');
 
    return {
@@ -53,4 +53,4 @@ Workspace.decode = function(str) {
    }
 };
 
-module.exports = Workspace;
+module.exports = Screen;
