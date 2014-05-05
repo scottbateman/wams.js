@@ -69,5 +69,5 @@ function onUpdateCard(data){
 }
 
 function consoleLog(consoleMessage){
-	console.log(consoleMessage);
+	console.log(consoleMessage.data);
 }
