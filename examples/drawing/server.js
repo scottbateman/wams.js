@@ -15,7 +15,7 @@ var stat404 = fs.readFileSync(path.join(homeDir, '/status_404.html'));
 var serverFunc = function (req, res) {
 
 	var uri = url.parse(req.url).pathname;
-
+	if (uri == "/") uri = "/index.html";
 	file = fs.readFile(path.join(homeDir, uri), function (err, data) {	
 		if (err) { // If file doesn't exist, serve 404 error.
 			res.writeHead(404, {'Content-Type': 'text/html', 'Content-Length': stat404.length});
@@ -42,18 +42,32 @@ var serverFunc = function (req, res) {
 //////////// WAMS section
 
 // Set up HTTP-server: listen on port 8080 and use serverFunc (see above) to serve files to clients.
-var httpServer = http.createServer(serverFunc).listen(8080);
+var httpServer = http.createServer(serverFunc).listen(3000);
 
 // Start WAMS using the HTTP-server
 WAMS.listen(httpServer);
 
 WAMS.on("newCard", onNewCard);
 WAMS.on("updateUserView", onUpdateUserView);
+WAMS.on("updateCard", onUpdateCard);
+WAMS.on("consoleLog", consoleLog);
+
+var cardID = 0;
 
 function onNewCard(data) {
+	data.data.id = cardID;
+	cardID++;
 	WAMS.emit("newCard", data);
 }
 
 function onUpdateUserView(data) {
 	WAMS.emit("updateUserView", data);
+}
+
+function onUpdateCard(data){
+	WAMS.emit("updateCard", data);
+}
+
+function consoleLog(consoleMessage){
+	console.log(consoleMessage);
 }
