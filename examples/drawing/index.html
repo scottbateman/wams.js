@@ -8,8 +8,8 @@
 	<script src="/libs/wams-client.js"></script> <!-- REQUIRED! Import main WAMS-library -->
 	<style>
 		* { margin: 0px; padding: 0px; }
-		html, body { width: 100%; height: 100px; }
-		canvas { display:block; background-color: red; }
+		html, body { width: 90%; height: 90%; }
+		canvas { display:block; background-color: #aabbcc; }
 	</style>
 </head>
 
@@ -19,16 +19,18 @@
 
 	// Card class
 	// This will be the items in our simple array model
-	function Card(x, y, w, h) {
+	function Card(x, y, w, h, color, id) {
 		// Just a rectangle
 		this.x = x;
 		this.y = y;
 		this.w = w;
 		this.h = h;
+		this.color = color;
+		this.id = id
 	}
 	// It can draw itself for now
-	Card.prototype.draw = function () {
-		ctx.fillStyle="black";
+	Card.prototype.draw = function(){
+		ctx.fillStyle=this.color;
 		ctx.fillRect(this.x, this.y, this.w, this.h);
 	}
 
@@ -44,10 +46,28 @@
 		// The default view starts at the top left and fills the screen
 		this.x = 0;
 		this.y = 0;
+		/*var userPos = wams.getPosition(wams.uuid);
+		if(userPos==0){
+			this.x = 0;
+			this.y = 0;
+		}
+		else if(userPos==1){
+			this.x = 200;
+			this.y = 0;
+		}
+		else if(userPos==2){
+			this.x = 0;
+			this.y = 200;
+		}
+		else{	// userPos == 3
+			this.x = 200;
+			this.y = 200;
+		}*/
 		this.w = window.innerWidth;
 		this.h = window.innerHeight;
 		this.map = map;
 	}
+
 	View.prototype.move = function(dx, dy) {
 		// Moves the View about the Map
 		// If the view will stay in bounds, then make the change
@@ -60,7 +80,7 @@
 			this.x += dx;
 			this.y += dy;
 		} else {
-			console.log('Hit the boundaries');
+			wams.emit("consoleLog", "Hit The Boundaries");
 		}
 		// Resize the canvas, since we may have left the border area
 		resizeCanvas();
@@ -69,6 +89,7 @@
 		// Report possible change to server
 		this.reportView();
 	}
+
 	View.prototype.draw = function() {
 		// Grab the model
 		var model = this.map.model;
@@ -94,15 +115,16 @@
 				ctx.lineWidth = "2";
 				ctx.rect(otherView.x, otherView.y, otherView.w, otherView.h);
 				ctx.stroke();
-				console.log("Drawing user view #" + i);
+				//console.log("Drawing user view #" + i);
+				wams.emit("consoleLog", "Drawing user view #"+i);
 			}
 		}
 		ctx.restore();
 	}
+
 	View.prototype.reportView = function() {
 		// Tell the server about my view
 		var newview = {x: this.x, y: this.y, w: this.w, h: this.h};
-		console.log(wams);
 		wams.emit("updateUserView", newview);
 	}
 
@@ -117,36 +139,6 @@
 		myView.draw();
 		// Report possible change to server
 		myView.reportView();
-	}
-
-	function onWindowLoad() {
-		// Make the model and populate it
-		cards = new Array();
-		cards[0] = new Card(50, 50, 20, 20);
-		cards[1] = new Card(10, 50, 10, 20);
-		cards[2] = new Card(50, 80, 10, 10);
-		cards[3] = new Card(100, 100, 200, 200);
-
-		// Set up the Map with the model
-		myMap = new Map(2000,2000, cards);
-
-		// Set up the View on the Map
-		myView = new View(myMap);
-
-		// Set up the canvas
-		canvas = document.getElementById('main');
-		ctx = canvas.getContext('2d');
-
-		// Set up listener for window resize
-		window.addEventListener('resize', resizeCanvas, false);
-		// Resize it to start
-		resizeCanvas();
-
-		// Attach a click listener to the canvas
-		canvas.addEventListener('click', canvasClick, false);
-
-		// Redraw the view
-		myView.draw();
 	}
 
 	function handleInput(e) {
@@ -167,40 +159,106 @@
 		}
 	}
 
-	function canvasClick(e) {
-		// Make a card at the mouse coords and add it to the model
-		var x = e.x + myView.x;
-		var y = e.y + myView.y;
-		var newCard = new Card(x, y, 10, 10);
-		wams.emit("newCard", newCard);
-		cards.push(newCard);
-		// Redraw view
+	function onWindowLoad() {
+		// Make the model and populate it
+		cards = new Array();
+		//cards[0] = new Card(50, 50, 20, 20,"black");
+		/*if(wams.otherClients[0] !== "undefined"){
+			for(var i=0; i < wams.otherClients[0].cards.length;++i){
+				var oldCard = wams.otherClients[0].cards[i]
+				cards[i] = new Card(oldCard.x, oldCard.y, oldCard.h, oldCard.w, oldCard.color, oldCard.id);
+			}
+		}*/
+
+		// Set up the Map with the model
+		myMap = new Map(2000,2000, cards);
+
+		// Set up the View on the Map
+		myView = new View(myMap);
+
+		// Set up the canvas
+		canvas = document.getElementById('main');
+		ctx = canvas.getContext('2d');
+
+		// Set up listener for window resize
+		window.addEventListener('resize', resizeCanvas, false);
+		// Resize it to start
+		resizeCanvas();
+
+		// Attach a click listener to the canvas
+		canvas.addEventListener('mousedown', canvasClick, false);
+		canvas.addEventListener('mouseup', mouseup, false);
+		canvas.addEventListener('mousemove', mousemove, false);
+		// Redraw the view
 		myView.draw();
 	}
+
+	var cardIndex = -1;	// Index of the card to be dragged, -1 indicates no card should be dragging
+
+	function canvasClick(e) {
+		var x = e.x + myView.x;
+		var y = e.y + myView.y;
+		cardIndex = clickOnCard(x,y);
+		if(	cardIndex == -1){	// If you didn't click on a card, create a new one
+			var newCard = new Card(x-15, y-15, 30, 30, myCardColor, -1);
+			wams.emit("newCard", newCard);	// Tell everyone you created a new card
+			// Redraw view
+			myView.draw();
+		}
+	}
+
+	// Find if a click was in bounds of one of the cards
+	function clickOnCard(x,y){
+		for (var i = 0; i < cards.length; i++) {
+			if( (x > cards[i].x) && (x < (cards[i].x + cards[i].w)) && (y > cards[i].y) && (y < (cards[i].y + cards[i].h))){	// Boundary checking
+				return i;	// index on the card you clicked on
+			}
+		}
+		return -1;	// Didn't click on a card
+	}
+
+	function mouseup(e) {
+		cardIndex = -1;		// Stop dragging the card
+   	}
+
+   	function mousemove(e){
+   		if(cardIndex != -1){	// if there is a card to be dragged
+   			ctx.clearRect(cards[cardIndex].x, cards[cardIndex].y, cards[cardIndex].w, cards[cardIndex].h);	// Erase where the card was
+   			var x = e.x + myView.x;
+			var y = e.y + myView.y;
+   			cards[cardIndex].x = x;
+   			cards[cardIndex].y = y;
+   			wams.emit("updateCard", cards[cardIndex]);	// Tell everyone the card's new position
+   			myView.draw();
+   		}
+   	}
 	
 	window.addEventListener('load', onWindowLoad, false);
 	window.addEventListener("keydown", handleInput, false);
 
 	// Generate a random color to assign to this user
 	var rndColor = function() {
-      var bg_colour = Math.floor(Math.random() * 16777215).toString(16);
-      bg_colour = "#"+("000000" + bg_colour).slice(-6);
-      return bg_colour;
-   	};
+    	var bg_colour = Math.floor(Math.random() * 16777215).toString(16);
+      	bg_colour = "#"+("000000" + bg_colour).slice(-6);
+      	return bg_colour;
+   	}
+
    	var color = rndColor();
+   	var myCardColor = rndColor();
 
 	// Create new WAMS object
 	var wams = new WAMS({color: color}); 
 
 	wams.on("newCard", onNewCard);
-	wams.on("updateUserView", onUpdateUserView)
+	wams.on("updateUserView", onUpdateUserView);
+	wams.on("updateCard", onUpdateCard);
 	
 	function onNewCard(data) {
-		var newCard = new Card(data.data.x, data.data.y, data.data.h, data.data.w);
+		var newCard = new Card(data.data.x, data.data.y, data.data.h, data.data.w, data.data.color, data.data.id);
 		cards.push(newCard);
 		// Redraw view
 		myView.draw();
-	};
+	}
 
 	function onUpdateUserView(data) {
 		// Look through the list of other clients until we find the one who sent the message
@@ -213,10 +271,20 @@
 				break;
 			}
 		}
-		console.log("Didnt find user");
 		// Redraw view
 		myView.draw();
 	}
+
+	function onUpdateCard(updatedCard){
+		for (var i = 0; i < cards.length; i++) {
+			if(cards[i].id == updatedCard.data.id){
+				cards[i].x = updatedCard.data.x;
+				cards[i].y = updatedCard.data.y;
+				myView.draw();
+			}
+		}
+	}
+
 
 	</script>
 </body>
