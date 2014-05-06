@@ -50,7 +50,7 @@ WAMS.listen(httpServer);
 WAMS.on("newCard", onNewCard);
 WAMS.on("updateUserView", onUpdateUserView);
 WAMS.on("updateCard", onUpdateCard);
-WAMS.on("consoleLog", consoleLog);
+WAMS.on("consoleLog", onConsoleLog);
 
 var cardID = 0;
 
@@ -68,6 +68,6 @@ function onUpdateCard(data){
 	WAMS.emit("updateCard", data);
 }
 
-function consoleLog(consoleMessage){
-	console.log(consoleMessage.data);
+function onConsoleLog(consoleMessage){
+	console.log(consoleMessage.source+ ": " + consoleMessage.data);
 }
