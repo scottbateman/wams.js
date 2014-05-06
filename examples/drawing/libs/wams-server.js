@@ -1,23 +1,29 @@
 var socket_io = require('socket.io')
   , Vault = require('./vault')
   , User = require('./user')
+  , Locator = exports.Locator = require('./locator')
+  , LocationConn = exports.LocationConn = require('./locationConnection')
   ;
 
 //All events that sent to server
 /**
  *
- * @type {{new_connection: string, subscribe_mt_event: string, send_message: string, broadcast_message: string}}
+ * @type {{new_connection: string, subscribe_mt_event: string, send_message: string, broadcast_message: string, ask_front: string, ask_back: string, ask_left: string, ask_right: string}}
  */
-var server_io_recv_calls = {
+var server_io_recv_calls = exports.when = {
    new_connection:       "CONN"
    , subscribe_mt_event: "MT_EVENT_SUBSCRIBE"
    , send_message:       "SEND_MSG"
    , broadcast_message:  "SEND_BROADCAST"
+   , ask_front:          "ASK_FRONT"
+   , ask_back:           "ASK_BACK"
+   , ask_left:           "ASK_LEFT"
+   , ask_right:          "ASK_RIGHT"
 };
 //All events that received from server
 /**
  *
- * @type {{connection_ok: string, user_connected: string, user_disconnected: string, receive_message: string, receive_broadcast: string}}
+ * @type {{connection_ok: string, user_connected: string, user_disconnected: string, receive_message: string, receive_broadcast: string, get_front: string, get_back: string, get_left: string, get_right: string}}
  */
 var server_io_send_calls = {
    connection_ok:        "CONN_OK"
@@ -25,6 +31,10 @@ var server_io_send_calls = {
    , user_disconnected:  "DEL_USER"
    , receive_message:    "RECV_MSG"
    , receive_broadcast:  "RECV_BROADCAST"
+   , get_front:          "RECV_FRONT"
+   , get_back:           "RECV_BACK"
+   , get_left:           "RECV_LEFT"
+   , get_right:          "RECV_RIGHT"
 };
 
 var MTEvents = [
@@ -39,6 +49,7 @@ var MTEvents = [
  * @type {Vault}
  */
 var users = new Vault();
+var locationConn = new LocationConn();
 var io;
 
 /**
@@ -50,11 +61,14 @@ exports.listen = function(server, options, callback) {
    io.sockets.on('connection', function(socket) {
       socket.on(server_io_recv_calls.new_connection, function(data) {
          var newUser = new User(socket, "", data.description);
+         newUser.position = locationConn.addClient(newUser.uuid);
          users.push(newUser);
+		 Locator.artifact_conneced(newUser); // Tells location-server that artifact has connected.
 
          socket.emit(server_io_send_calls.connection_ok, {
             data: {
                uuid: newUser.uuid,
+               position: newUser.position,
                otherClients: users.networkExportExcept(newUser)
             }
          });
@@ -104,7 +118,33 @@ exports.listen = function(server, options, callback) {
             });
          });
 
+         socket.on(server_io_recv_calls.ask_left, function(data) {
+            socket.emit(server_io_send_calls.get_left, {
+               data: locationConn.toLeftFrom(newUser.position)
+            });
+         });
+
+         socket.on(server_io_recv_calls.ask_right, function(data) {
+            socket.emit(server_io_send_calls.get_right, {
+               data: locationConn.toRightFrom(newUser.position)
+            });
+         });
+
+         socket.on(server_io_recv_calls.ask_front, function(data) {
+            socket.emit(server_io_send_calls.get_front, {
+               data: locationConn.inFrontOf(newUser.position)
+            });
+         });
+
+         socket.on(server_io_recv_calls.ask_back, function(data) {
+            socket.emit(server_io_send_calls.get_back, {
+               data: locationConn.behind(newUser.position)
+            });
+         });
+
          socket.once('disconnect', function() {
+            locationConn.deleteClient(newUser.position);
+			Locator.user_disconneced(newUser); // Tells location-server that artifact has disconnected.
             socket.broadcast.emit(server_io_send_calls.user_disconnected, {
                data: {
                   client: newUser.uuid
@@ -136,8 +176,6 @@ exports.on = function(type, source, callback) {
          socket = '*';
          break;
       case 3:
-         console.log(typeof source);
-         console.log(source);
          if (typeof source === 'string') {
             var user = users.get(source);
             if (typeof user === 'undefined') { throw new Error('Wrong uuid'); }
@@ -218,3 +256,12 @@ exports.emit = function(type, destination, data) {
 exports.getSnapshot = function() {
    return users.localExport();
 };
+
+/**
+ * Lets the server change the behavior of Socket.IO-sockets.
+ * @param {string} Key
+ * @param {string} Value
+ */
+exports.set = function(key, value) {
+	io.set(key, value);
+}
