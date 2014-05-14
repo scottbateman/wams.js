@@ -101,33 +101,34 @@ model.subscribe(roomPath, function(err) {
    model.fn('workspaceBorder', function(screens) {
       if (isEmpty(screens)) { return { x: 0, y: 0, w: 0, h: 0 }; }
 
-      var id, screen, workspace = {
-         x: Infinity,
-         y: Infinity,
-         w: -Infinity,
-         h: -Infinity
-      };
+      var id, screen, screen_x2, screen_y2, w, h,
+         x = Infinity, y = Infinity, x2 = -Infinity, y2 = -Infinity;
 
       for (id in screens) {
          if (screens.hasOwnProperty(id)) {
             screen = screens[id];
+            screen_x2 = screen.x + screen.w * screen.s / 100;
+            screen_y2 = screen.y + screen.h * screen.s / 100;
 
-            if (screen.x < workspace.x) {
-               workspace.x = screen.x;
+            if (screen.x < x) {
+               x = screen.x;
             }
-            if (screen.y < workspace.y) {
-               workspace.y = screen.y;
+            if (screen.y < y) {
+               y = screen.y;
             }
-            if (screen.x + screen.w * screen.s / 100 > workspace.x + workspace.w) {
-               workspace.w = screen.x + screen.w * screen.s / 100 - workspace.x;
+            if (screen_x2 > x2) {
+               x2 = screen_x2;
             }
-            if (screen.y + screen.h * screen.s / 100 > workspace.y + workspace.h) {
-               workspace.h = screen.y + screen.h * screen.s / 100 - workspace.y;
+            if (screen_y2 > y2) {
+               y2 = screen_y2;
             }
          }
       }
 
-      return workspace;
+      w = x2 - x;
+      h = y2 - y;
+
+      return {x: x, y: y, w: w, h: h};
    });
    model.on('change', roomPath + '.screens**', function() {
       var workspace = model.evaluate('workspaceBorder', roomPath + '.screens');
