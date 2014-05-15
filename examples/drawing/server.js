@@ -15,7 +15,11 @@ var stat404 = fs.readFileSync(path.join(homeDir, '/status_404.html'));
 var serverFunc = function (req, res) {
 
 	var uri = url.parse(req.url).pathname;
-	if (uri == "/") uri = "/index.html";
+
+	// ---------- Choose your server file here-----------------------------------
+	if (uri == "/") uri = "/freeflow.html";
+	// --------------------------------------------------------------------------
+
 	file = fs.readFile(path.join(homeDir, uri), function (err, data) {	
 		if (err) { // If file doesn't exist, serve 404 error.
 			res.writeHead(404, {'Content-Type': 'text/html', 'Content-Length': stat404.length});
@@ -34,6 +38,7 @@ var serverFunc = function (req, res) {
 					// handler for all other file types
 					res.writeHead(200, {'Content-Type': 'text/plain', 'Content-Length': data.length}); break;
 			}
+			console.log("Started server with model: " + uri);
 			res.end(data);
 		}
 	});
@@ -51,6 +56,8 @@ WAMS.on("newCard", onNewCard);
 WAMS.on("updateUserView", onUpdateUserView);
 WAMS.on("updateCard", onUpdateCard);
 WAMS.on("consoleLog", onConsoleLog);
+WAMS.on("needOldCards", onNeedOldCards);
+WAMS.on("oldCards", onOldCards);
 
 var cardID = 0;
 
@@ -70,4 +77,12 @@ function onUpdateCard(data){
 
 function onConsoleLog(consoleMessage){
 	console.log(consoleMessage.source+ ": " + consoleMessage.data);
+}
+
+function onNeedOldCards(position){
+	WAMS.emit("needOldCards", position);
+}
+
+function onOldCards(data){
+	WAMS.emit("oldCards", data);
 }
