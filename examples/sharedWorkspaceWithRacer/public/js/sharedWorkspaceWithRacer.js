@@ -312,6 +312,8 @@ racer.ready(function(model) {
          wams.dispose();
 
          wams.addMT(document);
+         var rst_wrkspc_btn = document.getElementById('rst_wrkspc_btn');
+         wams.addMT(rst_wrkspc_btn);
 
          var balls = document.getElementsByClassName('ball');
          wams.addMT(balls);
@@ -326,6 +328,8 @@ racer.ready(function(model) {
                mt.on('touch', onElementTouch);
                mt.on('drag', onElementDrag);
                mt.on('release', onElementRelease);
+            } else if (mt.element.id === 'rst_wrkspc_btn') {
+               mt.on('touch', onButtonPress);
             }
          })
       }
@@ -354,6 +358,13 @@ racer.ready(function(model) {
          model.del('_page.tmp.touchPoint');
          model.del('_page.tmp.beforeMove');
       }
+      function onButtonPress(ev) {
+         model.set('_page.me.screen.x', 0);
+         model.set('_page.me.screen.y', 0);
+         model.set('_page.me.screen.w', window.innerWidth);
+         model.set('_page.me.screen.h', window.innerHeight);
+         model.set('_page.me.screen.s', 100);
+      }
       function onElementTouch(ev) {
       }
       function onElementDrag(ev) {
@@ -362,12 +373,4 @@ racer.ready(function(model) {
       }
    });
 });
-
-$('#rst_wrkspc_btn').click(function() {
-   model.set('_page.me.screen.x', 0);
-   model.set('_page.me.screen.y', 0);
-   model.set('_page.me.screen.w', window.innerWidth);
-   model.set('_page.me.screen.h', window.innerHeight);
-   model.set('_page.me.screen.s', 100);
-})
 
