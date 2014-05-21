@@ -446,8 +446,8 @@ racer.ready(function(model) {
             tmp = model.get('_page.tmp'),
             scrBefore = tmp.scrBeforeMove,
             pt = tmp.touchPoint,
-            dx = (x - pt.x) * scr.s / 100,
-            dy = (y - pt.y) * scr.s / 100;
+            dx = Math.round((x - pt.x) * scr.s / 100),
+            dy = Math.round((y - pt.y) * scr.s / 100);
 
          model.increment('_page.me.screen.x', (scrBefore.x - dx) - scr.x);
          model.increment('_page.me.screen.y', (scrBefore.y - dy) - scr.y);
@@ -537,8 +537,8 @@ racer.ready(function(model) {
             }
          }
 
-         relativeElementXY.x = (x - touchP.x) * scr.s / 100;
-         relativeElementXY.y = (y - touchP.y) * scr.s / 100;
+         relativeElementXY.x = Math.round((x - touchP.x) * scr.s / 100);
+         relativeElementXY.y = Math.round((y - touchP.y) * scr.s / 100);
          currentLockID = els[i].attributes['data-lock'];
          if (currentLockID === id) {
             model.set(room + '.elements.' + i + '.x', scr.x + relativeElementXY.x);
