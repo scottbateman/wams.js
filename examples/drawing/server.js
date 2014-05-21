@@ -17,7 +17,7 @@ var serverFunc = function (req, res) {
 	var uri = url.parse(req.url).pathname;
 
 	// ---------- Choose your server file here-----------------------------------
-	if (uri == "/") uri = "/freeflow.html";
+	if (uri == "/") uri = "/models/recursive.html";
 	// --------------------------------------------------------------------------
 
 	file = fs.readFile(path.join(homeDir, uri), function (err, data) {	
