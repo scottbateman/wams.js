@@ -2,15 +2,29 @@ all();
 function all() {
    /**
     * Function is alias to {@link WAMS.init}
-    * @param {string} [host] Host socket.io is connecting to
+    * @param {object} [settings] Settings for wams library
     * @param {object} clientDescription User specified description of client
     * @returns {WAMS.init} Instance of session
     *
     * @alias WAMS
     * @constructor
     */
-   var WAMS = function(host, clientDescription) {
-      return new WAMS.init(host, clientDescription);
+   var WAMS = function(settings, clientDescription) {
+      var cases = {
+         0: function() {
+            throw new Error("Wrong amount of arguments");
+         },
+         1: function() {
+            clientDescription = settings;
+            settings = {};
+            return undefined;
+         },
+         2: function() {
+            return undefined;
+         }
+      };
+      cases[arguments.length] && cases[arguments.length]();
+      return new WAMS.init(settings, clientDescription);
    };
 
    /**
@@ -60,19 +74,25 @@ function all() {
     */
    WAMS.READY = false;
 
+    //All events that sent to server
    /**
-    * All events that sent to server
-    * @type {{}}
+    *
+    * @type {{new_connection: string, subscribe_mt_event: string, message_sent: string, broadcast_sent: string, ask_front: string, ask_back: string, ask_left: string, ask_right: string}}
     */
    var io_send_calls = {
       new_connection:       "CONN"
       , subscribe_mt_event: "MT_EVENT_SUBSCRIBE"
       , message_sent:       "SEND_MSG"
       , broadcast_sent:     "SEND_BROADCAST"
+      , ask_front:          "ASK_FRONT"
+      , ask_back:           "ASK_BACK"
+      , ask_left:           "ASK_LEFT"
+      , ask_right:          "ASK_RIGHT"
    };
+   //All events that received from server
    /**
-    * All events that received from server
-    * @type {{}}
+    *
+    * @type {{connection_ok: string, user_connected: string, user_disconnected: string, message_received: string, broadcast_received: string, get_front: string, get_back: string, get_left: string, get_right: string}}
     */
    var io_recv_calls = WAMS.when = {
       connection_ok:        "CONN_OK"
@@ -80,6 +100,10 @@ function all() {
       , user_disconnected:  "DEL_USER"
       , message_received:   "RECV_MSG"
       , broadcast_received: "RECV_BROADCAST"
+      , get_front:          "RECV_FRONT"
+      , get_back:           "RECV_BACK"
+      , get_left:           "RECV_LEFT"
+      , get_right:          "RECV_RIGHT"
    };
    io_recv_calls.has = function(target) {
       for (var i in this) {
@@ -93,18 +117,14 @@ function all() {
 
    /**
     * Function initializes new session instance
-    * @param {string} [host] Host socket.io is connecting to
+    * @param {object} [settings] Settings for wams library
     * @param {object} clientDescription User specified description of client
     * @returns {WAMS.init} Instance of session
     *
     * @constructor
     */
-   WAMS.init = function(host, clientDescription) {
-      if (typeof host !== "string") {
-         clientDescription = host;
-         host = undefined;
-      }
-      var self = this;
+   WAMS.init = function(settings, clientDescription) {
+      var self = this, host = settings.host;
 
       /**
        * Description of client for current session
@@ -136,6 +156,7 @@ function all() {
       });
       this.socket.on(io_recv_calls.connection_ok, function(data) {
          self.uuid = data.data.uuid;
+         self.position = data.data.position;
          self.otherClients = data.data.otherClients;
 
          //TODO fire event or something similar when connection happened
@@ -185,24 +206,25 @@ function all() {
 
       /**
        * Specify on which element multitouch is started
-       * @param {jQuery} elem Jquery array of elements
+       * @param {HTMLElement|HTMLCollection|jQuery} elem HTML collection or jQuery array of elements
        */
       addMT: function(elem) {
-         //TODO make hammer start on body and move items only with certain classes
-         //FIXME --bug 1--
-         // when we pass clean js array of html elements (not $),
-         // and we push each element into MTObjects array, inside "on" function
-         // callback on elements is not called.
-         // Also. When in MTObjects was pushed instance of Hammer, "on" function
-         // was not calling callback on elements. (On github wiki it is working)
-         for (var i = 0, len = elem.length; i < len; i++) {
-            var newMTObj = new WAMS.modules.Hammer(elem[i], {
+         var self = this, newMTObj;
+         if (elem.length) {
+            for (var i = 0, len = elem.length; i < len; i++) {
+               newMTObj = new WAMS.modules.Hammer(elem[i], {
+                  prevent_default: true,
+                  no_mouseevents: true
+               });
+               self.MTObjects.push(newMTObj);
+            }
+         } else {
+            newMTObj = new WAMS.modules.Hammer(elem, {
                prevent_default: true,
                no_mouseevents: true
             });
-//            this.MTObjects.push(newMTObj);
+            self.MTObjects.push(newMTObj);
          }
-         this.MTObjects.push(elem);
       },
 
       // TODO check on idea of starting MT on body and only allowing
@@ -245,7 +267,7 @@ function all() {
             } else if (self.MTEvents.indexOf(type) != -1) { // if this event is from hammer
                self.MTObjects.forEach(function (MTObj) { // to all mt objects we attach listener
                   MTObj.on(type, function (ev) { //listener callback
-                     var touches = ev.originalEvent.gesture.touches;
+                     var touches = ev.gesture.touches;
                      var event = {
                            type: type,
                            element: []
@@ -266,10 +288,6 @@ function all() {
                      }
                      self.emit(type, event);
 
-                     //FIXME --bug 1-- continued
-                     // cont from higher - this callback is not called when event is
-                     // generated. Right before callback any console.log is called,
-                     // but right inside this callback none of console.log are called
                      callback(ev);
                   });
                });
@@ -355,6 +373,38 @@ function all() {
             }
          }
          return undefined;
+      },
+
+      front: function(callback) {
+         var self = this;
+         self.emit(io_send_calls.ask_front, {});
+         self.on(io_recv_calls.get_front, function(users) {
+            callback(users);
+         });
+      },
+
+      left: function(callback) {
+         var self = this;
+         self.emit(io_send_calls.ask_left, {});
+         self.on(io_recv_calls.get_left, function(users) {
+            callback(users);
+         });
+      },
+
+      right: function(callback) {
+         var self = this;
+         self.emit(io_send_calls.ask_right, {});
+         self.on(io_recv_calls.get_right, function(users) {
+            callback(users);
+         });
+      },
+
+      behind: function(callback) {
+         var self = this;
+         self.emit(io_send_calls.ask_back, {});
+         self.on(io_recv_calls.get_back, function(users) {
+            callback(users);
+         });
       }
    };
 

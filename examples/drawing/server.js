@@ -38,7 +38,6 @@ var serverFunc = function (req, res) {
 					// handler for all other file types
 					res.writeHead(200, {'Content-Type': 'text/plain', 'Content-Length': data.length}); break;
 			}
-			console.log("Started server with model: " + uri);
 			res.end(data);
 		}
 	});
