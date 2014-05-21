@@ -529,7 +529,7 @@ racer.ready(function(model) {
             y = ev.gesture.touches[0].pageY,
             touchP = model.get('_page.tmp.elementRelativeTouchPoint'),
             scr = model.get('_page.me.screen'),
-            relativeElementXY;
+            relativeElementXY = {};
 
          for ( i = 0; i < els.length; i++ ) {
             if (els[i].attributes.id === target.id) {
@@ -537,10 +537,12 @@ racer.ready(function(model) {
             }
          }
 
+         relativeElementXY.x = (x - touchP.x) * scr.s / 100;
+         relativeElementXY.y = (y - touchP.y) * scr.s / 100;
          currentLockID = els[i].attributes['data-lock'];
          if (currentLockID === id) {
-            model.set(room + '.elements.' + i + '.x', scr.x + (x - touchP.x));
-            model.set(room + '.elements.' + i + '.y', scr.y + (y - touchP.y));
+            model.set(room + '.elements.' + i + '.x', scr.x + relativeElementXY.x);
+            model.set(room + '.elements.' + i + '.y', scr.y + relativeElementXY.y);
          }
       }
       function onElementRelease(ev) {
