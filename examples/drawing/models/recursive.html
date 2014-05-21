@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Canvas Testing</title>
+
+	<script src="/socket.io/socket.io.js"></script>  <!-- REQUIRED! WAMS uses Socket.IO for communication between server and clients. -->
+	<script src="/libs/hammer.js"></script> <!-- REQUIRED! Import Hammer  -->
+	<script src="/libs/wams.js"></script> <!-- REQUIRED! Import main WAMS-library -->
+	<style>
+		* { margin: 0px; padding: 0px; }
+		html, body { width: 90%; height: 90%; }
+		canvas { display:block; background-color: #aabbcc; }
+	</style>
+</head>
+
+<body>
+	<canvas id='main'></canvas>
+	<script>
+
+	// Generate a random name to assign to this user
+	var sampleNames = [
+		'Fe', 'Thomas', 'Kirstie', 'Wynell', 'Mario', 'Aretha', 'Cherryl', 'Ta',
+		'Lindy', 'Karina', 'Sacha', 'Latesha', 'Miki', 'Janel', 'Leola', 'Romeo',
+		'Roderick', 'Felica', 'Ilona', 'Nila', 'Patrina', 'Wes', 'Henry', 'Elvera',
+		'Karrie', 'Jacklyn', 'Alethea', 'Emogene', 'Alphonso', 'Chandra', 'Beryl',
+		'Lilly', 'Georgetta', 'Darrin', 'Deane', 'Rocio', 'Charissa', 'Simona',
+		'Don', 'Arianne', 'Esther', 'Leonia', 'Karma', 'Rosemarie', 'Carolyn',
+		'Miriam', 'Chastity', 'Vesta', 'Christian', 'Lashaun'
+	].sort();
+	var rndName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
+
+	// Card class
+	// This will be the items in our simple array model
+	function Card(x, y, w, h, color, id) {
+		// Just a rectangle
+		this.x = x;
+		this.y = y;
+		this.w = w;
+		this.h = h;
+		this.color = color;
+		this.id = id;
+	}
+
+	// It can draw itself for now
+	Card.prototype.draw = function(){
+		ctx.fillStyle = this.color;
+		ctx.fillRect(this.x, this.y, this.w, this.h);
+	}
+
+	// Map Class
+	// The map of the workspace. A rectangle with a model.
+	function Map(w, h, model) {
+		this.w = w;
+		this.h = h;
+		this.model = model;
+	}
+
+	function View(map) {
+		// The default view starts at the top left and fills the screen
+		this.x = 0;
+		this.y = 0;
+		this.w = window.innerWidth;
+		this.h = window.innerHeight;
+		this.ew = window.innerWidth;
+		this.eh = window.innerHeight;
+		this.position = -1;
+		this.scale = 1;
+		this.color = myCardColor;
+		this.name = rndName;
+		this.map = map;
+	}
+
+	var setInitialPostion = false,
+	 	numOtherClients = 0,
+		numOtherClientsOld = 0,
+		originalScale =-1;
+		// drawMode = true;
+	View.prototype.draw = function() {
+		// wams.emit("consoleLog", "Start of View.draw");
+
+		// TODO: Switch from basis on # of others, to available position
+		if(typeof wams.uuid == "string" && !setInitialPostion){	// Only set the initial position once/after the wams client server is running
+			setInitialPostion = true;
+			this.position = wams.otherClients.length;
+
+			if(this.position == 0){
+				originalScale = this.w/canvasWidth;
+				// drawMode = false;
+				this.moveToXY(0, 0);
+				this.rescale(originalScale);
+			}
+			else{
+				originalScale = this.scale;
+				this.moveToXY((canvasWidth/6)*this.position , 100);
+				this.rescale(.75);
+				drawMode = true;
+			}
+
+			this.resizeCanvas();
+
+			if(this.position != 0){
+				wams.emit("needOldCards", this.position);
+			}
+		}
+		
+		// If there is a change in # of people, report your view
+		numOtherClients = wams.otherClients.length;
+		if(numOtherClientsOld != numOtherClients){
+			this.reportView();
+			numOtherClientsOld = numOtherClients;
+		}
+
+		// Grab the model
+		var model = this.map.model;
+		// Clear the canvas
+		ctx.clearRect(0, 0, this.w, this.h);
+		// Draw the model
+		ctx.save();
+		// Scale since we're drawing content
+		ctx.scale(this.scale, this.scale);
+		// Translate the view to the model coordinates
+		ctx.translate(-this.x, -this.y);
+		// Draw all the cards in the model
+		for (var i = 0; i < model.length; i++) {
+			model[i].draw();
+		}
+		ctx.restore();
+		ctx.save();
+		// Don't scale since we're drawing UI noq
+		ctx.translate(-this.x*this.scale, -this.y*this.scale);
+		// And draw the other user's viewport boundaries
+		for (var i = 0, len = wams.otherClients.length; i < len; i++) {
+			var otherView = wams.otherClients[i].view;
+			if (typeof otherView !== "undefined") {
+				// Draw User Effective View and Real View
+				// Using their color
+				ctx.strokeStyle = otherView.color;
+				// TODO: Allow view attributes to affect linewidth, etc.
+				ctx.lineWidth = "5";
+
+				// Draw the effective viewport
+				ctx.beginPath();
+				ctx.rect(otherView.x*this.scale, otherView.y*this.scale, otherView.ew*this.scale, otherView.eh*this.scale);
+				ctx.stroke();
+
+				// Draw their name
+				/*ctx.fillStyle = 'black';
+				ctx.font = "24px Georgia";
+				ctx.fillText(otherView.name, otherView.x*this.scale +(otherView.ew*this.scale)/2 , otherView.y*this.scale + (otherView.eh*this.scale)/2);*/
+			}
+		}
+
+		ctx.restore();
+		// wams.emit("consoleLog", "End of View.draw");
+	}
+
+	View.prototype.move = function(dx, dy) {
+		// wams.emit("consoleLog", "Start of View.move");
+		
+		// Filter out meaningless moves
+		if (dx == 0 && dy == 0 ) {
+			return;
+		}
+		
+		// Moves the View about the Map
+		// If the view will stay in bounds, then make the change
+		var newx = this.x + dx;
+		var newy = this.y + dy;
+		var newr = newx + this.w;
+		var newb = newy + this.h;
+		if ( ( newx >= 0 ) && ( newr <= this.map.w ) &&
+		   ( newy >= 0 ) && ( newb <= this.map.h ) ) {
+			this.x += dx;
+			this.y += dy;
+		} else {
+			wams.emit("consoleLog", "Hit The Boundaries");
+			return;
+		}
+		// Redraw view
+		this.draw();
+
+		this.resizeCanvas();
+		// wams.emit("consoleLog", "End of View.move");
+	}
+
+	// Move your top Left Corner to (x,y)
+	View.prototype.moveToXY = function(x,y){
+		this.x = x;
+		this.y = y;
+	}
+
+	View.prototype.reportView = function() {
+		// Tell the server about my view
+		var newView = {
+			x : this.x,
+			y : this.y,
+			w : this.w,
+			h : this.h,
+			ew : this.ew,
+			eh : this.eh,
+			scale : this.scale,
+			color : this.color,
+			name : this.name,
+			position : this.position
+		}; 
+		wams.emit("updateUserView", newView);
+	}
+
+	function onResized() {
+		// Resize the Canvas
+		myView.resizeCanvas();
+		// Update the view
+		myView.resize(canvas.width, canvas.height);
+
+		myView.rescale(1);
+	}
+
+	View.prototype.resizeCanvas = function() {
+		// wams.emit("consoleLog", "Start of resizeCanvas");
+
+		// Resize the view and canvas to the window
+		// Dont set the view larger than there is map to show
+		this.w = Math.min(window.innerWidth, this.map.w - this.x);
+		this.h = Math.min(window.innerHeight, this.map.h - this.y);
+		canvas.width = this.w;
+		canvas.height = this.h;
+		
+		// Redraw the view
+		this.draw();
+		
+		// Report possible change to server
+		this.reportView();
+		// wams.emit("consoleLog", "End of resizeCanvas");
+	}
+
+	View.prototype.resize = function(nw, nh) {
+		// Filter out meaningless resizes
+		if ( this.w == nw && this.h == nh ) {
+			return;
+		}
+		// Set the new dimensions
+		this.w = nw;
+		this.h = nh;
+		// Then set the effective view dimensions
+		this.ew = Math.floor(nw/this.scale);
+		this.eh = Math.floor(nh/this.scale);
+		// Redraw view
+		this.draw();
+		// Report possible change to server
+		this.reportView();
+	}
+
+	View.prototype.rescale = function(nscale) {
+		// Filter out meaningless scales
+		/*if(this.scale == nscale){
+			return;
+		}*/
+		this.scale = nscale;
+		// Then set the effective view dimensions
+		this.ew = Math.floor(this.w/this.scale);
+		this.eh = Math.floor(this.h/this.scale);
+		// Resize the Canvas
+		this.resizeCanvas();
+	}
+
+	var scaleRatio = 0;
+	View.prototype.scaleToUser = function(index){ 
+		this.moveToXY(wams.otherClients[index].view.x, wams.otherClients[index].view.y);
+		scaleRatio = (this.w > this.h) ? this.w/wams.otherClients[index].view.w : this.h/wams.otherClients[index].view.h;
+		this.rescale(wams.otherClients[index].view.scale * scaleRatio);
+	}
+
+	var canvasWidth = 7000,
+		canvasHeight = 7000;
+	function onWindowLoad() {
+		// wams.emit("consoleLog", "Start of onWindowLoad");
+
+		// Set up the Map
+		myMap = new Map(canvasWidth, canvasHeight, cards);
+
+		// Set up the View on the Map
+		myView = new View(myMap);
+
+		// Set up the canvas
+		ctx = canvas.getContext('2d');
+
+		// Set up listener for window resize
+		window.addEventListener('resize', onResized, false);
+
+		// Resize it to start
+		myView.resizeCanvas();
+
+		// Redraw the view
+		myView.draw();
+		// wams.emit("consoleLog", "End of onWindowLoad");
+	}
+
+	window.addEventListener('load', onWindowLoad, false);
+	window.addEventListener("mousewheel", onMouseScroll, false);
+	window.addEventListener("DOMMouseScroll", onMouseScroll, false);
+
+	function onMouseScroll(ev) {
+		var delta = Math.max(-1, Math.min(1, (ev.wheelDelta || -ev.detail)));
+		var newScale = myView.scale + delta*0.075;
+		myView.rescale(newScale);
+	}
+
+
+	// Find if a click was in bounds of one of the cards
+	function clickOnCard(x,y){
+		for (var i = 0; i < cards.length; i++) {
+			if( (x > cards[i].x) && (x < (cards[i].x + cards[i].w)) && (y > cards[i].y) && (y < (cards[i].y + cards[i].h))){	// Boundary checking
+				return i;	// index on the card you clicked on
+			}
+		}
+		return -1;	// Didn't click on a card
+	}
+
+	var cardWidth = 50, 
+		cardHeight = 50; // 50px
+	function createNewCard(x,y){
+		var newCard = new Card(x - cardWidth/2, y - cardHeight/2, cardWidth, cardHeight, myCardColor, -1);
+		wams.emit("newCard", newCard);	// Tell everyone you created a new card
+	}
+
+	function moveCardToXY(cardIndex, x, y){
+		cards[cardIndex].x = x - cardWidth/2;
+		cards[cardIndex].y = y - cardHeight/2;
+	}
+
+	// Generate a random color to assign to this user
+	var rndColor = function() {
+    	var bg_colour = Math.floor(Math.random() * 16777215).toString(16);
+      	bg_colour = "#" + bg_colour;
+      	return bg_colour;
+   	}
+
+   	var cards = new Array();
+   	var myCardColor = rndColor();
+
+   	// Create new WAMS object
+	var wams = new WAMS({
+		color: myCardColor,
+		name: name,
+		path: window.location.pathname
+	});
+
+	var canvas = document.getElementById('main');
+	wams.addMT(canvas);
+
+	// Setup multitouch events
+	wams.on('tap dragstart drag dragend transformstart transform transformend', handleMT);
+
+	var transforming = false,
+		lastDeltaX = null,
+		lastDeltaY = null,
+		startScale = null,
+		firstTap = false,
+		doubleTap = false,
+		cardIndex = -1,		// Index of the card to be dragged, -1 indicates no card should be dragging
+		viewIndex = -1,		// Index of the view to be scaled to
+		doubleTapThreshold = 200; // 200 milliseconds
+	function handleMT(ev) {
+		ev.preventDefault();
+		ev.gesture.preventDefault();
+		switch (ev.type) {
+			case 'tap':
+				var x = ev.gesture.center.pageX/myView.scale + myView.x;
+				var y = ev.gesture.center.pageY/myView.scale + myView.y;
+				cardIndex = clickOnCard(x,y);
+				if(cardIndex == -1){
+					if(firstTap == true){
+						doubleTap = true;
+						viewIndex = clickOnView(x,y);
+						if(viewIndex != -1){
+							myView.scaleToUser(viewIndex);
+							// drawMode = true;
+						}
+						else{
+							myView.moveToXY(0,0);
+							myView.rescale(originalScale);
+							// drawMode = false;
+						}
+					}
+					else{
+						firstTap = true;
+						doubleTap = false;
+						setTimeout(function(){
+							if(!doubleTap){ // If they didn't doubleTap
+								createNewCard(x, y);
+							}
+							firstTap = false;
+						}, doubleTapThreshold);
+					}
+					// Redraw view
+					myView.draw();
+				}
+				else{
+					cardIndex = -1;
+				}
+				break;
+			case 'dragstart':
+				var x = ev.gesture.center.pageX/myView.scale + myView.x;
+				var y = ev.gesture.center.pageY/myView.scale + myView.y;
+				cardIndex = clickOnCard(x,y);
+				lastDeltaX = 0;
+				lastDeltaY = 0;
+				break;
+			case 'drag':
+				// If we're transforming, don't drag
+				if (transforming){
+					return;
+				}
+				var dx = (lastDeltaX - ev.gesture.deltaX)/myView.scale;
+				var dy = (lastDeltaY - ev.gesture.deltaY)/myView.scale;
+				lastDeltaX = ev.gesture.deltaX
+				lastDeltaY = ev.gesture.deltaY
+				if(cardIndex == -1){ 		// No card was clicked
+					myView.move(dx, dy); 	// Move the view
+				}
+				else{
+		   			moveCardToXY(cardIndex, myView.x + ev.gesture.center.pageX/myView.scale, myView.y + ev.gesture.center.pageY/myView.scale);
+		   			wams.emit("updateCard", cards[cardIndex]);	// Tell everyone the card's new position
+				}
+				break;
+			case 'dragend':
+				cardIndex = -1;
+				lastDeltaX = null;
+				lastDeltaY = null;
+				break;
+			case 'transformstart':
+				transforming = true;
+				startScale = myView.scale;
+				break;
+			case 'transform':
+				var scale = ev.gesture.scale;
+				var newScale = scale * startScale;
+				myView.rescale(newScale);
+				break;
+			case 'transformend':
+				startScale = null;
+				// Stop detecting the gesture to avoid extra drags (Doesnt seem to work)
+				ev.gesture.stopDetect();
+				// Avoid extra drags manually
+				setTimeout(function () {
+					transforming = false;
+				}, 100);
+				break;
+		}
+	}
+
+	function clickOnView(x,y){
+		for (var i = 0, len = wams.otherClients.length; i < len; i++) {
+			if( (x > wams.otherClients[i].view.x) && (x < (wams.otherClients[i].view.x + wams.otherClients[i].view.ew)) && 
+				(y > wams.otherClients[i].view.y) && (y < (wams.otherClients[i].view.y + wams.otherClients[i].view.eh)) &&
+				wams.otherClients[i].view.position != 0){
+				return i;	// index on the card you clicked on
+			}
+		}
+		return -1;
+	}
+
+	wams.on("newCard", onNewCard);
+	wams.on("updateUserView", onUpdateUserView);
+	wams.on("updateCard", onUpdateCard);
+	wams.on("needOldCards", onNeedOldCards);
+	wams.on("oldCards", onOldCards);
+
+	// Recieve the newly created card to be added
+	function onNewCard(newCard) {
+		var newCard = new Card(newCard.data.x, newCard.data.y, newCard.data.h, newCard.data.w, newCard.data.color, newCard.data.id);
+		cards.push(newCard);
+		// Redraw view
+		myView.draw();
+	}
+
+	function onUpdateUserView(data) {
+		// Look through the list of other clients until we find the one who sent the message
+		for (var i = 0, len = wams.otherClients.length; i < len; i++) {
+			if (wams.otherClients[i].uuid == data.source) {
+				// Then update their view object
+				wams.otherClients[i].view = data.data;
+				break;
+			}
+		}
+		// Redraw view
+		myView.draw();
+	}
+
+	// Recieve which card needs to be updated
+	function onUpdateCard(updatedCard){
+		for (var i = 0; i < cards.length; i++) {
+			if(cards[i].id == updatedCard.data.id){
+				cards[i].x = updatedCard.data.x;
+				cards[i].y = updatedCard.data.y;
+			}
+		}
+		myView.draw();
+	}
+
+	function onNeedOldCards(position){
+		if(myView.position != 0){
+			// wams.emit("consoleLog", "I'm not the first person.");
+		}
+		else if(myView.position == position.data){
+			// wams.emit("consoleLog", "This is me, I don't need to update.");
+		}
+		else{
+			var outputCards = {
+				destination : position.data,
+				cards : cards
+			};
+			wams.emit("oldCards", outputCards);
+		}
+	}
+
+	function onOldCards(oldCards){
+		if(myView.position != oldCards.data.destination){
+			// Don't Do Anything, these cards are not for you
+		}
+		else{
+			for (var i = 0; i < oldCards.data.cards.length; i++) {
+				var newCard = new Card( oldCards.data.cards[i].x, oldCards.data.cards[i].y,
+										oldCards.data.cards[i].h, oldCards.data.cards[i].w,
+										oldCards.data.cards[i].color, oldCards.data.cards[i].id);
+				cards.push(newCard);
+			}
+			myView.draw();
+		}
+	}
+
+	</script>
+</body>
+</html>
