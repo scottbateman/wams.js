@@ -472,7 +472,13 @@ racer.ready(function(model) {
             scaleBeforePinch = model.get('_page.tmp.scaleBeforePinch'),
             newWorkspaceScale = Math.round(scaleBeforePinch * pinchScale);
 
-         model.set('_page.me.screen.s', newWorkspaceScale);
+         if ( MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE ) {
+            model.set('_page.me.screen.s', newWorkspaceScale);
+         } else if ( newWorkspaceScale < MIN_SCALE ) {
+            model.setDiff('_page.me.screen.s', MIN_SCALE);
+         } else if ( MAX_SCALE < newWorkspaceScale ) {
+            model.setDiff('_page.me.screen.s', MAX_SCALE);
+         }
       }
       function onDocumentTransformEnd(ev) {
          model.del('_page.tmp.scaleBeforePinch');
