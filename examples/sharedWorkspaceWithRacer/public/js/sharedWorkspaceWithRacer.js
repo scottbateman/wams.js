@@ -194,6 +194,26 @@ racer.ready(function(model) {
          model.set('_page.elements', convertedEls);
       }
 
+      function showElsAsWorkspace() {
+         var els = model.get(room + '.elements'), i;
+
+         for (i in els) {
+            model.set(room + '.users.' + els[i].attributes.id, {
+               color: '#151515',
+               id: i,
+               screen: {
+                  x: els[i].x,
+                  y: els[i].y,
+                  w: els[i].w,
+                  h: els[i].h,
+                  s: 100
+               }
+            });
+            model.ref(room + '.screens.' + els[i].attributes.id,
+               room + '.users.' + els[i].attributes.id + '.screen');
+         }
+      }
+
       model.on('change', '_page.me.screen**', function() {
          displayScreenMode( model.get('_page.me.screen') );
          updateElements();
@@ -206,6 +226,8 @@ racer.ready(function(model) {
 
       model.on('change', '_page.elements**', function(path, value, previous, passed) {
          moveElements( value, previous );
+
+         showElsAsWorkspace();
       });
 
       model.on('change', '_page.workspace**', function(path, value, previous, passed) {
@@ -272,6 +294,7 @@ racer.ready(function(model) {
          showElements( model.get('_page.elements') );
 
          restartMT();
+         showElsAsWorkspace();
       });
 
       $(window).resize(function() {
