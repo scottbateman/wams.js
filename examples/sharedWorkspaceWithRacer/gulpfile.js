@@ -1,0 +1,51 @@
+var gulp = require('gulp'),
+    gutil = require('gulp-util'),
+    stylus = require('gulp-stylus'),
+    clean = require('gulp-clean'),
+    notify = require('gulp-notify'),
+    livereload = require('gulp-livereload'),
+    spawn = require('child_process').spawn;
+
+var server, supervisor,
+    paths = {
+       jade: 'views/**/*.jade',
+       styl: 'views/css/**/*.styl',
+       public: ['public/**/*']
+    };
+
+gulp.task('styles', function() {
+   return gulp.src(paths.styl)
+      .pipe(stylus())
+      .pipe(gulp.dest('public/css'))
+      // .pipe(notify({message: "Styles compiled"}))
+      ;
+});
+
+gulp.task('reloaders', function() {
+   server = livereload();
+
+   supervisor = spawn('supervisor', ['-i', './public,./views', 'app.js'],
+      { stdio: 'inherit' });
+});
+
+gulp.task('watch', ['reloaders'], function() {
+   gulp.watch(paths.styl, ['styles']);
+
+   gulp.watch(paths.jade).on('change', reloadClient);
+   gulp.watch(paths.public).on('change', reloadClient);
+});
+
+function reloadClient(ev) {
+   server.changed(ev.path);
+}
+
+gulp.task('clean', function() {
+   return gulp.src(['public/css/'], {read: false})
+      .pipe(clean())
+      // .pipe(notify(message: "Project cleaned"))
+      ;
+});
+
+gulp.task('default', function() {
+   gulp.start('styles', 'watch');
+});
