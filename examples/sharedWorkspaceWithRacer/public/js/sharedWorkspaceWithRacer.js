@@ -565,10 +565,10 @@ racer.ready(function(model) {
             }
          }
 
-         relativeElementXY.x = Math.round((x - touchP.x) * scr.s / 100);
-         relativeElementXY.y = Math.round((y - touchP.y) * scr.s / 100);
          currentLockID = els[i].attributes['data-lock'];
          if (currentLockID === id) {
+            relativeElementXY.x = Math.round((x - touchP.x) * scr.s / 100);
+            relativeElementXY.y = Math.round((y - touchP.y) * scr.s / 100);
             model.set(room + '.elements.' + i + '.x', scr.x + relativeElementXY.x);
             model.set(room + '.elements.' + i + '.y', scr.y + relativeElementXY.y);
          }
