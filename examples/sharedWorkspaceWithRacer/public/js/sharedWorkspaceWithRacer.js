@@ -195,6 +195,7 @@ racer.ready(function(model) {
       }
 
       function showElsAsWorkspace() {
+         if (false) {
          var els = model.get(room + '.elements'), i;
 
          for (i in els) {
@@ -211,6 +212,7 @@ racer.ready(function(model) {
             });
             model.ref(room + '.screens.' + els[i].attributes.id,
                room + '.users.' + els[i].attributes.id + '.screen');
+         }
          }
       }
 
