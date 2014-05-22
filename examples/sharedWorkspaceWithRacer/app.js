@@ -7,7 +7,18 @@ var express = require('express');
 var http = require('http');
 var path = require('path');
 var os = require('os');
+
+var racerBrowserChannel = require('racer-browserchannel');
+var liveDbMongo = require('livedb-mongo');
+var redis = require('redis').createClient();
+var racer = require('racer');
+
 var wams = require('wams.js-server');
+
+var store = racer.createStore({
+   db: liveDbMongo('localhost:27017/wams?auto_reconnect', { safe: true }),
+   redis: redis
+});
 
 var app = express();
 
@@ -30,6 +41,8 @@ app.use(express.logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
+app.use(racerBrowserChannel(store));
+app.use(store.modelMiddleware());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -37,6 +50,77 @@ app.use(express.static(path.join(__dirname, 'public')));
 if ('development' === app.get('env')) {
   app.use(express.errorHandler());
 }
+
+store.on('bundle', function(browserify) {
+   browserify.require('./public/js/lib/jquery-1.10.2.js', { expose: 'jquery' });
+   browserify.require('./public/js/lib/hammer.js', { expose: 'hammerjs' });
+   browserify.require('socket.io-client', { expose: 'socket.io-client' });
+   browserify.require('./public/js/lib/wams.js', { expose: 'wams' });
+});
+
+var model = store.createModel();
+var roomPath = 'sharedWorkspace';
+
+var resetUsers = true;
+var resetBalls = true;
+
+model.subscribe(roomPath, function(err) {
+   if (err) { throw err; }
+
+   if (resetUsers) {
+      model.set(roomPath + '.users', {});
+      model.set(roomPath + '.screens', {});
+      model.set(roomPath + '.workspace', {});
+   }
+
+   if (resetBalls || model.get(roomPath + ".elements") === undefined) {
+      var elements = [];
+      for (var i = 1; i <= 4; i++) {
+         var element = {
+            tag: 'div',
+            attributes: {
+               id: 'ball' + i,
+               class: 'ball',
+               'data-lock': ''
+            }
+         };
+         elements.push(element);
+      }
+      model.set(roomPath + '.elements', elements);
+   }
+});
+
+function createBundle(req, res, next) {
+   store.bundle(__dirname + '/public/js/sharedWorkspaceWithRacer.js',
+      function(err, js) {
+         if (err) { return next(err); }
+         res.type('js');
+         res.send(js);
+      }
+   );
+}
+
+function renderRacer(req, res, next) {
+   // var model = req.getModel();
+
+   model.subscribe(roomPath, function(err) {
+      if (err) { return next(err); }
+
+      model.bundle(function(err, bundle) {
+         if (err) { return next(err); }
+
+         var settings = {
+            title: 'Shared space between clients with racer',
+            bundle: JSON.stringify(bundle)
+         };
+         console.log(settings.bundle);
+         res.render('sharedWorkspaceWithRacer', settings);
+      });
+   });
+}
+
+app.get('/js/sharedWorkspaceWithRacer.js', createBundle);
+app.get('/', renderRacer);
 
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){

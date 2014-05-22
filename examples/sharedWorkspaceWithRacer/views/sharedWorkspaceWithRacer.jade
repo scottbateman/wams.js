@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1 #{title} - Drag balls on all your connected screens
+  p#description
+    span#userID
+    span.separator  - 
+    span#mode
+
+  canvas#minimap
+
+  script(async src='/js/sharedWorkspaceWithRacer.js'
+    onload='require("racer").init(#{bundle})')
