@@ -216,7 +216,15 @@ racer.ready(function(model) {
          }
       }
 
-      model.on('change', '_page.me.screen**', function() {
+      model.on('change', '_page.me.screen**', function(path, value, previous, passed) {
+         if (path === 's' && passed.documentRescaleCenter) {
+            var rescaleP = passed.documentRescaleCenter,
+               dx = Math.round(rescaleP.x * (previous - value) / 100),
+               dy = Math.round(rescaleP.y * (previous - value) / 100);
+
+            model.increment('_page.me.screen.x', dx);
+            model.increment('_page.me.screen.y', dy);
+         }
          displayScreenMode( model.get('_page.me.screen') );
          updateElements();
       });
@@ -310,8 +318,14 @@ racer.ready(function(model) {
             (screen.s > MIN_SCALE && screen.s < MAX_SCALE && ev.whellDeltaY !== 0) ||
             (screen.s === MAX_SCALE && ev.wheelDeltaY < 0))
          {
-            var delta = Math.floor(ev.wheelDeltaY / 120);
-            model.increment('_page.me.screen.s', SCALE_DELTA * delta);
+            var delta = Math.floor(ev.wheelDeltaY / 120),
+               passing = {
+                  documentRescaleCenter: {
+                     x: ev.pageX,
+                     y: ev.pageY
+                  }
+               };
+            model.pass(passing).increment('_page.me.screen.s', SCALE_DELTA * delta);
          }
       }
       var html = document.getElementsByTagName('html')[0];
@@ -475,7 +489,13 @@ racer.ready(function(model) {
             newWorkspaceScale = Math.round(scaleBeforePinch * pinchScale);
 
          if ( MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE ) {
-            model.set('_page.me.screen.s', newWorkspaceScale);
+            var passing = {
+               documentRescaleCenter: {
+                  x: ev.gesture.center.pageX,
+                  y: ev.gesture.center.pageY
+               }
+            };
+            model.pass(passing).set('_page.me.screen.s', newWorkspaceScale);
          } else if ( newWorkspaceScale < MIN_SCALE ) {
             model.setDiff('_page.me.screen.s', MIN_SCALE);
          } else if ( MAX_SCALE < newWorkspaceScale ) {
