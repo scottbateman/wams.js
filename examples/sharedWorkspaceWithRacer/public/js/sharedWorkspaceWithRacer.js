@@ -89,9 +89,27 @@ function showElements(elements) {
       }
       elem.innerHTML = element.innerHTML || "";
 
+      elem.style.left = element.x + 'px';
+      elem.style.top = element.y + 'px';
+      elem.style.width = element.w + 'px';
+      elem.style.height = element.h + 'px';
+      elem.style.borderRadius = (element.w / 2) + 'px';
+
       var body = document.getElementsByTagName('body')[0];
       body.appendChild(elem);
    });
+}
+
+function moveElements(newEls, oldEls) {
+   if (oldEls) {
+      oldEls.forEach(function(el) {
+         var elem = $('#' + el.attributes.id);
+         elem.remove();
+      });
+      if (newEls) {
+         showElements(newEls);
+      }
+   }
 }
 
 var MAX_CANVAS_HEIGHT = 450,
@@ -165,6 +183,10 @@ racer.ready(function(model) {
       model.on('change', room + '.elements**', function() {
          updateElements()
          drawMinimap();
+      });
+
+      model.on('change', '_page.elements**', function(path, value, previous, passed) {
+         moveElements( value, previous );
       });
 
       model.on('change', room + '.workspace', function(value, previous, passed) {
