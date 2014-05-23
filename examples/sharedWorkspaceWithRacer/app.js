@@ -63,6 +63,8 @@ var roomPath = 'sharedWorkspace';
 
 var resetUsers = true;
 var resetBalls = true;
+var showBallsOnMinimap = true;
+var gapBetweenClients = true;
 
 model.subscribe(roomPath, function(err) {
    if (err) { throw err; }
@@ -72,6 +74,9 @@ model.subscribe(roomPath, function(err) {
       model.set(roomPath + '.screens', {});
       model.set(roomPath + '.workspace', {});
    }
+
+   model.set(roomPath + '.minimap.showBalls', showBallsOnMinimap);
+   model.set(roomPath + '.minimap.gapBetweenClients', gapBetweenClients);
 
    if (resetBalls || model.get(roomPath + ".elements") === undefined) {
       var elements = [];
