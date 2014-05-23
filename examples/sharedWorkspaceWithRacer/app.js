@@ -104,6 +104,15 @@ function createBundle(req, res, next) {
    );
 }
 
+function isEmpty(map) {
+   for(var key in map) {
+      if (map.hasOwnProperty(key)) {
+         return false;
+      }
+   }
+   return true;
+}
+
 function renderRacer(req, res, next) {
    // var model = req.getModel();
 
