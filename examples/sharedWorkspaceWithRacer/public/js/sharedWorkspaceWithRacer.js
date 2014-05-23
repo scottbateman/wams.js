@@ -30,16 +30,30 @@ function displayScreenMode(screen) {
    );
 }
 
+
+
+
+function showBalls(elements) {
+   elements.forEach(function (element) {
+      var elem = document.createElement(element.tag),
+         attr;
+      for (attr in element.attributes) {
+         if (element.attributes.hasOwnProperty(attr)) {
+            elem.setAttribute(attr, element.attributes[attr]);
+         }
+      }
+      elem.innerHTML = element.innerHTML || "";
+
+      var body = document.getElementsByTagName('body')[0];
+      body.appendChild(elem);
+   });
+}
+
 racer.ready(function(model) {
    var room = 'sharedWorkspace';
    model.subscribe(room, function() {
       window.model = model;
       // model = model.at('sharedWorkspace');
-
-
-
-         }
-
 
       var id = model.id();
       model.add(room + '.users', {
@@ -75,6 +89,7 @@ racer.ready(function(model) {
          userID.css({ background: model.get('_page.me.color') });
 
          displayScreenMode( model.get('_page.screen') );
+         showBalls( model.get(room + '.elements') );
       });
 
       $(window).resize(function() {
