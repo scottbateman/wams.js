@@ -331,11 +331,28 @@ racer.ready(function(model) {
       }
 
       function onDocumentTouch(ev) {
+         var x = ev.gesture.center.pageX,
+            y = ev.gesture.center.pageY,
+            scr = model.get('_page.me.screen');
 
+         model.set('_page.tmp.touchPoint', {x: x, y: y});
+         model.set('_page.tmp.beforeMove', {x: scr.x, y: scr.y});
       }
       function onDocumentDrag(ev) {
+         var x = ev.gesture.center.pageX,
+            y = ev.gesture.center.pageY,
+            scr = model.get('_page.me.screen'),
+            tmp = model.get('_page.tmp'),
+            scrBefore = tmp.beforeMove,
+            pt = tmp.touchPoint,
+            dx = x - pt.x, dy = y - pt.y;
+
+         model.increment('_page.me.screen.x', (scrBefore.x - dx) - scr.x);
+         model.increment('_page.me.screen.y', (scrBefore.y - dy) - scr.y);
       }
       function onDocumentRelease(ev) {
+         model.del('_page.tmp.touchPoint');
+         model.del('_page.tmp.beforeMove');
       }
       function onElementTouch(ev) {
       }
