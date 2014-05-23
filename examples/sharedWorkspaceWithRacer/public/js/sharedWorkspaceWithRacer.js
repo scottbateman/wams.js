@@ -87,7 +87,7 @@ racer.ready(function(model) {
          h: window.innerHeight,
          x: 0,
          y: 0,
-         s: 1
+         s: 100
       });
       model.ref('_page.me', room + '.users.' + id);
       model.ref('_page.screen', room + '.screens.' + id);
