@@ -47,6 +47,35 @@ function clone(obj) {
    throw new Error("Unable to copy obj! Its type isn't supported.");
 }
 
+function elInArr(element, arr) {
+   if (!element) { return false; }
+
+   var i, el;
+   for ( i = 0; i < arr.length; i++ ) {
+      el = arr[i];
+      if (el.attributes.id === element.attributes.id) {
+         return true;
+      }
+   }
+
+   return false;
+}
+
+function subtrSubsetArr(arr1, arr2) {
+   //arr1 is bigger than arr2
+   //arr2 is subset of arr1
+
+   var r = [];
+
+   arr1.forEach(function(el) {
+      if (!elInArr(el, arr2)) {
+         r.push(el);
+      }
+   });
+
+   return r;
+}
+
 function displayScreenMode(screen) {
    var screenMode = $('#mode');
    screenMode.text(screen.w + 'x' + screen.h +
@@ -99,18 +128,6 @@ function showElements(elements) {
       var body = document.getElementsByTagName('body')[0];
       body.appendChild(elem);
    });
-}
-
-function moveElements(newEls, oldEls) {
-   if (oldEls) {
-      oldEls.forEach(function(el) {
-         var elem = $('#' + el.attributes.id);
-         elem.remove();
-      });
-      if (newEls) {
-         showElements(newEls);
-      }
-   }
 }
 
 var MAX_CANVAS_HEIGHT = 450,
@@ -321,6 +338,32 @@ racer.ready(function(model) {
          if (model.get('_page.settings.minimap.showElements')) {
             drawBalls(ctx);
          }
+      }
+
+      function moveElements(newEls, oldEls) {
+         if (!newEls || !oldEls) { return; }
+
+         var diffEls;
+         if (newEls.length > oldEls.length) {
+            diffEls = subtrSubsetArr(newEls, oldEls);
+            showElements(diffEls);
+            restartMT();
+         } else if (newEls.length < oldEls.length) {
+            diffEls = subtrSubsetArr(oldEls, newEls);
+            diffEls.forEach(function(el) {
+               $('#' + el.attributes.id).remove();
+            });
+         }
+
+         newEls.forEach(function(el) {
+            $('#' + el.attributes.id).css({
+               left: el.x,
+               top: el.y,
+               width: el.w,
+               height: el.h,
+               borderRadius: el.w / 2
+            });
+         });
       }
 
       function restartMT() {
