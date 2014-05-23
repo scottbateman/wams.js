@@ -251,6 +251,12 @@ racer.ready(function(model) {
       //    drawMinimap();
       // });
 
+      model.on('all', '**', function(path, event, args, passed) {
+         // console.log(path);
+         // console.log(event);
+         // console.log(args);
+      });
+
       window.onbeforeunload = function() {
          model.del(room + '.users.' + id);
          model.removeRef(room + '.screens.' + id);
