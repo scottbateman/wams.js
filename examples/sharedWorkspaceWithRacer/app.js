@@ -132,7 +132,7 @@ model.subscribe(roomPath, function(err) {
    });
    model.on('change', roomPath + '.screens**', function() {
       var workspace = model.evaluate('workspaceBorder', roomPath + '.screens');
-      model.set(roomPath + '.workspace', workspace);
+      model.setDiff(roomPath + '.workspace', workspace);
    });
 });
 

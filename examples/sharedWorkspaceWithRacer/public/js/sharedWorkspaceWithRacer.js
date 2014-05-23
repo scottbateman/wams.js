@@ -147,7 +147,7 @@ racer.ready(function(model) {
       model.ref('_page.settings', room + '.settings');
       model.ref('_page.workspace', room + '.workspace');
 
-      model.fn('convertElements', function (els) {//{{{
+      model.fn('convertElements', function (els) {
          if (!els) { return []; }
 
          var s = model.get('_page.me.screen'),
@@ -169,7 +169,7 @@ racer.ready(function(model) {
          });
 
          return r;
-      });//}}}
+      });
 
       function updateElements() {
          var convertedEls = model.evaluate('convertElements', room + '.elements');
@@ -190,18 +190,32 @@ racer.ready(function(model) {
          moveElements( value, previous );
       });
 
-      model.on('change', room + '.workspace', function(value, previous, passed) {
-         if (!value.w || !value.h) { return; }
+      model.on('change', '_page.workspace**', function(path, value, previous, passed) {
+         if (path !== 'w' && path !== 'h' && path !== '') { return; }
 
-         var w, h;
+         var w, h, dimensions;
 
-         if (MAX_CANVAS_HEIGHT / MAX_CANVAS_WIDTH < value.h / value.w) {
-            minimapScale = MAX_CANVAS_HEIGHT / value.h;
+         if (path === 'w') {
+            dimensions = {
+               w: value,
+               h: model.get('_page.workspace.h')
+            }
+         } else if (path === 'h') {
+            dimensions = {
+               w: model.get('_page.workspace.w'),
+               h: value
+            }
+         } else if (path === '') {
+            dimensions = value;
+         }
+
+         if (MAX_CANVAS_HEIGHT / MAX_CANVAS_WIDTH < dimensions.h / dimensions.w) {
+            minimapScale = MAX_CANVAS_HEIGHT / dimensions.h;
             h = MAX_CANVAS_HEIGHT;
-            w = value.w * minimapScale;
+            w = dimensions.w * minimapScale;
          } else {
-            minimapScale = MAX_CANVAS_WIDTH / value.w;
-            h = value.h * minimapScale;
+            minimapScale = MAX_CANVAS_WIDTH / dimensions.w;
+            h = dimensions.h * minimapScale;
             w = MAX_CANVAS_WIDTH;
          }
 
