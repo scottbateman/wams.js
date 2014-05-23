@@ -100,6 +100,7 @@ racer.ready(function(model) {
       });
       model.ref('_page.me', room + '.users.' + id);
       model.ref('_page.screen', room + '.screens.' + id);
+      model.ref('_page.settings', room + '.settings');
 
       window.onbeforeunload = function() {
          model.del(room + '.users.' + id);
@@ -158,7 +159,7 @@ racer.ready(function(model) {
          var id, screen, color,
             screens = model.get(room + '.screens'),
             clients = model.get(room + '.users'),
-            minimapSettings = model.get(room + '.minimap');
+            drawGap = model.get('_page.settings.minimap.gapBetweenClients');
 
          for (id in screens) {
             if (screens.hasOwnProperty(id)) {
@@ -168,7 +169,7 @@ racer.ready(function(model) {
                ctx.beginPath();
                   ctx.strokeStyle = color;
                   ctx.setLineDash([7, 3]);
-                  if (minimapSettings.gapBetweenClients) {
+                  if (drawGap) {
                      ctx.rect(screen.x * minimapScale + 1,
                         screen.y * minimapScale + 1,
                         screen.w * minimapScale * screen.s / 100 - 2,
@@ -204,7 +205,7 @@ racer.ready(function(model) {
          canvas.height = canvas.height;
          ctx.translate(0.5, 0.5);
          drawClients(ctx);
-         if (model.get(room + '.minimap.showBalls')) {
+         if (model.get('_page.settings.minimap.showElements')) {
             drawBalls(ctx);
          }
       }

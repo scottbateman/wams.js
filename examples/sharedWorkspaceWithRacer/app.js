@@ -75,8 +75,8 @@ model.subscribe(roomPath, function(err) {
       model.set(roomPath + '.workspace', {});
    }
 
-   model.set(roomPath + '.minimap.showBalls', showBallsOnMinimap);
-   model.set(roomPath + '.minimap.gapBetweenClients', gapBetweenClients);
+   model.set(roomPath + '.settings.minimap.showElements', showElementsOnMinimap);
+   model.set(roomPath + '.settings.minimap.gapBetweenClients', gapBetweenClients);
 
    if (resetBalls || model.get(roomPath + ".elements") === undefined) {
       var elements = [];
