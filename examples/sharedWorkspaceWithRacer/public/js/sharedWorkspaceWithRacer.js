@@ -128,6 +128,35 @@ racer.ready(function(model) {
       model.ref('_page.settings', room + '.settings');
       model.ref('_page.workspace', room + '.workspace');
 
+      model.fn('convertElements', function (els) {//{{{
+         if (!els) { return []; }
+
+         var s = model.get('_page.me.screen'),
+            r = [];
+
+         els.forEach(function(el) {
+            el = clone(el);
+            el.x = (el.x - s.x) / (s.s / 100);
+            el.y = (el.y - s.y) / (s.s / 100);
+            el.w = el.w / (s.s / 100);
+            el.h = el.h / (s.s / 100);
+
+            if (el.x + el.w > 0 &&
+                el.y + el.h > 0 &&
+                el.x < s.w &&
+                el.y < s.h) {
+               r.push(el);
+            }
+         });
+
+         return r;
+      });//}}}
+
+      function updateElements() {
+         var convertedEls = model.evaluate('convertElements', room + '.elements');
+         model.set('_page.elements', convertedEls);
+      }
+
       window.onbeforeunload = function() {
          model.del(room + '.users.' + id);
          model.removeRef(room + '.screens.' + id);
