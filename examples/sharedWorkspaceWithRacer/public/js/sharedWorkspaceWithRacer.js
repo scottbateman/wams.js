@@ -69,6 +69,12 @@ function showBalls(elements) {
    });
 }
 
+var MAX_CANVAS_HEIGHT = 450,
+   MAX_CANVAS_WIDTH = 250,
+   canvas = document.getElementById('minimap'),
+   ctx = canvas.getContext('2d'),
+   minimapScale;
+
 racer.ready(function(model) {
    var room = 'sharedWorkspace';
    model.subscribe(room, function() {
@@ -130,6 +136,25 @@ racer.ready(function(model) {
 //             ctx.translate(0.5, 0.5);
 //
 //       });
+
+      model.on('change', room + '.workspace', function(value, previous, passed) {
+         if (!value.w || !value.h) { return; }
+
+         var w, h;
+
+         if (MAX_CANVAS_HEIGHT / MAX_CANVAS_WIDTH < value.h / value.w) {
+            minimapScale = MAX_CANVAS_HEIGHT / value.h;
+            h = MAX_CANVAS_HEIGHT;
+            w = value.w * minimapScale;
+         } else {
+            minimapScale = MAX_CANVAS_WIDTH / value.w;
+            h = value.h * minimapScale;
+            w = MAX_CANVAS_WIDTH;
+         }
+
+         canvas.width = w;
+         canvas.height = h;
+      });
    });
 });
 
