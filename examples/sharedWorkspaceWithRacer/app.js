@@ -63,7 +63,7 @@ var roomPath = 'sharedWorkspace';
 
 var resetUsers = true;
 var resetBalls = true;
-var showBallsOnMinimap = true;
+var showElementsOnMinimap = true;
 var gapBetweenClients = true;
 
 model.subscribe(roomPath, function(err) {

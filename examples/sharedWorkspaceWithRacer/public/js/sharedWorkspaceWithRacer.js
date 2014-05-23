@@ -53,7 +53,7 @@ function extractColor(data) {
    return color;
 }
 
-function showBalls(elements) {
+function showElements(elements) {
    elements.forEach(function (element) {
       var elem = document.createElement(element.tag),
          attr;
@@ -112,7 +112,7 @@ racer.ready(function(model) {
          userID.text( model.get('_page.me.name') );
          userID.css({ background: model.get('_page.me.color') });
          displayScreenMode( model.get('_page.screen') );
-         showBalls( model.get(room + '.elements') );
+         showElements( model.get(room + '.elements') );
       });
 
       $(window).resize(function() {
