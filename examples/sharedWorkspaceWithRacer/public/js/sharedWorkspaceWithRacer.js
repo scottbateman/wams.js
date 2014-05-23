@@ -71,6 +71,9 @@ function showBalls(elements) {
 
 var MAX_CANVAS_HEIGHT = 450,
    MAX_CANVAS_WIDTH = 250,
+   MIN_SCALE = 25,
+   MAX_SCALE = 500,
+   SCALE_DELTA = 5,
    canvas = document.getElementById('minimap'),
    ctx = canvas.getContext('2d'),
    minimapScale;
@@ -115,6 +118,37 @@ racer.ready(function(model) {
          model.set('_page.screen.w', window.innerWidth);
          model.set('_page.screen.h', window.innerHeight);
       });
+
+      function rescaleElements() {
+         var scale = model.get('_page.screen.s'),
+            elements = model.get(room + '.elements');
+         elements.forEach(function(element) {
+            var elem = document.getElementById(element.attributes.id);
+            if (elem) {
+               elem = $(elem);
+               elem.css({
+                  x: element.x * scale / 100,
+                  y: element.y * scale / 100,
+                  width: element.w * scale / 100,
+                  height: element.h * scale / 100,
+                  borderRadius: +elem.css('width') / 2
+               });
+            }
+         });
+      }
+      function onMouseWheel(ev) {
+         var screen = model.get('_page.screen');
+         if ((screen.s === MIN_SCALE && ev.wheelDeltaY > 0) ||
+            (screen.s > MIN_SCALE && screen.s < MAX_SCALE && ev.whellDeltaY !== 0) ||
+            (screen.s === MAX_SCALE && ev.wheelDeltaY < 0))
+         {
+            var delta = Math.floor(ev.wheelDeltaY / 120);
+            model.increment('_page.screen.s', SCALE_DELTA * delta);
+            rescaleElements(SCALE_DELTA * delta);
+         }
+      }
+      var html = document.getElementsByTagName('html')[0];
+      html.addEventListener('mousewheel', onMouseWheel, false);
 
       model.on('change', '_page.screen**', function() {
          displayScreenMode( model.get('_page.screen') );
