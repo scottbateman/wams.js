@@ -51,19 +51,28 @@ var httpServer = http.createServer(serverFunc).listen(3000);
 // Start WAMS using the HTTP-server
 WAMS.listen(httpServer);
 
+// WAMS Callback functions for different signals
 WAMS.on("newCard", onNewCard);
+WAMS.on("newViewSpace", onNewViewSpace);
 WAMS.on("updateUserView", onUpdateUserView);
 WAMS.on("updateCard", onUpdateCard);
+WAMS.on("removeCard", onRemoveCard);
+WAMS.on("needOldInfo", onNeedOldInfo);
+WAMS.on("oldInfo", onOldInfo);
 WAMS.on("consoleLog", onConsoleLog);
-WAMS.on("needOldCards", onNeedOldCards);
-WAMS.on("oldCards", onOldCards);
 
 var cardID = 0;
-
 function onNewCard(data) {
 	data.data.id = cardID;
 	cardID++;
 	WAMS.emit("newCard", data);
+}
+
+var viewSpaceID = 0;
+function onNewViewSpace(data){
+	data.data.id = viewSpaceID;
+	viewSpaceID++;
+	WAMS.emit("newViewSpace", data);
 }
 
 function onUpdateUserView(data) {
@@ -74,14 +83,18 @@ function onUpdateCard(data){
 	WAMS.emit("updateCard", data);
 }
 
+function onRemoveCard(data){
+	WAMS.emit("removeCard", data);
+}
+
+function onNeedOldInfo(position){
+	WAMS.emit("needOldInfo", position);
+}
+
+function onOldInfo(data){
+	WAMS.emit("oldInfo", data);
+}
+
 function onConsoleLog(consoleMessage){
 	console.log(consoleMessage.source+ ": " + consoleMessage.data);
-}
-
-function onNeedOldCards(position){
-	WAMS.emit("needOldCards", position);
-}
-
-function onOldCards(data){
-	WAMS.emit("oldCards", data);
 }
