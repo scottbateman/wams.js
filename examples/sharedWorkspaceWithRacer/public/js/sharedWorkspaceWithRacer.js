@@ -464,10 +464,82 @@ racer.ready(function(model) {
          model.set('_page.me.screen.s', 100);
       }
       function onElementTouch(ev) {
+         var el, i,
+            touch = ev.gesture.touches[0],
+            target = ev.target,
+            els = model.get(room + '.elements'),
+            currentLockID,
+            relTouchX = ev.gesture.touches[0].pageX - $(target).offset().left,
+            relTouchY = ev.gesture.touches[0].pageY - $(target).offset().top;
+
+         for ( i = 0; i < els.length; i++ ) {
+            if (els[i].attributes.id === target.id) {
+               break;
+            }
+         }
+
+         currentLockID = els[i].attributes['data-lock'];
+         if (currentLockID === '') {
+            model.set(room + '.elements.' + i + '.attributes.data-lock', id);
+            model.set('_page.tmp.elementRelativeTouchPoint', {x: relTouchX, y: relTouchY});
+         }
+
+         wams.MTObjects.forEach(function(mt) {
+            if (mt.element.nodeName === '#document') {
+               mt.off('drag', onDocumentDrag);
+            }
+         });
       }
       function onElementDrag(ev) {
+         var el, i,
+            touch = ev.gesture.touches[0],
+            target = ev.target,
+            els = model.get(room + '.elements'),
+            currentLockID,
+            x = ev.gesture.touches[0].pageX,
+            y = ev.gesture.touches[0].pageY,
+            touchP = model.get('_page.tmp.elementRelativeTouchPoint'),
+            scr = model.get('_page.me.screen'),
+            relativeElementXY;
+
+         for ( i = 0; i < els.length; i++ ) {
+            if (els[i].attributes.id === target.id) {
+               break;
+            }
+         }
+
+         currentLockID = els[i].attributes['data-lock'];
+         if (currentLockID === id) {
+            model.set(room + '.elements.' + i + '.x', scr.x + (x - touchP.x));
+            model.set(room + '.elements.' + i + '.y', scr.y + (y - touchP.y));
+         }
       }
       function onElementRelease(ev) {
+         var el, i,
+            touch = ev.gesture.touches[0],
+            target = ev.target,
+            els = model.get(room + '.elements'),
+            currentLockID;
+
+         for ( i = 0; i < els.length; i++ ) {
+            if (els[i].attributes.id === target.id) {
+               break;
+            }
+         }
+
+         currentLockID = els[i].attributes['data-lock'];
+         if (currentLockID === id) {
+            model.set(room + '.elements.' + i + '.attributes.data-lock', "");
+            model.del('_page.tmp.elementRelativeTouchPoint');
+         }
+
+         setTimeout(function() {
+            wams.MTObjects.forEach(function(mt) {
+               if (mt.element.nodeName === '#document') {
+                  mt.on('drag', onDocumentDrag);
+               }
+            });
+         }, 50);
       }
    });
 });
