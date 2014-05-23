@@ -367,9 +367,12 @@ racer.ready(function(model) {
       }
 
       function restartMT() {
+         var options = {
+            preventDefault: true
+         };
          wams.dispose();
 
-         wams.addMT(document);
+         wams.addMT(document, options);
          var rst_wrkspc_btn = document.getElementById('rst_wrkspc_btn');
          wams.addMT(rst_wrkspc_btn);
 
