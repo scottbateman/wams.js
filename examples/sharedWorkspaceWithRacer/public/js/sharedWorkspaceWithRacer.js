@@ -240,3 +240,11 @@ racer.ready(function(model) {
    });
 });
 
+$('#rst_wrkspc_btn').click(function() {
+   model.set('_page.me.screen.x', 0);
+   model.set('_page.me.screen.y', 0);
+   model.set('_page.me.screen.w', window.innerWidth);
+   model.set('_page.me.screen.h', window.innerHeight);
+   model.set('_page.me.screen.s', 100);
+})
+
