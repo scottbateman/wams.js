@@ -92,6 +92,42 @@ model.subscribe(roomPath, function(err) {
       }
       model.set(roomPath + '.elements', elements);
    }
+
+   model.fn('workspaceBorder', function(screens) {
+      if (isEmpty(screens)) { return { x: 0, y: 0, w: 0, h: 0 }; }
+
+      var id, screen, workspace = {
+         x: Infinity,
+         y: Infinity,
+         w: -Infinity,
+         h: -Infinity
+      };
+
+      for (id in screens) {
+         if (screens.hasOwnProperty(id)) {
+            screen = screens[id];
+
+            if (screen.x < workspace.x) {
+               workspace.x = screen.x;
+            }
+            if (screen.y < workspace.y) {
+               workspace.y = screen.y;
+            }
+            if (screen.x + screen.w * screen.s / 100 > workspace.x + workspace.w) {
+               workspace.w = screen.x + screen.w * screen.s / 100 - workspace.x;
+            }
+            if (screen.y + screen.h * screen.s / 100 > workspace.y + workspace.h) {
+               workspace.h = screen.y + screen.h * screen.s / 100 - workspace.y;
+            }
+         }
+      }
+
+      return workspace;
+   });
+   model.on('change', roomPath + '.screens**', function() {
+      var workspace = model.evaluate('workspaceBorder', roomPath + '.screens');
+      model.set(roomPath + '.workspace', workspace);
+   });
 });
 
 function createBundle(req, res, next) {

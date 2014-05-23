@@ -36,33 +36,10 @@ racer.ready(function(model) {
       window.model = model;
       // model = model.at('sharedWorkspace');
 
-      model.fn('outerBorder', function(screens) {//{{{
-         var id, screen, workspace = {
-            x: Infinity,
-            y: Infinity,
-            w: -Infinity,
-            h: -Infinity,
-            s: 1
-         };
 
-         for (id in screens) {
-            if (screens.hasOwnProperty(id)) {
-               screen = screens[id];
 
-               if (screen.x <= workspace.x) { workspace.x = screen.x; }
-               if (screen.y <= workspace.y) { workspace.y = screen.y; }
-               if (screen.x + screen.w >= workspace.x + workspace.w) {
-                  workspace.w = screen.x + screen.w - workspace.x;
-               }
-               if (screen.y + screen.h >= workspace.y + workspace.h) {
-                  workspace.h = screen.y + screen.h - workspace.y;
-               }
-            }
          }
 
-         return workspace;
-      });//}}}
-      model.start('outerBorder', room + '.workspace', room + '.screens');
 
       var id = model.id();
       model.add(room + '.users', {
