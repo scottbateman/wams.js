@@ -410,7 +410,8 @@ racer.ready(function(model) {
             tmp = model.get('_page.tmp'),
             scrBefore = tmp.scrBeforeMove,
             pt = tmp.touchPoint,
-            dx = x - pt.x, dy = y - pt.y;
+            dx = (x - pt.x) * scr.s / 100,
+            dy = (y - pt.y) * scr.s / 100;
 
          model.increment('_page.me.screen.x', (scrBefore.x - dx) - scr.x);
          model.increment('_page.me.screen.y', (scrBefore.y - dy) - scr.y);
