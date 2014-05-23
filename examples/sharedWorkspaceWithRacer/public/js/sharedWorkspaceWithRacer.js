@@ -113,40 +113,39 @@ racer.ready(function(model) {
       model.add(room + '.users', {
          id: id,
          color: rndColor,
-         name: rndName
+         name: rndName,
+         screen: {
+            w: window.innerWidth,
+            h: window.innerHeight,
+            x: 0,
+            y: 0,
+            s: 100
+         }
       });
-      model.add(room + '.screens', {
-         id: id,
-         w: window.innerWidth,
-         h: window.innerHeight,
-         x: 0,
-         y: 0,
-         s: 100
-      });
+      model.ref(room + '.screens.' + id, room + '.users.' + id + '.screen');
       model.ref('_page.me', room + '.users.' + id);
-      model.ref('_page.screen', room + '.screens.' + id);
       model.ref('_page.settings', room + '.settings');
 
       window.onbeforeunload = function() {
          model.del(room + '.users.' + id);
-         model.del(room + '.screens.' + id);
+         model.removeRef(room + '.screens.' + id);
       };
 
       $(document).ready(function() {
          var userID = $('#userID');
          userID.text( model.get('_page.me.name') );
          userID.css({ background: model.get('_page.me.color') });
-         displayScreenMode( model.get('_page.screen') );
+         displayScreenMode( model.get('_page.me.screen') );
          showElements( model.get(room + '.elements') );
       });
 
       $(window).resize(function() {
-         model.set('_page.screen.w', window.innerWidth);
-         model.set('_page.screen.h', window.innerHeight);
+         model.set('_page.me.screen.w', window.innerWidth);
+         model.set('_page.me.screen.h', window.innerHeight);
       });
 
       function rescaleElements() {
-         var scale = model.get('_page.screen.s'),
+         var scale = model.get('_page.me.screen.s'),
             elements = model.get(room + '.elements');
          elements.forEach(function(element) {
             var elem = document.getElementById(element.attributes.id);
@@ -163,13 +162,13 @@ racer.ready(function(model) {
          });
       }
       function onMouseWheel(ev) {
-         var screen = model.get('_page.screen');
+         var screen = model.get('_page.me.screen');
          if ((screen.s === MIN_SCALE && ev.wheelDeltaY > 0) ||
             (screen.s > MIN_SCALE && screen.s < MAX_SCALE && ev.whellDeltaY !== 0) ||
             (screen.s === MAX_SCALE && ev.wheelDeltaY < 0))
          {
             var delta = Math.floor(ev.wheelDeltaY / 120);
-            model.increment('_page.screen.s', SCALE_DELTA * delta);
+            model.increment('_page.me.screen.s', SCALE_DELTA * delta);
             rescaleElements(SCALE_DELTA * delta);
          }
       }
@@ -182,14 +181,13 @@ racer.ready(function(model) {
 
       function drawClients() {
          var id, screen, color,
-            screens = model.get(room + '.screens'),
-            clients = model.get(room + '.users'),
+            users = model.get('_page.users'),
             drawGap = model.get('_page.settings.minimap.gapBetweenClients');
 
-         for (id in screens) {
-            if (screens.hasOwnProperty(id)) {
-               screen = screens[id];
-               color = clients[id].color;
+         for (id in users) {
+            if (users.hasOwnProperty(id)) {
+               screen = users[id].screen;
+               color = users[id].color;
 
                ctx.beginPath();
                   ctx.strokeStyle = color;
