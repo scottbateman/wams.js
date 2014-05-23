@@ -97,12 +97,6 @@ racer.ready(function(model) {
       });
       model.ref('_page.me', room + '.users.' + id);
       model.ref('_page.screen', room + '.screens.' + id);
-      model.ref('_page.workspace', room + '.workspace');
-      model.ref('_page.elements', room + '.elements');
-
-      // model.on('all', function() {
-      //    console.log(arguments);
-      // });
 
       window.onbeforeunload = function() {
          model.del(room + '.users.' + id);
@@ -113,7 +107,6 @@ racer.ready(function(model) {
          var userID = $('#userID');
          userID.text( model.get('_page.me.name') );
          userID.css({ background: model.get('_page.me.color') });
-
          displayScreenMode( model.get('_page.screen') );
          showBalls( model.get(room + '.elements') );
       });
@@ -127,15 +120,6 @@ racer.ready(function(model) {
          displayScreenMode( model.get('_page.screen') );
       });
 
-//       model.on('change', '_page.workspace**', function(changed) {
-//          var path = '_page.workspace.' + changed[0],
-//             newValue = changed[1],
-//             oldValue = changed[2],
-//             ctx = document.getElementById('minimap').getContext('2d');
-//
-//             ctx.translate(0.5, 0.5);
-//
-//       });
 
       model.on('change', room + '.workspace', function(value, previous, passed) {
          if (!value.w || !value.h) { return; }
