@@ -150,21 +150,15 @@ function isEmpty(map) {
 }
 
 function renderRacer(req, res, next) {
-   // var model = req.getModel();
-
-   model.subscribe(roomPath, function(err) {
+   model.bundle(function(err, bundle) {
       if (err) { return next(err); }
 
-      model.bundle(function(err, bundle) {
-         if (err) { return next(err); }
-
-         var settings = {
-            title: 'Shared space between clients with racer',
-            bundle: JSON.stringify(bundle)
-         };
-         console.log(settings.bundle);
-         res.render('sharedWorkspaceWithRacer', settings);
-      });
+      var settings = {
+         title: 'Shared space between clients with racer',
+         bundle: JSON.stringify(bundle)
+      };
+      console.log(settings.bundle);
+      res.render('sharedWorkspaceWithRacer', settings);
    });
 }
 
