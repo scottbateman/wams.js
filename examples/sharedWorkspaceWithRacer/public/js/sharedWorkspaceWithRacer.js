@@ -1,6 +1,6 @@
 var racer = require('racer');
 var $ = require('jquery');
-var wams = require('wams');
+var WAMS = require('wams');
 
 var rndColor = (function() {
    var bg_colour = Math.floor(Math.random() * 16777215).toString(16);
@@ -117,6 +117,7 @@ var MAX_CANVAS_HEIGHT = 450,
    MIN_SCALE = 25,
    MAX_SCALE = 500,
    SCALE_DELTA = 5,
+   wams = new WAMS({}),
    canvas = document.getElementById('minimap'),
    ctx = canvas.getContext('2d'),
    minimapScale;
@@ -227,6 +228,8 @@ racer.ready(function(model) {
 
          updateElements();
          showElements( model.get('_page.elements') );
+
+         restartMT();
       });
 
       $(window).resize(function() {
@@ -305,8 +308,41 @@ racer.ready(function(model) {
          }
       }
 
+      function restartMT() {
+         wams.dispose();
 
+         wams.addMT(document);
 
+         var balls = document.getElementsByClassName('ball');
+         wams.addMT(balls);
+
+         wams.MTObjects.forEach(function(mt) {
+            if (mt.element.nodeName === '#document') {
+               mt.on('touch', onDocumentTouch);
+               mt.on('drag', onDocumentDrag);
+               mt.on('release', onDocumentRelease);
+            } else if (mt.element.tagName === 'DIV' &&
+                       mt.element.className.indexOf('ball') > -1) {
+               mt.on('touch', onElementTouch);
+               mt.on('drag', onElementDrag);
+               mt.on('release', onElementRelease);
+            }
+         })
+      }
+
+      function onDocumentTouch(ev) {
+
+      }
+      function onDocumentDrag(ev) {
+      }
+      function onDocumentRelease(ev) {
+      }
+      function onElementTouch(ev) {
+      }
+      function onElementDrag(ev) {
+      }
+      function onElementRelease(ev) {
+      }
    });
 });
 
