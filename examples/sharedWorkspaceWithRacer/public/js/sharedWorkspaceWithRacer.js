@@ -154,6 +154,60 @@ racer.ready(function(model) {
          displayScreenMode( model.get('_page.screen') );
       });
 
+      function drawClients() {
+         var id, screen, color,
+            screens = model.get(room + '.screens'),
+            clients = model.get(room + '.users'),
+            minimapSettings = model.get(room + '.minimap');
+
+         for (id in screens) {
+            if (screens.hasOwnProperty(id)) {
+               screen = screens[id];
+               color = clients[id].color;
+
+               ctx.beginPath();
+                  ctx.strokeStyle = color;
+                  ctx.setLineDash([7, 3]);
+                  if (minimapSettings.gapBetweenClients) {
+                     ctx.rect(screen.x * minimapScale + 1,
+                        screen.y * minimapScale + 1,
+                        screen.w * minimapScale * screen.s / 100 - 2,
+                        screen.h * minimapScale * screen.s / 100 - 2);
+                  } else {
+                     ctx.rect(screen.x * minimapScale,
+                        screen.y * minimapScale,
+                        screen.w * minimapScale * screen.s / 100,
+                        screen.h * minimapScale * screen.s / 100);
+                  }
+               ctx.stroke();
+            }
+         }
+      }
+      function drawBalls() {
+         var color, x, y, r,
+            elements = model.get(room + '.elements');
+
+         elements.forEach(function(element) {
+            color = extractColor(element);
+
+            ctx.beginPath();
+               ctx.fillStyle = color;
+               x = element.x + element.w / 2;
+               y = element.y + element.h / 2;
+               r = element.w / 2;
+               ctx.arc(x * minimapScale, y * minimapScale, r * minimapScale, 0, 360);
+            ctx.fill();
+         });
+      }
+      function drawMinimap() {
+         canvas.width = canvas.width;
+         canvas.height = canvas.height;
+         ctx.translate(0.5, 0.5);
+         drawClients(ctx);
+         if (model.get(room + '.minimap.showBalls')) {
+            drawBalls(ctx);
+         }
+      }
 
       model.on('change', room + '.workspace', function(value, previous, passed) {
          if (!value.w || !value.h) { return; }
