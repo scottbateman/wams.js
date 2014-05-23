@@ -30,8 +30,28 @@ function displayScreenMode(screen) {
    );
 }
 
+function extractColor(data) {
+   var needToDelete = false, elem = $('#' + data.attributes.id);
 
+   // object does not exist
+   if (!elem.length) {
+      needToDelete = true;
 
+      elem = document.createElement(data.tag);
+      elem.setAttribute('id', data.attributes.id);
+
+      var body = document.getElementsByTagName('body');
+      body[0].appendChild(elem);
+
+      elem = $(elem);
+   }
+
+   var color = elem.css('background-color');
+   if (needToDelete) {
+      elem.remove();
+   }
+   return color;
+}
 
 function showBalls(elements) {
    elements.forEach(function (element) {
