@@ -115,7 +115,9 @@ racer.ready(function(model) {
       $(window).resize(function() {
          model.set('_page.screen.w', window.innerWidth);
          model.set('_page.screen.h', window.innerHeight);
+      });
 
+      model.on('change', '_page.screen**', function() {
          displayScreenMode( model.get('_page.screen') );
       });
 
