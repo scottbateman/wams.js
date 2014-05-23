@@ -23,12 +23,13 @@ var rndName = (function() {
 
 function clone(obj) {
    // Handle the 2 simple types, and null or undefined
-   if (null == obj || "object" != typeof obj) return obj;
+   if (null === obj || "object" !== typeof obj) { return obj; }
 
+   var copy, i, len, attr;
    // Handle Array
    if (obj instanceof Array) {
-      var copy = [];
-      for (var i = 0, len = obj.length; i < len; i++) {
+      copy = [];
+      for (i = 0, len = obj.length; i < len; i++) {
          copy[i] = clone(obj[i]);
       }
       return copy;
@@ -36,9 +37,9 @@ function clone(obj) {
 
    // Handle Object
    if (obj instanceof Object) {
-      var copy = {};
-      for (var attr in obj) {
-         if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+      copy = {};
+      for (attr in obj) {
+         if (obj.hasOwnProperty(attr)) { copy[attr] = clone(obj[attr]); }
       }
       return copy;
    }
@@ -182,7 +183,7 @@ racer.ready(function(model) {
       });
 
       model.on('change', room + '.elements**', function() {
-         updateElements()
+         updateElements();
          drawMinimap();
       });
 
@@ -199,12 +200,12 @@ racer.ready(function(model) {
             dimensions = {
                w: value,
                h: model.get('_page.workspace.h')
-            }
+            };
          } else if (path === 'h') {
             dimensions = {
                w: model.get('_page.workspace.w'),
                h: value
-            }
+            };
          } else if (path === '') {
             dimensions = value;
          }
@@ -345,7 +346,7 @@ racer.ready(function(model) {
             } else if (mt.element.id === 'rst_wrkspc_btn') {
                mt.on('touch', onButtonPress);
             }
-         })
+         });
       }
 
       function onDocumentTouch(ev) {
