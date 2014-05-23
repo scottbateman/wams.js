@@ -234,23 +234,6 @@ racer.ready(function(model) {
          model.set('_page.me.screen.h', window.innerHeight);
       });
 
-      function rescaleElements() {
-         var scale = model.get('_page.me.screen.s'),
-            elements = model.get(room + '.elements');
-         elements.forEach(function(element) {
-            var elem = document.getElementById(element.attributes.id);
-            if (elem) {
-               elem = $(elem);
-               elem.css({
-                  x: element.x * scale / 100,
-                  y: element.y * scale / 100,
-                  width: element.w * scale / 100,
-                  height: element.h * scale / 100,
-                  borderRadius: +elem.css('width') / 2
-               });
-            }
-         });
-      }
       function onMouseWheel(ev) {
          var screen = model.get('_page.me.screen');
          if ((screen.s === MIN_SCALE && ev.wheelDeltaY > 0) ||
@@ -259,7 +242,6 @@ racer.ready(function(model) {
          {
             var delta = Math.floor(ev.wheelDeltaY / 120);
             model.increment('_page.me.screen.s', SCALE_DELTA * delta);
-            rescaleElements(SCALE_DELTA * delta);
          }
       }
       var html = document.getElementsByTagName('html')[0];
