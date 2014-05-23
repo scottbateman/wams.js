@@ -243,6 +243,10 @@ racer.ready(function(model) {
          drawMinimap();
       });
 
+      // model.on('change', '_page.users**', function() {
+      //    drawMinimap();
+      // });
+
       // model.on('change', room + '.minimap**', function() {
       //    drawMinimap();
       // });
