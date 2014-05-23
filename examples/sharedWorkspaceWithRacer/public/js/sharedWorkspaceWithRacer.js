@@ -242,6 +242,8 @@ racer.ready(function(model) {
       function drawClients() {
          var id, screen, color,
             users = model.get('_page.users'),
+            w = model.get('_page.workspace'),
+            dx = -w.x, dy = -w.y,
             drawGap = model.get('_page.settings.minimap.gapBetweenClients');
 
          for (id in users) {
@@ -253,13 +255,13 @@ racer.ready(function(model) {
                   ctx.strokeStyle = color;
                   ctx.setLineDash([7, 3]);
                   if (drawGap) {
-                     ctx.rect(screen.x * minimapScale + 1,
-                        screen.y * minimapScale + 1,
+                     ctx.rect((dx + screen.x) * minimapScale + 1,
+                        (dy + screen.y) * minimapScale + 1,
                         screen.w * minimapScale * screen.s / 100 - 2,
                         screen.h * minimapScale * screen.s / 100 - 2);
                   } else {
-                     ctx.rect(screen.x * minimapScale,
-                        screen.y * minimapScale,
+                     ctx.rect((dx + screen.x) * minimapScale,
+                        (dy + screen.y) * minimapScale,
                         screen.w * minimapScale * screen.s / 100,
                         screen.h * minimapScale * screen.s / 100);
                   }
@@ -269,6 +271,8 @@ racer.ready(function(model) {
       }
       function drawBalls() {
          var color, x, y, r,
+            w = model.get('_page.workspace'),
+            dx = -w.x, dy = -w.y,
             elements = model.get(room + '.elements');
 
          elements.forEach(function(element) {
@@ -276,8 +280,8 @@ racer.ready(function(model) {
 
             ctx.beginPath();
                ctx.fillStyle = color;
-               x = element.x + element.w / 2;
-               y = element.y + element.h / 2;
+               x = dx + element.x + element.w / 2;
+               y = dy + element.y + element.h / 2;
                r = element.w / 2;
                ctx.arc(x * minimapScale, y * minimapScale, r * minimapScale, 0, 360);
             ctx.fill();
