@@ -226,6 +226,15 @@ racer.ready(function(model) {
 
          canvas.width = w;
          canvas.height = h;
+
+         drawMinimap();
+      });
+
+      model.on('change', room + '.elements**', function() {
+         drawMinimap();
+      });
+      model.on('change', room + '.minimap**', function() {
+         drawMinimap();
       });
    });
 });
