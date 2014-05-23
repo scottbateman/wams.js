@@ -82,7 +82,11 @@ model.subscribe(roomPath, function(err) {
                id: 'ball' + i,
                class: 'ball',
                'data-lock': ''
-            }
+            },
+            x: (i - 1 - 2 * Math.floor((i - 1) / 2)) * 125 + 100,
+            y: Math.floor((i - 1) / 2) * 125 + 300,
+            w: 100,
+            h: 100
          };
          elements.push(element);
       }
