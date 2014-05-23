@@ -157,6 +157,39 @@ racer.ready(function(model) {
          model.set('_page.elements', convertedEls);
       }
 
+      model.on('change', '_page.me.screen**', function() {
+         displayScreenMode( model.get('_page.me.screen') );
+      });
+
+      model.on('change', room + '.elements**', function() {
+         drawMinimap();
+      });
+
+      model.on('change', room + '.workspace', function(value, previous, passed) {
+         if (!value.w || !value.h) { return; }
+
+         var w, h;
+
+         if (MAX_CANVAS_HEIGHT / MAX_CANVAS_WIDTH < value.h / value.w) {
+            minimapScale = MAX_CANVAS_HEIGHT / value.h;
+            h = MAX_CANVAS_HEIGHT;
+            w = value.w * minimapScale;
+         } else {
+            minimapScale = MAX_CANVAS_WIDTH / value.w;
+            h = value.h * minimapScale;
+            w = MAX_CANVAS_WIDTH;
+         }
+
+         canvas.width = w;
+         canvas.height = h;
+
+         drawMinimap();
+      });
+
+      // model.on('change', room + '.minimap**', function() {
+      //    drawMinimap();
+      // });
+
       window.onbeforeunload = function() {
          model.del(room + '.users.' + id);
          model.removeRef(room + '.screens.' + id);
@@ -205,10 +238,6 @@ racer.ready(function(model) {
       }
       var html = document.getElementsByTagName('html')[0];
       html.addEventListener('mousewheel', onMouseWheel, false);
-
-      model.on('change', '_page.screen**', function() {
-         displayScreenMode( model.get('_page.screen') );
-      });
 
       function drawClients() {
          var id, screen, color,
@@ -264,33 +293,8 @@ racer.ready(function(model) {
          }
       }
 
-      model.on('change', room + '.workspace', function(value, previous, passed) {
-         if (!value.w || !value.h) { return; }
 
-         var w, h;
 
-         if (MAX_CANVAS_HEIGHT / MAX_CANVAS_WIDTH < value.h / value.w) {
-            minimapScale = MAX_CANVAS_HEIGHT / value.h;
-            h = MAX_CANVAS_HEIGHT;
-            w = value.w * minimapScale;
-         } else {
-            minimapScale = MAX_CANVAS_WIDTH / value.w;
-            h = value.h * minimapScale;
-            w = MAX_CANVAS_WIDTH;
-         }
-
-         canvas.width = w;
-         canvas.height = h;
-
-         drawMinimap();
-      });
-
-      model.on('change', room + '.elements**', function() {
-         drawMinimap();
-      });
-      model.on('change', room + '.minimap**', function() {
-         drawMinimap();
-      });
    });
 });
 
