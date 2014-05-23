@@ -388,6 +388,9 @@ racer.ready(function(model) {
                mt.on('touch', onDocumentTouch);
                mt.on('drag', onDocumentDrag);
                mt.on('release', onDocumentRelease);
+               mt.on('transformstart', onDocumentTransformStart);
+               mt.on('pinch', onDocumentPinch);
+               mt.on('transformend', onDocumentTransformEnd);
             } else if (mt.element.tagName === 'DIV' &&
                        mt.element.className.indexOf('ball') > -1) {
                mt.on('touch', onElementTouch);
@@ -423,6 +426,35 @@ racer.ready(function(model) {
       function onDocumentRelease(ev) {
          model.del('_page.tmp.touchPoint');
          model.del('_page.tmp.scrBeforeMove');
+      }
+      function onDocumentTransformStart(ev) {
+         var scr = model.get('_page.me.screen');
+
+         model.set('_page.tmp.scaleBeforePinch', scr.s);
+
+         wams.MTObjects.forEach(function(mt) {
+            if (mt.element.nodeName === '#document') {
+               mt.off('drag', onDocumentDrag);
+            }
+         });
+      }
+      function onDocumentPinch(ev) {
+         var pinchScale = 1 / ev.gesture.scale,
+            scaleBeforePinch = model.get('_page.tmp.scaleBeforePinch'),
+            newWorkspaceScale = Math.round(scaleBeforePinch * pinchScale);
+
+         model.set('_page.me.screen.s', newWorkspaceScale);
+      }
+      function onDocumentTransformEnd(ev) {
+         model.del('_page.tmp.scaleBeforePinch');
+
+         setTimeout(function() {
+            wams.MTObjects.forEach(function(mt) {
+               if (mt.element.nodeName === '#document') {
+                  mt.on('drag', onDocumentDrag);
+               }
+            });
+         }, 50);
       }
       function onButtonPress(ev) {
          model.set('_page.me.screen.x', 0);
