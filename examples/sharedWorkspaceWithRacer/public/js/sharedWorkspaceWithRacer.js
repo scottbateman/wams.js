@@ -159,9 +159,11 @@ racer.ready(function(model) {
 
       model.on('change', '_page.me.screen**', function() {
          displayScreenMode( model.get('_page.me.screen') );
+         updateElements();
       });
 
       model.on('change', room + '.elements**', function() {
+         updateElements()
          drawMinimap();
       });
 
@@ -200,7 +202,9 @@ racer.ready(function(model) {
          userID.text( model.get('_page.me.name') );
          userID.css({ background: model.get('_page.me.color') });
          displayScreenMode( model.get('_page.me.screen') );
-         showElements( model.get(room + '.elements') );
+
+         updateElements();
+         showElements( model.get('_page.elements') );
       });
 
       $(window).resize(function() {
