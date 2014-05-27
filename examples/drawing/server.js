@@ -17,7 +17,7 @@ var serverFunc = function (req, res) {
 	var uri = url.parse(req.url).pathname;
 
 	// ---------- Choose your server file here-----------------------------------
-	if (uri == "/") uri = "/models/recursive.html";
+	if (uri == "/") uri = "/models/cooperative.html";
 	// --------------------------------------------------------------------------
 
 	file = fs.readFile(path.join(homeDir, uri), function (err, data) {	
@@ -59,7 +59,10 @@ WAMS.on("updateCard", onUpdateCard);
 WAMS.on("removeCard", onRemoveCard);
 WAMS.on("needOldInfo", onNeedOldInfo);
 WAMS.on("oldInfo", onOldInfo);
+WAMS.on("move", onMove);
 WAMS.on("consoleLog", onConsoleLog);
+WAMS.on("touching", onTouching);
+WAMS.on("released", onReleased);
 
 var cardID = 0;
 function onNewCard(data) {
@@ -95,6 +98,56 @@ function onOldInfo(data){
 	WAMS.emit("oldInfo", data);
 }
 
+
+var p1Touching = false, p2Touching = false;
+function onTouching(position){
+	console.log("\n" + position.source+ ": Is Touching!\n");
+	if(position.data == 1){
+		p1Touching = true;
+	}
+	else if(position.data == 2){
+		p2Touching = true;
+	}
+}
+
+function onReleased(position){
+	console.log("\n" + position.source+ ": Has Released!\n");
+	if(position.data == 1){
+		p1Touching = false;
+		p1Direction = "";
+	}
+	else if(position.data == 2){
+		p2Touching = false;
+		p2Direction = "";
+	}
+}
+
+var p1Direction = "", 
+	p2Direction = "",
+	scaleRate = .03;
+function onMove(data){
+	if(data.data.position == 1){
+		p1Direction = data.data.direction;
+	}
+	else if(data.data.position == 2){
+		p2Direction = data.data.direction;
+	}
+
+	if(p1Touching && p2Touching){
+		if(p1Direction == "left" && p2Direction == "right"){
+			console.log("\nShould Really Be Zooming In Right Now!!\n");
+			WAMS.emit("coopScale", scaleRate);
+		}
+		else if(p1Direction == "right" && p2Direction == "left"){
+			console.log("\nShould Really Be Zooming Out Right Now!!\n");
+			WAMS.emit("coopScale", -scaleRate);
+		}
+	}
+	else{
+		// WAMS.emit("move", data);
+	}
+}
+
 function onConsoleLog(consoleMessage){
-	console.log(consoleMessage.source+ ": " + consoleMessage.data);
+	console.log("\n" + consoleMessage.source+ ": " + consoleMessage.data + "\n");
 }
