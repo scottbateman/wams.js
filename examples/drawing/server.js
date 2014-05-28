@@ -67,6 +67,7 @@ WAMS.on("released", onReleased);
 var cardID = 0;
 function onNewCard(data) {
 	data.data.id = cardID;
+	console.log("\nCreated Card " + cardID);
 	cardID++;
 	WAMS.emit("newCard", data);
 }
@@ -144,10 +145,10 @@ function onMove(data){
 		}
 	}
 	else{
-		// WAMS.emit("move", data);
+		WAMS.emit("move", data);
 	}
 }
 
 function onConsoleLog(consoleMessage){
-	console.log("\n" + consoleMessage.source+ ": " + consoleMessage.data + "\n");
+	console.log("\n" + consoleMessage.source+ ": " + consoleMessage.data);
 }

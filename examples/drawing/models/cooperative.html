@@ -10,7 +10,7 @@
 	<style>
 		* { margin: 0px; padding: 0px; }
 		html, body { width: 90%; height: 90%; }
-		canvas { display:block; background-color: #aabbcc; }
+		canvas { display:block; background-color: #112233; }
 	</style>
 </head>
 
@@ -84,9 +84,9 @@
 		// wams.emit("consoleLog", "Start of View.draw");
 
 		if(typeof wams.uuid == "string" && !setInitialPostion){	// Only set the initial position once/after the wams client server is running
-
 			setInitialPostion = true;
 			this.position = wams.otherClients.length;
+			wams.emit("consoleLog", "New User Has Joined. Position:" + this.position);
 			myPosition = this.position;
 			if(this.position != 0){	// If you are not the overview, get the current information from the overview user
 				wams.emit("needOldInfo", this.position);
@@ -109,10 +109,10 @@
 						for (var i = 0; i < wams.otherClients.length; i++) {
 							if(wams.otherClients[i].view.position == myPosition - 1){
 								otherGuy = i;
-								myView.scaleToUser(i);
+								myView.scaleToUser(otherGuy);
 							}
 						}
-					},1000)
+					},1500)
 				}
 			}
 			this.resizeCanvas();
@@ -323,6 +323,7 @@
 	var scaleRatio = 0,
 		dontMoveToAnchor = true;
 	View.prototype.scaleToUser = function(index){
+		this.moveToXY(0,0);
 		this.move(	wams.otherClients[index].view.x + wams.otherClients[index].view.ew, 
 					wams.otherClients[index].view.y);
 		scaleRatio = this.h/wams.otherClients[index].view.eh;
@@ -442,8 +443,8 @@
 				var x = ev.gesture.center.pageX/myView.scale + myView.x;
 				var y = ev.gesture.center.pageY/myView.scale + myView.y;
 				cardIndex = clickOnCard(x,y);	// Index of the tapped card
-				if(cardIndex == -1){			// If no Card was tapped
-					if(firstTap){				
+				if(cardIndex == -1){ // If no Card was tapped
+					if(firstTap){
 						doubleTap = true;
 						// Do action doubletap, not on a Card
 					}
@@ -463,8 +464,8 @@
 				else{ 	// Clicked on a Card
 					if(firstTap == true && drawMode){				// Doubletap a Card in drawmode to delete it
 						doubleTap = true;
+						wams.emit("consoleLog", "Deleted Card " + cards[cardIndex].id + ".");
 						wams.emit("removeCard", cards[cardIndex]);	// Tell everyone about the Card to delete
-						wams.emit("consoleLog", "Deleted Card.");
 						// Redraw view
 						myView.draw();
 					}
@@ -504,7 +505,30 @@
 						direction : direction,
 						position : myView.position
 					};
-					wams.emit("move", moveXY);
+					if(direction == "left"){
+						if(myView.position == 1){
+							for (var i = 0; i < wams.otherClients.length; i++) {
+								if((wams.otherClients[i].view.position == 2)&&(wams.otherClients[i].view.x + wams.otherClients[i].view.ew + dx < canvasWidth)){
+									wams.emit("move", moveXY);
+								}
+							}		
+						}
+						else if((myView.position == 2)&&(myView.x + myView.ew + dx < canvasWidth)){
+							wams.emit("move", moveXY);
+						}
+					}
+					else if(direction == "right"){
+						if((myView.position == 1)&&(myView.x + dx > 0)){
+							wams.emit("move", moveXY);
+						}
+						else if(myView.position == 2){
+							for (var i = 0; i < wams.otherClients.length; i++) {
+								if((wams.otherClients[i].view.position == 1)&&(wams.otherClients[i].view.x + dx > 0)){
+									wams.emit("move", moveXY);
+								}
+							}
+						}
+					}
 				}
 				else{	// If the drag started on a Card, move the Card
 		   			moveCardToXY(cardIndex, x, y);
@@ -524,7 +548,9 @@
 			case 'transform':
 				var scale = ev.gesture.scale;
 				var newScale = scale * startScale;	// Calculate the new scale
-				//myView.rescale(newScale);			// Rescale the View
+
+				// myView.rescale(newScale);			// Rescale the View
+				
 				break;
 			case 'transformend':
 				startScale = null;
@@ -558,7 +584,6 @@
 
 	// Recieves the newly created card and adds it to Cards array
 	function onNewCard(newCard) {
-		wams.emit("consoleLog", "Got a New Card");
 		var newCard = new Card(newCard.data.x, newCard.data.y, newCard.data.w, newCard.data.h, newCard.data.color, newCard.data.id);
 		cards.push(newCard);
 		// Redraw view
@@ -621,10 +646,8 @@
 	function onOldInfo(oldInfo){
 		if(myView.position != oldInfo.data.destination){
 			// Don't Do Anything, these cards are not for you
-			// wams.emit("consoleLog", "This Info is not for me.");
 		}
 		else{
-			// wams.emit("consoleLog", "Recieved Old Info.");
 			for (var i = 0; i < oldInfo.data.cards.length; i++) {	// Add all the Cards to your Cards array
 				var newCard = new Card( oldInfo.data.cards[i].x, oldInfo.data.cards[i].y,
 										oldInfo.data.cards[i].w, oldInfo.data.cards[i].h,
@@ -643,14 +666,10 @@
 
 	function onCoopScale(scale){
 		if(myView.position != 0){
-			wams.emit("consoleLog", "Trying to Rescale." + scale);
-			if(myView.position == 1){
-				myView.scale += scale;
-				myView.rescale(myView.scale);
-			}
-			else{
+			myView.scale += scale;
+			myView.rescale(myView.scale);
+			if(myView.position == 2){
 				myView.scaleToUser(otherGuy);
-				myView.moveToAchor();
 			}
 		}
 	}
