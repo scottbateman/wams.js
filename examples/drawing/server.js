@@ -16,9 +16,13 @@ var serverFunc = function (req, res) {
 
 	var uri = url.parse(req.url).pathname;
 
-	// ---------- Choose your server file here-----------------------------------
-	if (uri == "/") uri = "/models/cooperative.html";
-	// --------------------------------------------------------------------------
+	// ---------- Choose Your View Model Here ----------
+	if (uri == "/") uri = "/models/array.html";
+	// if (uri == "/") uri = "/models/4Square.html";
+	// if (uri == "/") uri = "/models/freeflow.html";
+	// if (uri == "/") uri = "/models/recursive.html";
+	// if (uri == "/") uri = "/models/cooperative.html";
+	// --------------------------------------------------
 
 	file = fs.readFile(path.join(homeDir, uri), function (err, data) {	
 		if (err) { // If file doesn't exist, serve 404 error.
@@ -125,7 +129,7 @@ function onReleased(position){
 
 var p1Direction = "", 
 	p2Direction = "",
-	scaleRate = .03;
+	scaleRate = .1;
 function onMove(data){
 	if(data.data.position == 1){
 		p1Direction = data.data.direction;
@@ -136,12 +140,15 @@ function onMove(data){
 
 	if(p1Touching && p2Touching){
 		if(p1Direction == "left" && p2Direction == "right"){
-			console.log("\nShould Really Be Zooming In Right Now!!\n");
+			// console.log("\nShould Really Be Zooming In Right Now!!\n");
 			WAMS.emit("coopScale", scaleRate);
 		}
 		else if(p1Direction == "right" && p2Direction == "left"){
-			console.log("\nShould Really Be Zooming Out Right Now!!\n");
+			// console.log("\nShould Really Be Zooming Out Right Now!!\n");
 			WAMS.emit("coopScale", -scaleRate);
+		}
+		else{
+			WAMS.emit("move", data);
 		}
 	}
 	else{
