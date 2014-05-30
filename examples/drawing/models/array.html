@@ -133,7 +133,8 @@
 			}
 			else if(this.position == 1){
 				drawMode = true;
-				this.moveToXY(50,200);
+				this.moveToXY(100,200);
+				this.rescale(2);
 			}
 			else{
 				drawMode = true;
@@ -259,7 +260,7 @@
 	var scaleRatio = 0;
 	View.prototype.scaleToUser = function(index){
 		this.moveToXY(0,0);
-		this.move(	wams.otherClients[index].view.x + wams.otherClients[index].view.ew - 50,
+		this.move(	wams.otherClients[index].view.x + wams.otherClients[index].view.ew,
 					wams.otherClients[index].view.y);
 		scaleRatio = this.h/wams.otherClients[index].view.eh;
 		this.rescale(scaleRatio);
@@ -391,6 +392,8 @@
 		startScale = null,
 		firstTap = false,
 		doubleTap = false,
+		leftGood = false,
+		rightGood = false,
 		cardIndex = -1,				// Index of the card to be dragged, -1 indicates no card should be dragging
 		doubleTapThreshold = 200; 	// 200 milliseconds
 	function handleMT(ev) {
@@ -459,7 +462,38 @@
 						y : dy,
 						position : myView.position
 					};
-					wams.emit("move", moveXY);
+					leftGood = false; 
+					rightGood = false;
+					if(myView.position == 1){
+						if(myView.x + dx > 50){
+							leftGood = true;
+						}
+					}
+					else{
+						for (var i = 0; i < wams.otherClients.length; i++) {
+							if((wams.otherClients[i].view.position == 1)&&(wams.otherClients[i].view.x + dx > 50)){
+								leftGood = true;
+							}
+						}
+					}
+
+					if(myView.position == 4){
+						if(myView.x + myView.ew + dx < canvasWidth - 50){
+							rightGood = true;
+						}
+					}
+					else{
+						for (var i = 0; i < wams.otherClients.length; i++) {
+							if((wams.otherClients[i].view.position == 4)&&(wams.otherClients[i].view.x + wams.otherClients[i].view.ew + dx < (canvasWidth - 50))){
+								rightGood = true;
+							}
+						}
+					}
+
+					if(leftGood && rightGood){
+						wams.emit("move", moveXY);
+					}
+
 				}
 				else{	// If the drag started on a Card, move the Card
 		   			moveCardToXY(cardIndex, x, y);

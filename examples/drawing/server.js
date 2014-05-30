@@ -17,9 +17,9 @@ var serverFunc = function (req, res) {
 	var uri = url.parse(req.url).pathname;
 
 	// ---------- Choose Your View Model Here ----------
-	if (uri == "/") uri = "/models/array.html";
+	// if (uri == "/") uri = "/models/array.html";
 	// if (uri == "/") uri = "/models/4Square.html";
-	// if (uri == "/") uri = "/models/freeflow.html";
+	if (uri == "/") uri = "/models/freeflow.html";
 	// if (uri == "/") uri = "/models/recursive.html";
 	// if (uri == "/") uri = "/models/cooperative.html";
 	// --------------------------------------------------

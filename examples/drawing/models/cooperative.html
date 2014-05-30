@@ -86,23 +86,26 @@
 		if(typeof wams.uuid == "string" && !setInitialPostion){	// Only set the initial position once/after the wams client server is running
 			setInitialPostion = true;
 			this.position = wams.otherClients.length;
-			wams.emit("consoleLog", "New User Has Joined. Position:" + this.position);
 			myPosition = this.position;
+			wams.emit("consoleLog", "New User Has Joined. Position:" + this.position);
+			
 			if(this.position != 0){	// If you are not the overview, get the current information from the overview user
 				wams.emit("needOldInfo", this.position);
 			}
-			MAX_SCALE = (this.w > this.h) ? this.w/canvasWidth : this.h/canvasHeight;	// The farthest out a user can scale
+
 			this.moveToXY(0, 0);
 			if(this.position == 0){			// First person to join will act as the overview
+				MAX_SCALE = (this.w > this.h) ? this.w/canvasWidth : this.h/canvasHeight;	// The farthest out a user can scale
 				this.rescale(MAX_SCALE);
 				drawMode = false;			// Not allowed to draw in the beginning
 			}
 			else{
-				originalScale = 2;								// Scales the new users down
-				if(this.position == 1){
-					this.moveToXY(300,300);
-				}
+				MAX_SCALE = 1;
+				originalScale = 5;								// Scales the new users down
 				this.rescale(originalScale);
+				if(this.position == 1){
+					this.moveToXY(1000,1000);
+				}
 				drawMode = true;
 				if(this.position > 1){
 					setTimeout( function(){
@@ -147,7 +150,7 @@
 		// And draw the other user's viewport boundaries
 		for (var i = 0, len = wams.otherClients.length; i < len; i++) {
 			var otherView = wams.otherClients[i].view;
-			if (typeof otherView !== "undefined") {
+			if (typeof otherView !== "undefined" && otherView.position != 0) {
 				// Draw User Effective View and Real View
 				// Using their color
 				ctx.strokeStyle = otherView.color;
@@ -324,7 +327,7 @@
 		dontMoveToAnchor = true;
 	View.prototype.scaleToUser = function(index){
 		this.moveToXY(0,0);
-		this.move(	wams.otherClients[index].view.x + wams.otherClients[index].view.ew, 
+		this.move(	wams.otherClients[index].view.x + wams.otherClients[index].view.ew,
 					wams.otherClients[index].view.y);
 		scaleRatio = this.h/wams.otherClients[index].view.eh;
 		dontMoveToAnchor = true;
@@ -380,8 +383,8 @@
 		return -1;	// Didn't tap on a card
 	}
 
-	var cardWidth = .05, 	// 5% of the View Width
-		cardHeight = .05; 	// 5% of the View Height
+	var cardWidth = .1, 	// 10% of the View Width
+		cardHeight = .1; 	// 10% of the View Height
 	function createNewCard(x,y){
 		var newCard = new Card(x - cardWidth*myView.ew/2, y - cardHeight*myView.ew/2, cardWidth*myView.ew, cardHeight*myView.ew, myCardColor, -1);
 		wams.emit("newCard", newCard);	// Tell everyone you created a new card
@@ -511,7 +514,7 @@
 								if((wams.otherClients[i].view.position == 2)&&(wams.otherClients[i].view.x + wams.otherClients[i].view.ew + dx < canvasWidth)){
 									wams.emit("move", moveXY);
 								}
-							}		
+							}
 						}
 						else if((myView.position == 2)&&(myView.x + myView.ew + dx < canvasWidth)){
 							wams.emit("move", moveXY);
@@ -550,7 +553,7 @@
 				var newScale = scale * startScale;	// Calculate the new scale
 
 				// myView.rescale(newScale);			// Rescale the View
-				
+
 				break;
 			case 'transformend':
 				startScale = null;
@@ -664,10 +667,11 @@
 		}
 	}
 
+	var newScale = -1;
 	function onCoopScale(scale){
 		if(myView.position != 0){
-			myView.scale += scale;
-			myView.rescale(myView.scale);
+			newScale = myView.scale + scale;
+			myView.rescale(newScale);
 			if(myView.position == 2){
 				myView.scaleToUser(otherGuy);
 			}

@@ -10,7 +10,7 @@
 	<style>
 		* { margin: 0px; padding: 0px; }
 		html, body { width: 90%; height: 90%; }
-		canvas { display:block; background-color: #aabbcc; }
+		canvas { display:block; background-color: #112233; }
 	</style>
 </head>
 
@@ -68,6 +68,7 @@
 	// It can draw itself for now
 	Card.prototype.draw = function(){
 		ctx.fillStyle = this.color;
+		ctx.globalAlpha = 0.5;
 		ctx.fillRect(this.x, this.y, this.w, this.h);
 	}
 
@@ -166,7 +167,7 @@
 		// And draw the other user's viewport boundaries
 		for (var i = 0, len = wams.otherClients.length; i < len; i++) {
 			var otherView = wams.otherClients[i].view;
-			if (typeof otherView !== "undefined") {
+			if (typeof otherView !== "undefined" && otherView.position != 0) {
 				// Draw User Effective View and Real View
 				// Using their color
 				ctx.strokeStyle = otherView.color;
@@ -298,20 +299,46 @@
 
 	var MAX_SCALE, MIN_SCALE = 10;
 	View.prototype.rescale = function(nscale) {
+		getAnchor();
 		if(MIN_SCALE >= nscale && nscale >= MAX_SCALE){
 			this.scale = nscale;
+		}
+		else{
+			wams.emit("consoleLog", "Scale Out of Range");
 		}
 		// Then set the effective view dimensions
 		this.ew = Math.floor(this.w/this.scale);
 		this.eh = Math.floor(this.h/this.scale);
+		if(!dontMoveToAnchor){
+			this.moveToAchor();
+		}
+		else{
+			dontMoveToAnchor = false;
+		}
+
 		// Resize the Canvas
 		this.resizeCanvas();
 	}
 
-	var scaleRatio = 0;
+	View.prototype.moveToAchor = function(){
+		var oldX = anchorX;
+		var oldY = anchorY;
+		getAnchor();
+		this.move(oldX - anchorX, oldY - anchorY);
+	}
+
+	var anchorX = -1, anchorY = -1;
+	function getAnchor(){
+		anchorX = (myView.x + myView.ew)/2;
+		anchorY = (myView.y + myView.eh)/2;
+	}
+
+	var scaleRatio = 0,
+		dontMoveToAnchor = true;
 	View.prototype.scaleToUser = function(index){
 		this.moveToXY(viewSpaces[index].x, viewSpaces[index].y);
 		scaleRatio = (this.w > this.h) ? this.w/viewSpaces[index].ew : this.h/viewSpaces[index].eh;
+		dontMoveToAnchor = true;
 		this.rescale(scaleRatio);
 	}
 
@@ -376,8 +403,8 @@
 		return -1;
 	}
 
-	var cardWidth = .05, 	// 5% of the View Width
-		cardHeight = .05; 	// 5% of the View Height
+	var cardWidth = .1, 	// 10% of the View Width
+		cardHeight = .1; 	// 10% of the View Height
 	function createNewCard(x,y){
 		var newCard = new Card(x - cardWidth*myView.ew/2, y - cardHeight*myView.ew/2, cardWidth*myView.ew, cardHeight*myView.ew, myCardColor, -1);
 		wams.emit("newCard", newCard);	// Tell everyone you created a new card
@@ -443,8 +470,8 @@
 			case 'tap':
 				var x = ev.gesture.center.pageX/myView.scale + myView.x;
 				var y = ev.gesture.center.pageY/myView.scale + myView.y;
-				cardIndex = clickOnCard(x,y);	// Index of the tapped card
-				if(cardIndex == -1){			// If no Card was tapped
+				cardIndex = clickOnCard(x,y);				// Index of the tapped card
+				if(cardIndex == -1){						// If no Card was tapped
 					if(firstTap){				
 						doubleTap = true;
 						viewIndex = clickOnView(x,y);		// Index of the doubleTapped viewspace
@@ -464,11 +491,14 @@
 						}
 					}
 					else{									// Single tap in a viewspace
+						viewIndex = clickOnView(x,y);
 						firstTap = true;
 						doubleTap = false;
 						setTimeout(function(){				// Wait for a doubleTap
 							if(!doubleTap && drawMode){ 	// If they didn't doubleTap and are in drawMode
-								createNewCard(x, y);		// Create a new Card
+								if(viewIndex != -1){
+									createNewCard(x, y);	// Create a new Card
+								}
 							}
 							firstTap = false;				// Complete the tap action, too late to doubletap
 						}, doubleTapThreshold);
