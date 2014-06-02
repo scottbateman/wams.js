@@ -1,0 +1,1 @@
+../../../../../wams.js-client/src/wams.js

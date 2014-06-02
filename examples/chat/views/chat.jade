@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  h1 Share tokens and chat with people you shared it to
+  h2 User tag:
+    span#userID
+
+  - for (var i = 1; i <= 4; i++)
+    div(class='drag chattable', id='box' + i, data-chat-id='', data-chat='')
+      p.id #{i}
+      textarea.shareable(id='editor' + i)
+
+  textarea#main-chat
+  #drop-area
+
+  script(data-main='/js/chat.js', src='/js/require.js')

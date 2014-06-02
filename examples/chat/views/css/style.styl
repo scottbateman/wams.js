@@ -1,0 +1,80 @@
+dimensions(w, h)
+  width w
+  height h
+
+body
+  padding 20px
+  font 14px "Lucida Grande", Helvetica, Arial sans-serif
+  background white
+  color black
+  // background #151515
+  // color white
+
+a
+  margin 10px
+  color lightseagreen
+
+div p
+  padding 0
+  margin 0
+  text-align center
+  position relative
+
+#drop-area
+  dimensions 10% 100%
+  position absolute
+  top 0
+  right 0
+  z-index: 2;
+  .drop
+    display block
+
+.drag
+  width 100px
+  height 100px
+  border-radius 50px
+  position absolute
+  z-index 5
+
+//chat on tokens
+textarea
+  resize none
+  margin 0
+  padding 0
+  border 1
+
+.shareable
+  background none
+  /*dimensions 120px 50px*/
+  dimensions 248px 132px
+
+#main-chat
+  position absolute
+  bottom 1%
+  dimensions 500px 100px
+
+.chattable
+  dimensions 250px 150px
+  border-radius 0px
+  p
+    width 100px
+
+#box1
+  background rgba(#008000, 0.5)
+  top 250px
+  left 50px
+
+#box2
+  background rgba(#ff0000, 0.5)
+  top 250px
+  left 350px
+
+#box3
+  background rgba(#0000ff, 0.5)
+  top 450px
+  left 50px
+
+#box4
+  background rgba(#ffff00, 0.5)
+  top 450px
+  left 350px
