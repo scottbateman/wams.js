@@ -446,7 +446,7 @@ function all() {
    }
    // Browserify support
    else if(typeof module === 'object' && typeof module.exports === 'object') {
-      var $ = require('');
+      var $ = require('jquery');
       var Hammer = require('hammerjs');
       var io = require('socket.io-client');
 
