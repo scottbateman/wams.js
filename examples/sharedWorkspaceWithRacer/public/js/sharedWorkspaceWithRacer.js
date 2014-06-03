@@ -494,7 +494,7 @@ racer.ready(function(model) {
             };
 
          if ( MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE ) {
-            model.pass(passing).set('_page.me.screen.s', newWorkspaceScale);
+            model.pass(passing).setDiff('_page.me.screen.s', newWorkspaceScale);
          } else if ( newWorkspaceScale < MIN_SCALE ) {
             model.pass(passing).setDiff('_page.me.screen.s', MIN_SCALE);
          } else if ( MAX_SCALE < newWorkspaceScale ) {
