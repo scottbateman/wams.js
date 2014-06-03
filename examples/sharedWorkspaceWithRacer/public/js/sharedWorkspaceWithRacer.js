@@ -313,19 +313,17 @@ racer.ready(function(model) {
       });
 
       function onMouseWheel(ev) {
-         var screen = model.get('_page.me.screen');
-         if ((screen.s === MIN_SCALE && ev.wheelDeltaY > 0) ||
-            (screen.s > MIN_SCALE && screen.s < MAX_SCALE && ev.whellDeltaY !== 0) ||
-            (screen.s === MAX_SCALE && ev.wheelDeltaY < 0))
-         {
-            var delta = Math.floor(ev.wheelDeltaY / 120),
-               passing = {
-                  documentRescaleCenter: {
-                     x: ev.pageX,
-                     y: ev.pageY
-                  }
-               };
-            model.pass(passing).increment('_page.me.screen.s', SCALE_DELTA * delta);
+         var screen = model.get('_page.me.screen'),
+            delta = ev.wheelDelta / 120,
+            newWorkspaceScale = Math.round(screen.s + SCALE_DELTA * delta),
+            passing = { documentRescaleCenter: { x: ev.pageX, y: ev.pageY } };
+
+         if (MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE) {
+            model.pass(passing).setDiff('_page.me.screen.s', newWorkspaceScale);
+         } else if ( newWorkspaceScale < MIN_SCALE ) {
+            model.pass(passing).setDiff('_page.me.screen.s', MIN_SCALE);
+         } else if ( newWorkspaceScale > MAX_SCALE ) {
+            model.pass(passing).setDiff('_page.me.screen.s', MAX_SCALE);
          }
       }
       var html = document.getElementsByTagName('html')[0];
