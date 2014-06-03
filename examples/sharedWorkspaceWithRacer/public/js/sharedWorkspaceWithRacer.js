@@ -314,7 +314,7 @@ racer.ready(function(model) {
 
       function onMouseWheel(ev) {
          var screen = model.get('_page.me.screen'),
-            delta = ev.wheelDelta / 120,
+            delta = ev.wheelDelta / 120 || -ev.detail,
             newWorkspaceScale = Math.round(screen.s + SCALE_DELTA * delta),
             passing = { documentRescaleCenter: { x: ev.pageX, y: ev.pageY } };
 
@@ -328,6 +328,7 @@ racer.ready(function(model) {
       }
       var html = document.getElementsByTagName('html')[0];
       html.addEventListener('mousewheel', onMouseWheel, false);
+      html.addEventListener('DOMMouseScroll', onMouseWheel, false);
 
       function drawClients() {
          var id, screen, color,
