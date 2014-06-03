@@ -486,20 +486,20 @@ racer.ready(function(model) {
       function onDocumentPinch(ev) {
          var pinchScale = 1 / ev.gesture.scale,
             scaleBeforePinch = model.get('_page.tmp.scaleBeforePinch'),
-            newWorkspaceScale = Math.round(scaleBeforePinch * pinchScale);
-
-         if ( MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE ) {
-            var passing = {
+            newWorkspaceScale = Math.round(scaleBeforePinch * pinchScale),
+            passing = {
                documentRescaleCenter: {
                   x: ev.gesture.center.pageX,
                   y: ev.gesture.center.pageY
                }
             };
+
+         if ( MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE ) {
             model.pass(passing).set('_page.me.screen.s', newWorkspaceScale);
          } else if ( newWorkspaceScale < MIN_SCALE ) {
-            model.setDiff('_page.me.screen.s', MIN_SCALE);
+            model.pass(passing).setDiff('_page.me.screen.s', MIN_SCALE);
          } else if ( MAX_SCALE < newWorkspaceScale ) {
-            model.setDiff('_page.me.screen.s', MAX_SCALE);
+            model.pass(passing).setDiff('_page.me.screen.s', MAX_SCALE);
          }
       }
       function onDocumentTransformEnd(ev) {
