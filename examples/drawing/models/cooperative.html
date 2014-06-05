@@ -115,7 +115,7 @@
 								myView.scaleToUser(otherGuy);
 							}
 						}
-					},1500)
+					},1500);
 				}
 			}
 			this.resizeCanvas();
@@ -256,7 +256,7 @@
 		
 		// Redraw the view
 		this.draw();
-		
+
 		// Report possible change to server
 		this.reportView();
 		// wams.emit("consoleLog", "End of resizeCanvas");
@@ -500,7 +500,12 @@
 				var dy = (lastDeltaY - ev.gesture.deltaY)/myView.scale;
 				lastDeltaX = ev.gesture.deltaX;
 				lastDeltaY = ev.gesture.deltaY;
-				direction = (dx < 0) ? "right" : "left";
+				if(Math.abs(dy) > Math.abs(dx)){
+					direction = (dy < 0) ? "down" : "up";
+				}
+				else{
+					direction = (dx < 0) ? "right" : "left";
+				}
 				if(cardIndex == -1 || !drawMode){ 		// If the drag didn't start on a Card or you are not in drawmode, move the View
 					var moveXY = {
 						x : dx,
@@ -531,6 +536,9 @@
 								}
 							}
 						}
+					}
+					else if(direction == "up" || direction == "down"){
+						wams.emit("move", moveXY);
 					}
 				}
 				else{	// If the drag started on a Card, move the Card

@@ -264,14 +264,14 @@
 
 	function onResized() {
 		// Resize the Canvas
-		resizeCanvas();
+		myView.resizeCanvas();
 		// Update the view
 		myView.resize(canvas.width, canvas.height);
 
 		myView.rescale(myView.scale);
 	}
 
-	function resizeCanvas() {
+	View.prototype.resizeCanvas = function() {
 		// wams.emit("consoleLog", "Start of resizeCanvas");
 
 		// Resize the view and canvas to the window
@@ -304,7 +304,7 @@
 		// Set up listener for window resize
 		window.addEventListener('resize', onResized, false);
 		// Resize it to start
-		resizeCanvas();
+		myView.resizeCanvas();
 
 		// Redraw the view
 		myView.draw();
