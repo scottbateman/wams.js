@@ -250,21 +250,24 @@
 		this.ew = Math.floor(this.w/this.scale);
 		this.eh = Math.floor(this.h/this.scale);
 		// Resize the Canvas
-		resizeCanvas();
+		this.resizeCanvas();
 		// Redraw view
 		myView.draw();
 		// Report possible change to server
 		myView.reportView();
 	}
 
-	function onResize() {
+	// Fired event when window is resized
+	function onResized() {
 		// Resize the Canvas
-		resizeCanvas();
+		myView.resizeCanvas();
 		// Update the view
 		myView.resize(canvas.width, canvas.height);
+
+		myView.rescale(myView.scale);
 	}
 
-	function resizeCanvas() {
+	View.prototype.resizeCanvas = function() {
 		// wams.emit("consoleLog", "Start of resizeCanvas");
 
 		// Resize the view and canvas to the window
@@ -302,9 +305,9 @@
 		ctx = canvas.getContext('2d');
 
 		// Set up listener for window resize
-		window.addEventListener('resize', resizeCanvas, false);
+		window.addEventListener('resize', onResized, false);
 		// Resize it to start
-		resizeCanvas();
+		myView.resizeCanvas();
 		
 		// Redraw the view
 		myView.draw();
@@ -539,7 +542,7 @@
 		else{
 			var outputInfo = {					// All the current information of the workspace
 				destination : position.data,
-				cards : cards,
+				cards : cards
 			};
 			wams.emit("oldInfo", outputInfo);	// Send the information to the new user
 		}
