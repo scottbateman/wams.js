@@ -209,21 +209,21 @@ function all() {
        * @param {HTMLElement|HTMLCollection|jQuery} elem HTML collection or jQuery array of elements
        */
       addMT: function(elem) {
-         var self = this, newMTObj, i, len,
-            addElement = function(elem) {
-               newMTObj = new WAMS.modules.Hammer(elem, {
+         var self = this, newMTObj;
+         if (elem.length) {
+            for (var i = 0, len = elem.length; i < len; i++) {
+               newMTObj = new WAMS.modules.Hammer(elem[i], {
                   prevent_default: true,
                   no_mouseevents: true
                });
                self.MTObjects.push(newMTObj);
-            };
-
-         if (elem.length) {
-            for (i = 0, len = elem.length; i < len; i++) {
-               addElement(elem[i]);
             }
          } else {
-            addElement(elem);
+            newMTObj = new WAMS.modules.Hammer(elem, {
+               prevent_default: true,
+               no_mouseevents: true
+            });
+            self.MTObjects.push(newMTObj);
          }
       },
 
@@ -265,37 +265,31 @@ function all() {
                   callback(data.data);
                });
             } else if (self.MTEvents.indexOf(type) != -1) { // if this event is from hammer
-               var handler = function (ev) { //listener callback
-                  var touches = ev.gesture.touches;
-                  var event = {
-                        type: type,
-                        element: []
-                     };
-                  for (var i = 0; i < touches.length; i++) {
-                     var touch = touches[i];
-                     if (WAMS.util.isDraggable(touch.target)) {
+               self.MTObjects.forEach(function (MTObj) { // to all mt objects we attach listener
+                  MTObj.on(type, function (ev) { //listener callback
+                     var touches = ev.gesture.touches;
+                     var event = {
+                           type: type,
+                           element: []
+                        };
+                     for (var i = 0; i < touches.length; i++) {
+                        var touch = touches[i];
                         var elementMetadata = {
                            tag: touch.target.tagName,
                            attributes: {},
                            innerHTML: touch.target.innerHTML,
-                           x: WAMS.util.offset(touch.target).left,
-                           y: WAMS.util.offset(touch.target).top,
-                           w: touch.target.offsetWidth,
-                           h: touch.target.offsetHeight
+                           x: touch.pageX,
+                           y: touch.pageY
                         };
                         for (var j = 0, attrs = touch.target.attributes; j < attrs.length; j++) {
                            elementMetadata.attributes[attrs.item(j).nodeName] = attrs.item(j).nodeValue;
                         }
                         event.element.push(elementMetadata);
                      }
-                  }
-                  self.emit(type, event);
+                     self.emit(type, event);
 
-                  callback(ev);
-               };
-
-               self.MTObjects.forEach(function (MTObj) { // to all mt objects we attach listener
-                  MTObj.on(type, handler);
+                     callback(ev);
+                  });
                });
             } else {
                self.socket.on(type, function (data) {
@@ -322,16 +316,6 @@ function all() {
             else {
                self.socket.removeListener(type, callback);
             }
-         });
-      },
-
-      /**
-       * Destroy all multi-touch objects created with addMT()
-       */
-      dispose: function() {
-         var self = this;
-         self.MTObjects.forEach(function(MTObj) {
-            MTObj.dispose();
          });
       },
 
@@ -424,32 +408,6 @@ function all() {
       }
    };
 
-   WAMS.util = {
-      offset: function(object) {
-         var left = object.offsetLeft,
-            top = object.offsetTop;
-         while (object = object.offsetParent) {
-            left += object.offsetLeft;
-            top += object.offsetTop;
-         }
-         return {
-            left: left,
-            top: top
-         };
-      },
-
-      isDraggable: function(element) {
-         if (!element || !element.attributes || !element.attributes.item(0)) {
-            return false;
-         }
-         var i, attrs, classes;
-         for (i = 0; element.attributes.item(i).nodeName !== 'class'; i++) {
-         }
-         classes = element.attributes.item(i).nodeValue;
-         return (classes.indexOf('ball') > -1);
-      }
-   };
-
    /*
     //Shared dic
     var dic = {};
@@ -488,7 +446,7 @@ function all() {
    }
    // Browserify support
    else if(typeof module === 'object' && typeof module.exports === 'object') {
-      var $ = require('jquery');
+      var $ = require('');
       var Hammer = require('hammerjs');
       var io = require('socket.io-client');
 
