@@ -658,10 +658,65 @@ racer.ready(function(model) {
          }
       }
       function onElementTransformStart(ev) {
+         var i, el,
+            target = ev.target,
+            els = model.get(room + '.elements');
+
+         for ( i = 0; i < els.length; i++ ) {
+            if (els[i].attributes.id === target.id) {
+               break;
+            }
+         }
+
+         el = model.get(room + '.elements.' + i);
+         model.set('_page.tmp.elScaleBeforePinch', el.s);
+
+         wams.MTObjects.forEach(function(mt) {
+            if (mt.element.nodeName === '#document') {
+               mt.off('pinch', onDocumentPinch);
+            } else if (mt.element.tagName === 'IMG' &&
+                       mt.element.className.indexOf('drag_img') > -1) {
+               mt.off('drag', onElementDrag);
+            }
+         });
       }
       function onElementPinch(ev) {
+         console.log(ev);
+
+         var i,
+            pinchScale = ev.gesture.scale,
+            target = ev.target,
+            els = model.get(room + '.elements'),
+            elScaleBeforePinch = model.get('_page.tmp.elScaleBeforePinch'),
+            newElementScale = Math.round(elScaleBeforePinch * pinchScale);
+
+         for ( i = 0; i < els.length; i++ ) {
+            if (els[i].attributes.id === target.id) {
+               break;
+            }
+         }
+
+         if ( MIN_SCALE <= newElementScale && newElementScale <= MAX_SCALE ) {
+            model.setDiff(room + '.elements.' + i + '.s', newElementScale);
+         } else if ( newElementScale < MIN_SCALE ) {
+            model.setDiff(room + '.elements.' + i + '.s', MIN_SCALE);
+         } else if ( MAX_SCALE < newElementScale ) {
+            model.setDiff(room + '.elements.' + i + '.s', MAX_SCALE);
+         }
       }
       function onElementTransformEnd(ev) {
+         model.del('_page.tmp.elScaleBeforePinch');
+
+         setTimeout(function() {
+            wams.MTObjects.forEach(function(mt) {
+               if (mt.element.nodeName === '#document') {
+                  mt.on('pinch', onDocumentPinch);
+               } else if (mt.element.tagName === 'IMG' &&
+                          mt.element.className.indexOf('drag_img') > -1) {
+                  mt.on('drag', onElementDrag);
+               }
+            });
+         }, 50);
       }
    });
 });
