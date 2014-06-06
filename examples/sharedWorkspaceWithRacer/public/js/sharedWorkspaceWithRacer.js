@@ -318,14 +318,19 @@ racer.ready(function(model) {
          var screen = model.get('_page.me.screen'),
             delta = ev.wheelDelta / 120 || -ev.detail,
             newWorkspaceScale = Math.round(screen.s + SCALE_DELTA * delta),
-            passing = { documentRescaleCenter: { x: ev.pageX, y: ev.pageY } };
+            passing = { documentRescaleCenter: { x: ev.pageX, y: ev.pageY } },
+            i, noScreenRescaleElements = document.getElementsByClassName('no_body_rescale');
 
-         if (MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE) {
-            model.pass(passing).setDiff('_page.me.screen.s', newWorkspaceScale);
-         } else if ( newWorkspaceScale < MIN_SCALE ) {
-            model.pass(passing).setDiff('_page.me.screen.s', MIN_SCALE);
-         } else if ( newWorkspaceScale > MAX_SCALE ) {
-            model.pass(passing).setDiff('_page.me.screen.s', MAX_SCALE);
+         for (i = 0; noScreenRescaleElements[i] !== ev.target &&
+              i < noScreenRescaleElements.length; i++) {}
+         if (i === noScreenRescaleElements.length) {
+            if (MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE) {
+               model.pass(passing).setDiff('_page.me.screen.s', newWorkspaceScale);
+            } else if ( newWorkspaceScale < MIN_SCALE ) {
+               model.pass(passing).setDiff('_page.me.screen.s', MIN_SCALE);
+            } else if ( newWorkspaceScale > MAX_SCALE ) {
+               model.pass(passing).setDiff('_page.me.screen.s', MAX_SCALE);
+            }
          }
       }
       var html = document.getElementsByTagName('html')[0];
