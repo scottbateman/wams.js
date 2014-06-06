@@ -91,7 +91,8 @@ model.subscribe(roomPath, function(err) {
             x: (i - 1 - 2 * Math.floor((i - 1) / 2)) * 125 + 100,
             y: Math.floor((i - 1) / 2) * 125 + 300,
             w: 100,
-            h: 100
+            h: 100,
+            s: 100
          };
          elements.push(element);
       }

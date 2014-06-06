@@ -121,9 +121,11 @@ function showElements(elements) {
 
       elem.style.left = element.x + 'px';
       elem.style.top = element.y + 'px';
-      elem.style.width = element.w + 'px';
-      elem.style.height = element.h + 'px';
-      elem.style.borderRadius = (element.w / 2) + 'px';
+      elem.style.width = (element.w * element.s / 100) + 'px';
+      elem.style.height = (element.h * element.s / 100) + 'px';
+      if (element.type === 'ball') {
+         elem.style.borderRadius = (element.w / 2) + 'px';
+      }
 
       var body = document.getElementsByTagName('body')[0];
       body.appendChild(elem);
@@ -175,8 +177,8 @@ racer.ready(function(model) {
             el = clone(el);
             el.x = (el.x - s.x) / (s.s / 100);
             el.y = (el.y - s.y) / (s.s / 100);
-            el.w = el.w / (s.s / 100);
-            el.h = el.h / (s.s / 100);
+            el.w = el.w * (el.s / 100) / (s.s / 100);
+            el.h = el.h * (el.s / 100) / (s.s / 100);
 
             if (el.x + el.w > 0 &&
                 el.y + el.h > 0 &&
@@ -367,15 +369,17 @@ racer.ready(function(model) {
             elements = model.get(room + '.elements');
 
          elements.forEach(function(element) {
-            color = extractColor(element);
+            if (element.type === 'ball') {
+               color = extractColor(element);
 
-            ctx.beginPath();
-               ctx.fillStyle = color;
-               x = dx + element.x + element.w / 2;
-               y = dy + element.y + element.h / 2;
-               r = element.w / 2;
-               ctx.arc(x * minimapScale, y * minimapScale, r * minimapScale, 0, 360);
-            ctx.fill();
+               ctx.beginPath();
+                  ctx.fillStyle = color;
+                  x = dx + element.x + element.w / 2;
+                  y = dy + element.y + element.h / 2;
+                  r = element.w / 2;
+                  ctx.arc(x * minimapScale, y * minimapScale, r * minimapScale, 0, 360);
+               ctx.fill();
+            }
          });
       }
       function drawMinimap() {
@@ -404,13 +408,15 @@ racer.ready(function(model) {
          }
 
          newEls.forEach(function(el) {
-            $('#' + el.attributes.id).css({
-               left: el.x,
-               top: el.y,
-               width: el.w,
-               height: el.h,
-               borderRadius: el.w / 2
-            });
+            if (el.type === 'ball') {
+               $('#' + el.attributes.id).css({
+                  left: el.x,
+                  top: el.y,
+                  width: el.w * el.s / 100,
+                  height: el.h * el.s / 100,
+                  borderRadius: el.w / 2
+               });
+            }
          });
       }
 
@@ -425,7 +431,9 @@ racer.ready(function(model) {
          wams.addMT(rst_wrkspc_btn);
 
          var balls = document.getElementsByClassName('ball');
-         wams.addMT(balls);
+         if (balls.length) {
+            wams.addMT(balls);
+         }
 
          wams.MTObjects.forEach(function(mt) {
             if (mt.element.nodeName === '#document') {
