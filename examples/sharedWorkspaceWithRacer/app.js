@@ -13,6 +13,8 @@ var liveDbMongo = require('livedb-mongo');
 var redis = require('redis').createClient();
 var racer = require('racer');
 
+var sizeOf = require('image-size');
+
 var wams = require('wams.js-server');
 
 var store = racer.createStore({
@@ -97,6 +99,22 @@ model.subscribe(roomPath, function(err) {
          };
          elements.push(element);
       }
+      var imageSize = sizeOf('public/img/img0.jpg');
+      elements.push({
+         tag: 'img',
+         attributes: {
+            src: '/img/img0.jpg',
+            id: 'img0',
+            class: 'drag_img no_body_rescale',
+            'data-lock': ''
+         },
+         type: 'image',
+         x: 500,
+         y: 500,
+         w: imageSize.width,
+         h: imageSize.height,
+         s: 100
+      });
       model.set(roomPath + '.elements', elements);
    }
 
