@@ -635,6 +635,27 @@ racer.ready(function(model) {
          }, 50);
       }
       function onElementMouseWheel(ev) {
+         var i, el, newElementScale,
+            target = ev.target,
+            els = model.get(room + '.elements'),
+            delta = ev.wheelDelta / 120 || -ev.detail;
+
+         for ( i = 0; i < els.length; i++ ) {
+            if (els[i].attributes.id === target.id) {
+               break;
+            }
+         }
+
+         el = model.get(room + '.elements.' + i);
+         newElementScale = Math.round(el.s + SCALE_DELTA * delta);
+
+         if (MIN_SCALE <= newElementScale && newElementScale <= MAX_SCALE) {
+            model.setDiff(room +'.elements.' + i + '.s', newElementScale);
+         } else if ( newElementScale < MIN_SCALE ) {
+            model.setDiff(room +'.elements.' + i + '.s', MIN_SCALE);
+         } else if ( newElementScale > MAX_SCALE ) {
+            model.setDiff(room +'.elements.' + i + '.s', MAX_SCALE);
+         }
       }
       function onElementTransformStart(ev) {
       }
