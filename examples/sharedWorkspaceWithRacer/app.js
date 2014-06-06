@@ -88,6 +88,7 @@ model.subscribe(roomPath, function(err) {
                class: 'ball',
                'data-lock': ''
             },
+            type: 'ball',
             x: (i - 1 - 2 * Math.floor((i - 1) / 2)) * 125 + 100,
             y: Math.floor((i - 1) / 2) * 125 + 300,
             w: 100,
