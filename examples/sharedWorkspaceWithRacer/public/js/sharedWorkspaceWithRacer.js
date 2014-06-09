@@ -681,8 +681,6 @@ racer.ready(function(model) {
          });
       }
       function onElementPinch(ev) {
-         console.log(ev);
-
          var i,
             pinchScale = ev.gesture.scale,
             target = ev.target,
