@@ -316,29 +316,6 @@ racer.ready(function(model) {
          model.set('_page.me.screen.h', window.innerHeight);
       });
 
-      function onMouseWheel(ev) {
-         var screen = model.get('_page.me.screen'),
-            delta = ev.wheelDelta / 120 || -ev.detail,
-            newWorkspaceScale = Math.round(screen.s + SCALE_DELTA * delta),
-            passing = { documentRescaleCenter: { x: ev.pageX, y: ev.pageY } },
-            i, noScreenRescaleElements = document.getElementsByClassName('no_body_rescale');
-
-         for (i = 0; noScreenRescaleElements[i] !== ev.target &&
-              i < noScreenRescaleElements.length; i++) {}
-         if (i === noScreenRescaleElements.length) {
-            if (MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE) {
-               model.pass(passing).setDiff('_page.me.screen.s', newWorkspaceScale);
-            } else if ( newWorkspaceScale < MIN_SCALE ) {
-               model.pass(passing).setDiff('_page.me.screen.s', MIN_SCALE);
-            } else if ( newWorkspaceScale > MAX_SCALE ) {
-               model.pass(passing).setDiff('_page.me.screen.s', MAX_SCALE);
-            }
-         }
-      }
-      var html = document.getElementsByTagName('html')[0];
-      html.addEventListener('mousewheel', onMouseWheel, false);
-      html.addEventListener('DOMMouseScroll', onMouseWheel, false);
-
       function drawClients() {
          var id, screen, color,
             users = model.get('_page.users'),
@@ -459,6 +436,8 @@ racer.ready(function(model) {
                mt.on('touch', onDocumentTouch);
                mt.on('drag', onDocumentDrag);
                mt.on('release', onDocumentRelease);
+               mt.element.addEventListener('mousewheel', onDocumentMouseWheel, false);
+               mt.element.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
                mt.on('transformstart', onDocumentTransformStart);
                mt.on('pinch', onDocumentPinch);
                mt.on('transformend', onDocumentTransformEnd);
@@ -507,6 +486,25 @@ racer.ready(function(model) {
       function onDocumentRelease(ev) {
          model.del('_page.tmp.touchPoint');
          model.del('_page.tmp.scrBeforeMove');
+      }
+      function onDocumentMouseWheel(ev) {
+         var screen = model.get('_page.me.screen'),
+            delta = ev.wheelDelta / 120 || -ev.detail,
+            newWorkspaceScale = Math.round(screen.s + SCALE_DELTA * delta),
+            passing = { documentRescaleCenter: { x: ev.pageX, y: ev.pageY } },
+            i, noScreenRescaleElements = document.getElementsByClassName('no_body_rescale');
+
+         for (i = 0; noScreenRescaleElements[i] !== ev.target &&
+              i < noScreenRescaleElements.length; i++) {}
+         if (i === noScreenRescaleElements.length) {
+            if (MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE) {
+               model.pass(passing).setDiff('_page.me.screen.s', newWorkspaceScale);
+            } else if ( newWorkspaceScale < MIN_SCALE ) {
+               model.pass(passing).setDiff('_page.me.screen.s', MIN_SCALE);
+            } else if ( newWorkspaceScale > MAX_SCALE ) {
+               model.pass(passing).setDiff('_page.me.screen.s', MAX_SCALE);
+            }
+         }
       }
       function onDocumentTransformStart(ev) {
          var scr = model.get('_page.me.screen');
