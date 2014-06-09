@@ -121,8 +121,8 @@ function showElements(elements) {
 
       elem.style.left = element.x + 'px';
       elem.style.top = element.y + 'px';
-      elem.style.width = (element.w * element.s / 100) + 'px';
-      elem.style.height = (element.h * element.s / 100) + 'px';
+      elem.style.width = element.w + 'px';
+      elem.style.height = element.h + 'px';
       if (element.type === 'ball') {
          elem.style.borderRadius = (element.w / 2) + 'px';
       }
@@ -171,14 +171,16 @@ racer.ready(function(model) {
          if (!els) { return []; }
 
          var s = model.get('_page.me.screen'),
+            localScale,
             r = [];
 
          els.forEach(function(el) {
             el = clone(el);
             el.x = (el.x - s.x) / (s.s / 100);
             el.y = (el.y - s.y) / (s.s / 100);
-            el.w = el.w * (el.s / 100) / (s.s / 100);
-            el.h = el.h * (el.s / 100) / (s.s / 100);
+            localScale = el.s / s.s;
+            el.w = el.w * localScale;
+            el.h = el.h * localScale;
 
             if (el.x + el.w > 0 &&
                 el.y + el.h > 0 &&
@@ -417,16 +419,16 @@ racer.ready(function(model) {
                $('#' + el.attributes.id).css({
                   left: el.x,
                   top: el.y,
-                  width: el.w * el.s / 100,
-                  height: el.h * el.s / 100,
+                  width: el.w,
+                  height: el.h,
                   borderRadius: el.w / 2
                });
             } else if (el.type === 'image') {
                $('#' + el.attributes.id).css({
                   left: el.x,
                   top: el.y,
-                  width: el.w * el.s / 100,
-                  height: el.h * el.s / 100
+                  width: el.w,
+                  height: el.h
                });
             }
          });
