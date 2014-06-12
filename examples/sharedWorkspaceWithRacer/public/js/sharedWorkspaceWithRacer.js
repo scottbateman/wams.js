@@ -216,6 +216,7 @@ racer.ready(function(model) {
       model.ref(room + '.screens.' + id, room + '.users.' + id + '.screen');
       model.ref('_page.me', room + '.users.' + id);
       model.ref('_page.users', room + '.users');
+      model.ref('_page.screens', room + '.screens');
       model.ref('_page.settings', room + '.settings');
       model.ref('_page.workspace', room + '.workspace');
 
