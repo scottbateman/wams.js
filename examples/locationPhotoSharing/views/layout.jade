@@ -1,0 +1,11 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/css/style.css')
+    if settings.env === 'development'
+      script(type='text/javascript', src='//' + settings.ip + ':35729/livereload.js')
+
+    block head
+  body
+    block content
