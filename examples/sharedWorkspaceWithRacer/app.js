@@ -67,6 +67,7 @@ var resetUsers = true;
 var resetBalls = true;
 var showElementsOnMinimap = true;
 var gapBetweenClients = true;
+var enableBalls = false;
 
 model.subscribe(roomPath, function(err) {
    if (err) { throw err; }
@@ -82,22 +83,24 @@ model.subscribe(roomPath, function(err) {
 
    if (resetBalls || model.get(roomPath + ".elements") === undefined) {
       var elements = [];
-      for (var i = 1; i <= 4; i++) {
-         var element = {
-            tag: 'div',
-            attributes: {
-               id: 'ball' + i,
-               class: 'ball',
-               'data-lock': ''
-            },
-            type: 'ball',
-            x: (i - 1 - 2 * Math.floor((i - 1) / 2)) * 125 + 100,
-            y: Math.floor((i - 1) / 2) * 125 + 300,
-            w: 100,
-            h: 100,
-            s: 100
-         };
-         elements.push(element);
+      if (enableBalls) {
+         for (var i = 1; i <= 4; i++) {
+            var element = {
+               tag: 'div',
+               attributes: {
+                  id: 'ball' + i,
+                  class: 'ball',
+                  'data-lock': ''
+               },
+               type: 'ball',
+               x: (i - 1 - 2 * Math.floor((i - 1) / 2)) * 125 + 100,
+               y: Math.floor((i - 1) / 2) * 125 + 300,
+               w: 100,
+               h: 100,
+               s: 100
+            };
+            elements.push(element);
+         }
       }
       var imageSize = sizeOf('public/img/img0.jpg');
       elements.push({
