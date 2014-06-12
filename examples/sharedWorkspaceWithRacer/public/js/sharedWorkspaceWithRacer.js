@@ -132,6 +132,48 @@ function showElements(elements) {
    });
 }
 
+//this function is called when a new client connects
+//it will layout update the position of all clients as they are added
+//clients will try to be added if they fit within the preferred width otherwise they
+//will be added below. Not exactly the jumbotron behaviour, but a simple approach
+//ws is an object representing the workspace, client is an object representing the new client
+var layoutFunc = function(clients, maxWS, client) {
+   //track position
+   var width = 0,  //width of the current row
+      height = 0,  //height of the workspace
+      otherClient, tempClient, minHeight;
+
+   //figure out the display position of other screens
+   for (otherClient in clients) {
+      if (clients.hasOwnProperty(otherClient)) {
+         if (width + clients[otherClient].w <= maxWS.w) {
+            width += clients[otherClient].w;
+         } else {
+            //must find the min height of the current 'row'
+            minHeight = Infinity;
+
+            for (tempClient in clients) {
+               //only clients on the current 'row'
+               if (clients.hasOwnProperty(tempClient) &&
+                   clients[tempClient].y === height &&
+                   clients[tempClient].h < minHeight) {
+                  minHeight = clients[tempClient].h;
+               }
+            }
+
+            width = 0;
+            height += minHeight;
+
+            clients[otherClient].x = width;
+            clients[otherClient].y = height;
+         }
+      }
+   }
+
+   client.screen.x = width;
+   client.screen.y = height;
+};
+
 var MAX_CANVAS_HEIGHT = 450,
    MAX_CANVAS_WIDTH = 250,
    MIN_SCALE = 25,
@@ -161,6 +203,14 @@ racer.ready(function(model) {
                s: 100
             }
          };
+
+      if (model.get(room + '.settings.jumbotron')) {
+         var maxWS = {
+            w: 2000,
+            h: 2000
+         };
+         layoutFunc(model.get(room + '.screens'), maxWS, me);
+      }
 
       model.add(room + '.users', me);
       model.ref(room + '.screens.' + id, room + '.users.' + id + '.screen');
