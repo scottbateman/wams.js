@@ -148,19 +148,21 @@ racer.ready(function(model) {
       window.model = model;
       // model = model.at('sharedWorkspace');
 
-      var id = model.id();
-      model.add(room + '.users', {
-         id: id,
-         color: rndColor,
-         name: rndName,
-         screen: {
-            w: window.innerWidth,
-            h: window.innerHeight,
-            x: 0,
-            y: 0,
-            s: 100
-         }
-      });
+      var id = model.id(),
+         me = {
+            id: id,
+            color: rndColor,
+            name: rndName,
+            screen: {
+               w: window.innerWidth,
+               h: window.innerHeight,
+               x: 0,
+               y: 0,
+               s: 100
+            }
+         };
+
+      model.add(room + '.users', me);
       model.ref(room + '.screens.' + id, room + '.users.' + id + '.screen');
       model.ref('_page.me', room + '.users.' + id);
       model.ref('_page.users', room + '.users');
