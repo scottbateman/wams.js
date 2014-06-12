@@ -68,6 +68,7 @@ var resetBalls = true;
 var showElementsOnMinimap = true;
 var gapBetweenClients = true;
 var enableBalls = false;
+var enableJumbotron = true;
 
 model.subscribe(roomPath, function(err) {
    if (err) { throw err; }
@@ -80,6 +81,7 @@ model.subscribe(roomPath, function(err) {
 
    model.set(roomPath + '.settings.minimap.showElements', showElementsOnMinimap);
    model.set(roomPath + '.settings.minimap.gapBetweenClients', gapBetweenClients);
+   model.set(roomPath + '.settings.jumbotron', enableJumbotron);
 
    if (resetBalls || model.get(roomPath + ".elements") === undefined) {
       var elements = [];
@@ -102,22 +104,24 @@ model.subscribe(roomPath, function(err) {
             elements.push(element);
          }
       }
-      var imageSize = sizeOf('public/img/img0.jpg');
-      elements.push({
-         tag: 'img',
-         attributes: {
-            src: '/img/img0.jpg',
-            id: 'img0',
-            class: 'drag_img no_body_rescale',
-            'data-lock': ''
-         },
-         type: 'image',
-         x: 500,
-         y: 500,
-         w: imageSize.width,
-         h: imageSize.height,
-         s: 100
-      });
+      if (enableJumbotron) {
+         var imageSize = sizeOf('public/img/img0.jpg');
+         elements.push({
+            tag: 'img',
+            attributes: {
+               src: '/img/img0.jpg',
+               id: 'img0',
+               class: 'drag_img no_body_rescale',
+               'data-lock': ''
+            },
+            type: 'image',
+            x: 500,
+            y: 500,
+            w: imageSize.width,
+            h: imageSize.height,
+            s: 100
+         });
+      }
       model.set(roomPath + '.elements', elements);
    }
 
