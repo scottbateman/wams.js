@@ -419,7 +419,9 @@ racer.ready(function(model) {
          };
          wams.dispose();
 
-         wams.addMT(document, options);
+         if (!model.get(room + '.settings.jumbotron')) {
+            wams.addMT(document, options);
+         }
          var rst_wrkspc_btn = document.getElementById('rst_wrkspc_btn');
          wams.addMT(rst_wrkspc_btn);
 
