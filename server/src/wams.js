@@ -1,9 +1,15 @@
 var socket_io = require('socket.io')
   , Vault = require('./vault')
   , User = require('./user')
-  , Locator = exports.Locator = require('./locator')
+  , Locator
   , LocationConn = require('./locationConnection')
   ;
+
+var ENABLE_LOCATOR = false;
+
+if (ENABLE_LOCATOR) {
+   Locator = exports.Locator = require('./locator');
+}
 
 //All events that sent to server
 /**
@@ -63,7 +69,9 @@ exports.listen = function(server, options, callback) {
          var newUser = new User(socket, "", data.description);
          newUser.position = locationConn.addClient(newUser.uuid);
          users.push(newUser);
-		 Locator.artifact_conneced(newUser); // Tells location-server that artifact has connected.
+         if (ENABLE_LOCATOR) {
+            Locator.artifact_conneced(newUser); // Tells location-server that artifact has connected.
+         }
 
          socket.emit(server_io_send_calls.connection_ok, {
             data: {
@@ -144,7 +152,9 @@ exports.listen = function(server, options, callback) {
 
          socket.once('disconnect', function() {
             locationConn.deleteClient(newUser.position);
-			Locator.user_disconneced(newUser); // Tells location-server that artifact has disconnected.
+            if (ENABLE_LOCATOR) {
+               Locator.user_disconneced(newUser); // Tells location-server that artifact has disconnected.
+            }
             socket.broadcast.emit(server_io_send_calls.user_disconnected, {
                data: {
                   client: newUser.uuid
