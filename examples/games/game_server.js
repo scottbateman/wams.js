@@ -8,6 +8,7 @@ var url = require('url'),
 //////////// web server section
 
 // Set up required variables
+var port = process.env.PORT || 3000;
 var homeDir = path.resolve(process.cwd(), '.');
 var stat404 = fs.readFileSync(path.join(homeDir, '/status_404.html'));
 
@@ -46,7 +47,7 @@ var serverFunc = function (req, res) {
 //////////// WAMS section
 
 // Set up HTTP-server: listen on port 3000 and use serverFunc (see above) to serve files to clients.
-var httpServer = http.createServer(serverFunc).listen(3000);
+var httpServer = http.createServer(serverFunc).listen(port);
 
 // Start WAMS using the HTTP-server
 WAMS.listen(httpServer);
