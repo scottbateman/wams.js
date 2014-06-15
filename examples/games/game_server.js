@@ -3,7 +3,7 @@ var url = require('url'),
 	http = require('http'),
 	path = require('path'),
     fs = require('fs'),
-	WAMS = require(path.resolve('libs/wams-server.js')); // When using this example as base, make sure that this points to the correct WAMS server library path.
+	WAMS = require('../../server'); // When using this example as base, make sure that this points to the correct WAMS server library path.
 
 //////////// web server section
 
