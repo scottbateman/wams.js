@@ -1,6 +1,7 @@
 var http = require('http'),
    express = require('express'),
    path = require('path'),
+   spawn = require('child_process').spawn,
    readLine = require('readline'),
    debugCreator = require('debug'),
    favicon = require('static-favicon'),
@@ -51,6 +52,7 @@ var APPLICATION_SETTINGS = {
 
 var app = express(),
    serverLogger = debugCreator('express'),
+   portList = {},
    examplesList = {};
 
 // express settings
@@ -83,6 +85,95 @@ var server = http.createServer(app);
 server.listen(app.get('port'), function() {
   serverLogger('Express server listening on port ' + server.address().port);
 });
+
+function getNextFreePort(port) {
+   if (port && !portList[port]) { return port; }
+
+   var beginPort = APPLICATION_SETTINGS.examplesPortRange.begin,
+      endPort = APPLICATION_SETTINGS.examplesPortRange.end;
+
+   for (port = beginPort; port <= endPort && portList[port]; port++) {}
+   if (port > endPort) { port = undefined; }
+
+   return port;
+}
+
+function prepareExampleServer(example) {
+   example.state = example.state || 'run';
+   example.path = path.resolve(
+      example.path || path.join(__dirname, '..', example.id)
+   );
+   example.mainJS = example.mainJS || 'app.js';
+   example.run = example.run || 'node ' + example.mainJS;
+   example.port = getNextFreePort(example.port);
+}
+
+function startChildProcess(example) {
+   var run = example.run.split(' '),
+      prog = run[0],
+      args = run.slice(1),
+      settings = {
+         cwd: example.path,
+         env: {
+            PORT: example.port
+         }
+      },
+      proc = spawn(prog, args, settings),
+      exampleLogger = debugCreator(example.id),
+      exampleErrorLogger = debugCreator(example.id + ':error');
+
+   proc.stdout.on('data', function(data) {
+      exampleLogger(data.toString().trim());
+   });
+
+   proc.stderr.on('data', function(data) {
+      exampleErrorLogger(data.toString().trim());
+   });
+
+   return proc;
+}
+
+function startExampleServer(id) {
+   var i, example, pid;
+
+   for (i = 0; i < EXAMPLES_LIST.length && !example; i++) {
+      if (EXAMPLES_LIST[i].id === id) {
+         example = EXAMPLES_LIST[i];
+      }
+   }
+
+   if (example.port) {
+      pid = startChildProcess(example);
+
+      example.pid = pid;
+      portList[example.port] = example.id;
+
+      examplesList[example.id] = {
+         running: true,
+         pid: pid.pid,
+         href: APPLICATION_SETTINGS.ip + ':' + example.port
+      }
+   }
+}
+
+function stopExampleServer(id) {
+   var i, example;
+
+   for (i = 0; i < EXAMPLES_LIST.length && !example; i++) {
+      if (EXAMPLES_LIST[i].id === id) {
+         example = EXAMPLES_LIST[i];
+      }
+   }
+
+   example.pid.kill('SIGINT');
+   portList[example.port] = undefined;
+   example.pid = undefined;
+}
+
+function restartExampleServer(id) {
+   stopExampleServer(id);
+   startExampleServer(id);
+}
 
 // graceful shutdown on windows
 if (process.platform === 'win32') {
