@@ -476,6 +476,9 @@ racer.ready(function(model) {
          var rst_wrkspc_btn = document.getElementById('rst_wrkspc_btn');
          wams.addMT(rst_wrkspc_btn);
 
+         var minimap = document.getElementById('minimap');
+         wams.addMT(minimap);
+
          var balls = document.getElementsByClassName('ball');
          if (balls.length) {
             wams.addMT(balls);
@@ -513,6 +516,16 @@ racer.ready(function(model) {
                mt.on('transformstart', onElementTransformStart);
                mt.on('pinch', onElementPinch);
                mt.on('transformend', onElementTransformEnd);
+            } else if (mt.element.tagName === 'CANVAS' &&
+                       mt.element.id === 'minimap') {
+               mt.on('touch', onMinimapTouch);
+               mt.on('drag', onMinimapDrag);
+               mt.on('release', onMinimapRelease);
+               mt.element.addEventListener('mousewheel', onMinimapMouseWheel, false);
+               mt.element.addEventListener('DOMMouseScroll', onMinimapMouseWheel, false);
+               mt.on('transformstart', onMinimapTransformStart);
+               mt.on('pinch', onMinimapPinch);
+               mt.on('transformend', onMinimapTransformEnd);
             }
          });
       }
@@ -770,6 +783,27 @@ racer.ready(function(model) {
                }
             });
          }, 50);
+      }
+      function onMinimapTouch(ev) {
+
+      }
+      function onMinimapDrag(ev) {
+
+      }
+      function onMinimapRelease(ev) {
+
+      }
+      function onMinimapMouseWheel(ev) {
+
+      }
+      function onMinimapTransformStart(ev) {
+
+      }
+      function onMinimapPinch(ev) {
+
+      }
+      function onMinimapTransformEnd(ev) {
+
       }
    });
 });
