@@ -1,6 +1,7 @@
 var http = require('http'),
    express = require('express'),
    path = require('path'),
+   readLine = require('readline'),
    debugCreator = require('debug'),
    favicon = require('static-favicon'),
    logger = require('morgan');
@@ -37,3 +38,19 @@ server.listen(app.get('port'), function() {
   serverLogger('Express server listening on port ' + server.address().port);
 });
 
+// graceful shutdown on windows
+if (process.platform === 'win32') {
+   var rl = readLine.createInterface({
+      input: process.stdin,
+      output: process.stdout
+   });
+
+   rl.on('SIGINT', function() {
+      process.emit('SIGINT');
+   });
+}
+
+process.on('SIGINT', function() {
+
+   process.exit();
+});
