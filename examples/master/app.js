@@ -52,6 +52,7 @@ var APPLICATION_SETTINGS = {
 
 var app = express(),
    serverLogger = debugCreator('express'),
+   exampleCreatorLogger = debugCreator('exampleCreator'),
    portList = {},
    examplesList = {};
 
@@ -174,6 +175,14 @@ function restartExampleServer(id) {
    stopExampleServer(id);
    startExampleServer(id);
 }
+
+EXAMPLES_LIST.forEach(function(example) {
+   prepareExampleServer(example);
+   if (example.state === 'run') {
+      exampleCreatorLogger('Starting ' + example.id + ' on port ' + example.port);
+      startExampleServer(example.id)
+   }
+});
 
 // graceful shutdown on windows
 if (process.platform === 'win32') {
