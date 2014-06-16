@@ -50,7 +50,8 @@ var APPLICATION_SETTINGS = {
    ];
 
 var app = express(),
-   serverLogger = debugCreator('express');
+   serverLogger = debugCreator('express'),
+   examplesList = {};
 
 // express settings
 app.set('ip', APPLICATION_SETTINGS.ip);
@@ -67,7 +68,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', function(req, res) {
    var settings = {
-      title: 'Express'
+      title: 'Master example',
+      allExamples: examplesList
    };
    res.render('index', settings);
 });
