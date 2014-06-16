@@ -67,8 +67,8 @@ var resetUsers = true;
 var resetBalls = true;
 var showElementsOnMinimap = true;
 var gapBetweenClients = true;
-var enableBalls = false;
-var enableJumbotron = true;
+var enableBalls = true;
+var enableJumbotron = false;
 
 model.subscribe(roomPath, function(err) {
    if (err) { throw err; }
