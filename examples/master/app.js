@@ -7,6 +7,37 @@ var http = require('http'),
    favicon = require('static-favicon'),
    logger = require('morgan');
 
+/**
+ * all fields in EXAMPLE_LIST object
+ * {
+ *    id: String,
+ *    port: Number,
+ *    state: 'run|stop'
+ *    path: String,
+ *    mainJS: String,
+ *    run: String
+ * }
+ *
+ * id is required
+ * port - on which port run example
+ * state - run or do not run by default
+ * path - folder with example
+ * mainJS - which file is main file of app
+ * run - string to run app
+ */
+/**
+ * fields of examplesList:
+ * {
+ *    'id': {
+ *       running: Boolean,
+ *       pid: Number,
+ *       href: String
+ *    },
+ *    'id2': {},
+ *    ...
+ * }
+ */
+
 var APPLICATION_SETTINGS = {
       ip: 'localhost',
       port: 8950,
