@@ -197,6 +197,13 @@ if (process.platform === 'win32') {
 }
 
 process.on('SIGINT', function() {
+   var id;
+
+   for (id in EXAMPLES_LIST) {
+      if (EXAMPLES_LIST.hasOwnProperty(id) && EXAMPLES_LIST[id].pid) {
+         EXAMPLES_LIST[id].pid.kill('SIGINT');
+      }
+   }
 
    process.exit();
 });
