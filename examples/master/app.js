@@ -6,11 +6,21 @@ var http = require('http'),
    favicon = require('static-favicon'),
    logger = require('morgan');
 
+var APPLICATION_SETTINGS = {
+      ip: 'localhost',
+      port: 8950,
+      examplesPortRange: {
+         begin: 8951,
+         end: 8999
+      }
+   };
+
 var app = express(),
    serverLogger = debugCreator('express');
 
 // express settings
-app.set('port', process.argv[2] || process.env.PORT || 8999);
+app.set('ip', APPLICATION_SETTINGS.ip);
+app.set('port', APPLICATION_SETTINGS.port);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
