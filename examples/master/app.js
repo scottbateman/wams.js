@@ -13,7 +13,41 @@ var APPLICATION_SETTINGS = {
          begin: 8951,
          end: 8999
       }
-   };
+   },
+   EXAMPLES_LIST = [
+      {
+         id: 'HelloWorld',
+         mainJS: 'server.js'
+      },
+      {
+         id: 'circles'
+      },
+      {
+         id: 'chat'
+      },
+      {
+         id: 'locationPhotoSharing'
+      },
+      {
+         id: 'drawing',
+         mainJS: 'server.js'
+      },
+      {
+         id: 'sharedWorkspace'
+      },
+      {
+         id: 'sharedWorkspaceWithRacer'
+      },
+      {
+         id: 'games',
+         mainJS: 'game_server.js'
+      },
+      {
+         id: 'LocationServer',
+         mainJS: 'server.js',
+         state: 'stop'
+      }
+   ];
 
 var app = express(),
    serverLogger = debugCreator('express');
