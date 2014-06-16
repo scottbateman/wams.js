@@ -1,10 +1,30 @@
+mixin exampleMixin(name, value)
+  .example(id='#{name}')
+    p.name Example '#{name}'
+    p.controls
+      if (value.running)
+        button.start_stop_btn Stop example
+      else
+        button.start_stop_btn Start example
+      button.restart_btn Restart example
+    p.description
+      if (value.running)
+        span.state State: Running
+      else
+        span.state State: Stopped
+      span.pid PID: #{value.pid}
+      span.link Link:
+        a(href='http://#{value.href}/' target='_blank') #{value.href}
+
 doctype html
 html
   head
     title= title
     link(rel='stylesheet' href='/css/index.css')
   body
-    h1= title
-    p Welcome to #{title}
+    h1 Welcome to #{title}
+    #examplesList
+      - for (var example in allExamples)
+        +exampleMixin(example, allExamples[example])
 
     script(type='text/javascript' src='/js/jquery-1.11.1.js')
