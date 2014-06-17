@@ -219,6 +219,7 @@ racer.ready(function(model) {
       model.ref('_page.screens', room + '.screens');
       model.ref('_page.settings', room + '.settings');
       model.ref('_page.workspace', room + '.workspace');
+      model.set('_page.minimap', { x: 0, y: 0, s: 100 });
 
       model.fn('convertElements', function (els) {
          if (!els) { return []; }
@@ -332,6 +333,10 @@ racer.ready(function(model) {
          drawMinimap();
       });
 
+      model.on('change', '_page.minimap.**', function(path, value, previous, passed) {
+         drawMinimap();
+      });
+
       // model.on('change', '_page.users**', function() {
       //    drawMinimap();
       // });
@@ -371,6 +376,7 @@ racer.ready(function(model) {
 
       function drawClients() {
          var id, screen, color,
+            minimap = model.get('_page.minimap'),
             users = model.get('_page.users'),
             w = model.get('_page.workspace'),
             dx = -w.x, dy = -w.y,
@@ -385,13 +391,13 @@ racer.ready(function(model) {
                   ctx.strokeStyle = color;
                   ctx.setLineDash([7, 3]);
                   if (drawGap) {
-                     ctx.rect((dx + screen.x) * minimapScale + 1,
-                        (dy + screen.y) * minimapScale + 1,
+                     ctx.rect(-minimap.x + (dx + screen.x) * minimapScale + 1,
+                        -minimap.y + (dy + screen.y) * minimapScale + 1,
                         screen.w * minimapScale * screen.s / 100 - 2,
                         screen.h * minimapScale * screen.s / 100 - 2);
                   } else {
-                     ctx.rect((dx + screen.x) * minimapScale,
-                        (dy + screen.y) * minimapScale,
+                     ctx.rect(-minimap.x + (dx + screen.x) * minimapScale,
+                        -minimap.y + (dy + screen.y) * minimapScale,
                         screen.w * minimapScale * screen.s / 100,
                         screen.h * minimapScale * screen.s / 100);
                   }
@@ -401,6 +407,7 @@ racer.ready(function(model) {
       }
       function drawBalls() {
          var color, x, y, r,
+            minimap = model.get('_page.minimap'),
             w = model.get('_page.workspace'),
             dx = -w.x, dy = -w.y,
             elements = model.get(room + '.elements');
@@ -414,7 +421,7 @@ racer.ready(function(model) {
                   x = dx + element.x + element.w / 2;
                   y = dy + element.y + element.h / 2;
                   r = element.w / 2;
-                  ctx.arc(x * minimapScale, y * minimapScale, r * minimapScale, 0, 360);
+                  ctx.arc(-minimap.x + x * minimapScale, -minimap.y + y * minimapScale, r * minimapScale, 0, 360);
                ctx.fill();
             }
          });
@@ -785,13 +792,43 @@ racer.ready(function(model) {
          }, 50);
       }
       function onMinimapTouch(ev) {
+         var x = ev.gesture.center.pageX,
+            y = ev.gesture.center.pageY,
+            minimap = model.get('_page.minimap');
 
+         model.set('_page.tmp.minimapTouchPoint', {x: x, y: y});
+         model.set('_page.tmp.minimapBeforeMove', {x: minimap.x, y: minimap.y});
+
+         wams.MTObjects.forEach(function(mt) {
+            if (mt.element.nodeName === '#document') {
+               mt.off('drag', onDocumentDrag);
+            }
+         });
       }
       function onMinimapDrag(ev) {
+         var x = ev.gesture.center.pageX,
+            y = ev.gesture.center.pageY,
+            minimap = model.get('_page.minimap'),
+            tmp = model.get('_page.tmp'),
+            minimapBefore = tmp.minimapBeforeMove,
+            pt = tmp.minimapTouchPoint,
+            dx = Math.round((x - pt.x) * minimap.s / 100),
+            dy = Math.round((y - pt.y) * minimap.s / 100);
 
+         model.increment('_page.minimap.x', (minimapBefore.x - dx) - minimap.x);
+         model.increment('_page.minimap.y', (minimapBefore.y - dy) - minimap.y);
       }
       function onMinimapRelease(ev) {
+         model.del('_page.tmp.minimapTouchPoint');
+         model.del('_page.tmp.minimapBeforeMove');
 
+         setTimeout(function() {
+            wams.MTObjects.forEach(function(mt) {
+               if (mt.element.nodeName === '#document') {
+                  mt.on('drag', onDocumentDrag);
+               }
+            });
+         }, 50);
       }
       function onMinimapMouseWheel(ev) {
 
