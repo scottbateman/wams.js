@@ -881,13 +881,46 @@ racer.ready(function(model) {
          }, 50);
       }
       function onMinimapTransformStart(ev) {
+         var minimapScale = model.get('_page.minimap.s');
 
+         model.set('_page.tmp.minimapScaleBeforePinch', minimapScale);
+
+         wams.MTObjects.forEach(function(mt) {
+            if (mt.element.nodeName === '#document') {
+               mt.off('pinch', onDocumentPinch);
+            } else if (mt.element.tagName === 'CANVAS' &&
+                       mt.element.id === 'minimap') {
+               mt.off('drag', onMinimapDrag);
+            }
+         });
       }
       function onMinimapPinch(ev) {
+         var pinchScale = ev.gesture.scale,
+            minimap = model.get('_page.minimap'),
+            minimapScaleBeforePinch = model.get('_page.tmp.minimapScaleBeforePinch'),
+            newElementScale = Math.round(minimapScaleBeforePinch * pinchScale);
 
+         if ( MIN_SCALE <= newElementScale && newElementScale <= MAX_SCALE ) {
+            model.setDiff('_page.minimap.s', newElementScale);
+         } else if ( newElementScale < MIN_SCALE ) {
+            model.setDiff('_page.minimap.s', MIN_SCALE);
+         } else if ( MAX_SCALE < newElementScale ) {
+            model.setDiff('_page.minimap.s', MAX_SCALE);
+         }
       }
       function onMinimapTransformEnd(ev) {
+         model.del('_page.tmp.minimapScaleBeforePinch');
 
+         setTimeout(function() {
+            wams.MTObjects.forEach(function(mt) {
+               if (mt.element.nodeName === '#document') {
+                  mt.on('pinch', onDocumentPinch);
+               } else if (mt.element.tagName === 'CANVAS' &&
+                          mt.element.id === 'minimap') {
+                  mt.on('drag', onMinimapDrag);
+               }
+            });
+         }, 50);
       }
    });
 });
