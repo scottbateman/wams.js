@@ -512,7 +512,7 @@ racer.ready(function(model) {
                mt.on('drag', onElementDrag);
                mt.on('release', onElementRelease);
             } else if (mt.element.id === 'rst_wrkspc_btn') {
-               mt.on('touch', onButtonPress);
+               mt.on('touch', onResetWorkspaceButtonPress);
             } else if (mt.element.tagName === 'IMG' &&
                        mt.element.className.indexOf('drag_img') > -1) {
                mt.on('touch', onElementTouch);
@@ -622,7 +622,7 @@ racer.ready(function(model) {
             });
          }, 50);
       }
-      function onButtonPress(ev) {
+      function onResetWorkspaceButtonPress(ev) {
          model.set('_page.me.screen.x', 0);
          model.set('_page.me.screen.y', 0);
          model.set('_page.me.screen.w', window.innerWidth);
