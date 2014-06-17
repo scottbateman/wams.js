@@ -842,7 +842,43 @@ racer.ready(function(model) {
          }, 50);
       }
       function onMinimapMouseWheel(ev) {
+         wams.MTObjects.forEach(function(mt) {
+            if (mt.element.nodeName === '#document') {
+               mt.element.removeEventListener('mousewheel', onDocumentMouseWheel);
+               mt.element.removeEventListener('DOMMouseScroll', onDocumentMouseWheel);
+            } else if (mt.element.tagName === 'IMG' &&
+                       mt.element.className.indexOf('drag_img') > -1) {
+               mt.element.removeEventListener('mousewheel', onElementMouseWheel);
+               mt.element.removeEventListener('DOMMouseScroll', onElementMouseWheel);
+            }
+         });
 
+         var newElementScale,
+            scale = model.get('_page.minimap.s'),
+            delta = ev.wheelDelta / 120 || -ev.detail;
+
+         newElementScale = Math.round(scale + SCALE_DELTA * delta);
+
+         if (MIN_SCALE <= newElementScale && newElementScale <= MAX_SCALE) {
+            model.setDiff('_page.minimap.s', newElementScale);
+         } else if ( newElementScale < MIN_SCALE ) {
+            model.setDiff('_page.minimap.s', MIN_SCALE);
+         } else if ( newElementScale > MAX_SCALE ) {
+            model.setDiff('_page.minimap.s', MAX_SCALE);
+         }
+
+         setTimeout(function() {
+            wams.MTObjects.forEach(function (mt) {
+               if (mt.element.nodeName === '#document') {
+                  mt.element.addEventListener('mousewheel', onDocumentMouseWheel, false);
+                  mt.element.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+               } else if (mt.element.tagName === 'IMG' &&
+                  mt.element.className.indexOf('drag_img') > -1) {
+                  mt.element.addEventListener('mousewheel', onElementMouseWheel, false);
+                  mt.element.addEventListener('DOMMouseScroll', onElementMouseWheel, false);
+               }
+            });
+         }, 50);
       }
       function onMinimapTransformStart(ev) {
 
