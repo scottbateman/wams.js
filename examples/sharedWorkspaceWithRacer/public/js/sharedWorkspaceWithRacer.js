@@ -391,15 +391,15 @@ racer.ready(function(model) {
                   ctx.strokeStyle = color;
                   ctx.setLineDash([7, 3]);
                   if (drawGap) {
-                     ctx.rect(-minimap.x + (dx + screen.x) * minimapScale + 1,
-                        -minimap.y + (dy + screen.y) * minimapScale + 1,
-                        screen.w * minimapScale * screen.s / 100 - 2,
-                        screen.h * minimapScale * screen.s / 100 - 2);
+                     ctx.rect(-minimap.x + (dx + screen.x) * minimapScale * minimap.s / 100 + 1,
+                        -minimap.y + (dy + screen.y) * minimapScale * minimap.s / 100 + 1,
+                        screen.w * minimapScale * screen.s / 100 * minimap.s / 100 - 2,
+                        screen.h * minimapScale * screen.s / 100 * minimap.s / 100 - 2);
                   } else {
-                     ctx.rect(-minimap.x + (dx + screen.x) * minimapScale,
-                        -minimap.y + (dy + screen.y) * minimapScale,
-                        screen.w * minimapScale * screen.s / 100,
-                        screen.h * minimapScale * screen.s / 100);
+                     ctx.rect(-minimap.x + (dx + screen.x) * minimapScale * minimap.s / 100,
+                        -minimap.y + (dy + screen.y) * minimapScale * minimap.s / 100,
+                        screen.w * minimapScale * screen.s / 100 * minimap.s / 100,
+                        screen.h * minimapScale * screen.s / 100 * minimap.s / 100);
                   }
                ctx.stroke();
             }
@@ -421,7 +421,9 @@ racer.ready(function(model) {
                   x = dx + element.x + element.w / 2;
                   y = dy + element.y + element.h / 2;
                   r = element.w / 2;
-                  ctx.arc(-minimap.x + x * minimapScale, -minimap.y + y * minimapScale, r * minimapScale, 0, 360);
+                  ctx.arc(-minimap.x + x * minimapScale * minimap.s / 100,
+                     -minimap.y + y * minimapScale * minimap.s / 100,
+                     r * minimapScale * minimap.s / 100, 0, 360);
                ctx.fill();
             }
          });
@@ -821,8 +823,8 @@ racer.ready(function(model) {
             tmp = model.get('_page.tmp'),
             minimapBefore = tmp.minimapBeforeMove,
             pt = tmp.minimapTouchPoint,
-            dx = Math.round((x - pt.x) * minimap.s / 100),
-            dy = Math.round((y - pt.y) * minimap.s / 100);
+            dx = Math.round((x - pt.x)),
+            dy = Math.round((y - pt.y));
 
          model.increment('_page.minimap.x', (minimapBefore.x - dx) - minimap.x);
          model.increment('_page.minimap.y', (minimapBefore.y - dy) - minimap.y);
