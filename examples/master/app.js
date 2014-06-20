@@ -155,6 +155,14 @@ function getExample(id) {
    return example;
 }
 
+function updateExamplesList(example) {
+   examplesList[example.id] = {
+      running: example.pid ? true : false,
+      pid: example.pid ? example.pid.pid : 0,
+      port: example.port
+   };
+}
+
 function getNextFreePort(port) {
    if (port && !portList[port]) { return port; }
 
@@ -175,6 +183,8 @@ function prepareExampleServer(example) {
    example.mainJS = example.mainJS || 'app.js';
    example.run = example.run || 'node ' + example.mainJS;
    example.port = getNextFreePort(example.port);
+
+   updateExamplesList(example);
 }
 
 function startChildProcess(example) {
@@ -211,11 +221,7 @@ function startExampleServer(id) {
       example.pid = pid;
       portList[example.port] = example.id;
 
-      examplesList[example.id] = {
-         running: true,
-         pid: pid.pid,
-         href: APPLICATION_SETTINGS.ip + ':' + example.port
-      }
+      updateExamplesList(example);
    }
 }
 
@@ -225,6 +231,8 @@ function stopExampleServer(id) {
    example.pid.kill('SIGINT');
    portList[example.port] = undefined;
    example.pid = undefined;
+
+   updateExamplesList(example);
 }
 
 function restartExampleServer(id) {
