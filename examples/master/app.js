@@ -2,6 +2,7 @@ var http = require('http'),
    express = require('express'),
    path = require('path'),
    spawn = require('child_process').spawn,
+   socket_io = require('socket.io'),
    readLine = require('readline'),
    debugCreator = require('debug'),
    favicon = require('static-favicon'),
@@ -143,6 +144,8 @@ var server = http.createServer(app);
 server.listen(app.get('port'), function() {
   serverLogger('Express server listening on port ' + server.address().port);
 });
+var io = new socket_io(server);
+
 function getExample(id) {
    var i, example;
 
@@ -270,4 +273,8 @@ process.on('SIGINT', function() {
    }
 
    process.exit();
+});
+
+io.on('connection', function(socket) {
+
 });
