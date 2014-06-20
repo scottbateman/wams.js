@@ -276,5 +276,23 @@ process.on('SIGINT', function() {
 });
 
 io.on('connection', function(socket) {
+   function onStart(id) {
+      startExampleServer(id);
+      var copy = clone(examplesList[id]);
+      copy.id = id;
 
+      io.emit('started', copy);
+   }
+   function onStop(id) {
+      stopExampleServer(id);
+
+      io.emit('stopped', id);
+   }
+
+   socket.on('start', onStart);
+   socket.on('stop', onStop);
+   socket.on('restart', function(id) {
+      onStop(id);
+      onStart(id);
+   });
 });

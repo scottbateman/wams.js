@@ -3,10 +3,11 @@ mixin exampleMixin(name, value)
     p.name Example '#{name}'
     p.controls
       if (value.running)
-        button.start_stop_btn Stop example
+        button.start_stop_btn(data-id='#{name}' data-start-btn='false') Stop example
+        button.restart_btn(data-id='#{name}') Restart example
       else
-        button.start_stop_btn Start example
-      button.restart_btn Restart example
+        button.start_stop_btn(data-id='#{name}' data-start-btn='true') Start example
+        button.restart_btn(data-id='#{name}' disabled) Restart example
     p.description
       if (value.running)
         span.state State: Running
