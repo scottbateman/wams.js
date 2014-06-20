@@ -31,7 +31,7 @@ var http = require('http'),
  *    'id': {
  *       running: Boolean,
  *       pid: Number,
- *       href: String
+ *       port: Number
  *    },
  *    'id2': {},
  *    ...

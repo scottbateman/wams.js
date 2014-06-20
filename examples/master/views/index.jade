@@ -14,7 +14,7 @@ mixin exampleMixin(name, value)
         span.state State: Stopped
       span.pid PID: #{value.pid}
       span.link Link:
-        a(href='http://#{value.href}/' target='_blank') #{value.href}
+        a(href='' data-port='#{value.port}' target='_blank')
 
 doctype html
 html
