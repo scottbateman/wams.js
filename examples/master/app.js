@@ -238,11 +238,6 @@ function stopExampleServer(id) {
    updateExamplesList(example);
 }
 
-function restartExampleServer(id) {
-   stopExampleServer(id);
-   startExampleServer(id);
-}
-
 EXAMPLES_LIST.forEach(function(example) {
    prepareExampleServer(example);
    if (example.state === 'run') {
