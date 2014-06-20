@@ -143,6 +143,17 @@ var server = http.createServer(app);
 server.listen(app.get('port'), function() {
   serverLogger('Express server listening on port ' + server.address().port);
 });
+function getExample(id) {
+   var i, example;
+
+   for (i = 0; i < EXAMPLES_LIST.length && !example; i++) {
+      if (EXAMPLES_LIST[i].id === id) {
+         example = EXAMPLES_LIST[i];
+      }
+   }
+
+   return example;
+}
 
 function getNextFreePort(port) {
    if (port && !portList[port]) { return port; }
@@ -192,13 +203,7 @@ function startChildProcess(example) {
 }
 
 function startExampleServer(id) {
-   var i, example, pid;
-
-   for (i = 0; i < EXAMPLES_LIST.length && !example; i++) {
-      if (EXAMPLES_LIST[i].id === id) {
-         example = EXAMPLES_LIST[i];
-      }
-   }
+   var example = getExample(id), pid;
 
    if (example.port) {
       pid = startChildProcess(example);
@@ -215,13 +220,7 @@ function startExampleServer(id) {
 }
 
 function stopExampleServer(id) {
-   var i, example;
-
-   for (i = 0; i < EXAMPLES_LIST.length && !example; i++) {
-      if (EXAMPLES_LIST[i].id === id) {
-         example = EXAMPLES_LIST[i];
-      }
-   }
+   var example = getExample(id);
 
    example.pid.kill('SIGINT');
    portList[example.port] = undefined;
