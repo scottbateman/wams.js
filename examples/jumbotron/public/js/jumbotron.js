@@ -123,9 +123,6 @@ function showElements(elements) {
       elem.style.top = element.y + 'px';
       elem.style.width = element.w + 'px';
       elem.style.height = element.h + 'px';
-      if (element.type === 'ball') {
-         elem.style.borderRadius = (element.w / 2) + 'px';
-      }
 
       var body = document.getElementsByTagName('body')[0];
       body.appendChild(elem);
@@ -204,13 +201,11 @@ racer.ready(function(model) {
             }
          };
 
-      if (model.get(room + '.settings.jumbotron')) {
-         var maxWS = {
-            w: 2000,
-            h: 2000
-         };
-         layoutFunc(model.get(room + '.screens'), maxWS, me);
-      }
+      var maxWS = {
+         w: 2000,
+         h: 2000
+      };
+      layoutFunc(model.get(room + '.screens'), maxWS, me);
 
       model.add(room + '.users', me);
       model.ref(room + '.screens.' + id, room + '.users.' + id + '.screen');
@@ -251,28 +246,6 @@ racer.ready(function(model) {
          model.set('_page.elements', convertedEls);
       }
 
-      function showElsAsWorkspace() {
-         if (false) {
-         var els = model.get(room + '.elements'), i;
-
-         for (i in els) {
-            model.set(room + '.users.' + els[i].attributes.id, {
-               color: '#151515',
-               id: i,
-               screen: {
-                  x: els[i].x,
-                  y: els[i].y,
-                  w: els[i].w,
-                  h: els[i].h,
-                  s: 100
-               }
-            });
-            model.ref(room + '.screens.' + els[i].attributes.id,
-               room + '.users.' + els[i].attributes.id + '.screen');
-         }
-         }
-      }
-
       model.on('change', '_page.me.screen**', function(path, value, previous, passed) {
          if (path === 's' && passed.documentRescaleCenter) {
             var rescaleP = passed.documentRescaleCenter,
@@ -293,8 +266,6 @@ racer.ready(function(model) {
 
       model.on('change', '_page.elements**', function(path, value, previous, passed) {
          moveElements( value, previous );
-
-         showElsAsWorkspace();
       });
 
       model.on('change', '_page.workspace**', function(path, value, previous, passed) {
@@ -361,7 +332,6 @@ racer.ready(function(model) {
          showElements( model.get('_page.elements') );
 
          restartMT();
-         showElsAsWorkspace();
       });
 
       $(window).resize(function() {
@@ -399,34 +369,11 @@ racer.ready(function(model) {
             }
          }
       }
-      function drawBalls() {
-         var color, x, y, r,
-            w = model.get('_page.workspace'),
-            dx = -w.x, dy = -w.y,
-            elements = model.get(room + '.elements');
-
-         elements.forEach(function(element) {
-            if (element.type === 'ball') {
-               color = extractColor(element);
-
-               ctx.beginPath();
-                  ctx.fillStyle = color;
-                  x = dx + element.x + element.w / 2;
-                  y = dy + element.y + element.h / 2;
-                  r = element.w / 2;
-                  ctx.arc(x * minimapScale, y * minimapScale, r * minimapScale, 0, 360);
-               ctx.fill();
-            }
-         });
-      }
       function drawMinimap() {
          canvas.width = canvas.width;
          canvas.height = canvas.height;
          ctx.translate(0.5, 0.5);
          drawClients(ctx);
-         if (model.get('_page.settings.minimap.showElements')) {
-            drawBalls(ctx);
-         }
       }
 
       function moveElements(newEls, oldEls) {
@@ -445,22 +392,12 @@ racer.ready(function(model) {
          }
 
          newEls.forEach(function(el) {
-            if (el.type === 'ball') {
-               $('#' + el.attributes.id).css({
-                  left: el.x,
-                  top: el.y,
-                  width: el.w,
-                  height: el.h,
-                  borderRadius: el.w / 2
-               });
-            } else if (el.type === 'image') {
-               $('#' + el.attributes.id).css({
-                  left: el.x,
-                  top: el.y,
-                  width: el.w,
-                  height: el.h
-               });
-            }
+            $('#' + el.attributes.id).css({
+               left: el.x,
+               top: el.y,
+               width: el.w,
+               height: el.h
+            });
          });
       }
 
@@ -470,40 +407,13 @@ racer.ready(function(model) {
          };
          wams.dispose();
 
-         if (!model.get(room + '.settings.jumbotron')) {
-            wams.addMT(document, options);
-         }
-         var rst_wrkspc_btn = document.getElementById('rst_wrkspc_btn');
-         wams.addMT(rst_wrkspc_btn);
-
-         var balls = document.getElementsByClassName('ball');
-         if (balls.length) {
-            wams.addMT(balls);
-         }
-
          var imgs = document.getElementsByClassName('drag_img');
          if (imgs.length) {
             wams.addMT(imgs);
          }
 
          wams.MTObjects.forEach(function(mt) {
-            if (mt.element.nodeName === '#document') {
-               mt.on('touch', onDocumentTouch);
-               mt.on('drag', onDocumentDrag);
-               mt.on('release', onDocumentRelease);
-               mt.element.addEventListener('mousewheel', onDocumentMouseWheel, false);
-               mt.element.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
-               mt.on('transformstart', onDocumentTransformStart);
-               mt.on('pinch', onDocumentPinch);
-               mt.on('transformend', onDocumentTransformEnd);
-            } else if (mt.element.tagName === 'DIV' &&
-                       mt.element.className.indexOf('ball') > -1) {
-               mt.on('touch', onElementTouch);
-               mt.on('drag', onElementDrag);
-               mt.on('release', onElementRelease);
-            } else if (mt.element.id === 'rst_wrkspc_btn') {
-               mt.on('touch', onButtonPress);
-            } else if (mt.element.tagName === 'IMG' &&
+            if (mt.element.tagName === 'IMG' &&
                        mt.element.className.indexOf('drag_img') > -1) {
                mt.on('touch', onElementTouch);
                mt.on('drag', onElementDrag);
@@ -517,98 +427,6 @@ racer.ready(function(model) {
          });
       }
 
-      function onDocumentTouch(ev) {
-         var x = ev.gesture.center.pageX,
-            y = ev.gesture.center.pageY,
-            scr = model.get('_page.me.screen');
-
-         model.set('_page.tmp.touchPoint', {x: x, y: y});
-         model.set('_page.tmp.scrBeforeMove', {x: scr.x, y: scr.y});
-      }
-      function onDocumentDrag(ev) {
-         var x = ev.gesture.center.pageX,
-            y = ev.gesture.center.pageY,
-            scr = model.get('_page.me.screen'),
-            tmp = model.get('_page.tmp'),
-            scrBefore = tmp.scrBeforeMove,
-            pt = tmp.touchPoint,
-            dx = Math.round((x - pt.x) * scr.s / 100),
-            dy = Math.round((y - pt.y) * scr.s / 100);
-
-         model.increment('_page.me.screen.x', (scrBefore.x - dx) - scr.x);
-         model.increment('_page.me.screen.y', (scrBefore.y - dy) - scr.y);
-      }
-      function onDocumentRelease(ev) {
-         model.del('_page.tmp.touchPoint');
-         model.del('_page.tmp.scrBeforeMove');
-      }
-      function onDocumentMouseWheel(ev) {
-         var screen = model.get('_page.me.screen'),
-            delta = ev.wheelDelta / 120 || -ev.detail,
-            newWorkspaceScale = Math.round(screen.s + SCALE_DELTA * delta),
-            passing = { documentRescaleCenter: { x: ev.pageX, y: ev.pageY } },
-            i, noScreenRescaleElements = document.getElementsByClassName('no_body_rescale');
-
-         for (i = 0; noScreenRescaleElements[i] !== ev.target &&
-              i < noScreenRescaleElements.length; i++) {}
-         if (i === noScreenRescaleElements.length) {
-            if (MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE) {
-               model.pass(passing).setDiff('_page.me.screen.s', newWorkspaceScale);
-            } else if ( newWorkspaceScale < MIN_SCALE ) {
-               model.pass(passing).setDiff('_page.me.screen.s', MIN_SCALE);
-            } else if ( newWorkspaceScale > MAX_SCALE ) {
-               model.pass(passing).setDiff('_page.me.screen.s', MAX_SCALE);
-            }
-         }
-      }
-      function onDocumentTransformStart(ev) {
-         var scr = model.get('_page.me.screen');
-
-         model.set('_page.tmp.scaleBeforePinch', scr.s);
-
-         wams.MTObjects.forEach(function(mt) {
-            if (mt.element.nodeName === '#document') {
-               mt.off('drag', onDocumentDrag);
-            }
-         });
-      }
-      function onDocumentPinch(ev) {
-         var pinchScale = 1 / ev.gesture.scale,
-            scaleBeforePinch = model.get('_page.tmp.scaleBeforePinch'),
-            newWorkspaceScale = Math.round(scaleBeforePinch * pinchScale),
-            passing = {
-               documentRescaleCenter: {
-                  x: ev.gesture.center.pageX,
-                  y: ev.gesture.center.pageY
-               }
-            };
-
-         if ( MIN_SCALE <= newWorkspaceScale && newWorkspaceScale <= MAX_SCALE ) {
-            model.pass(passing).setDiff('_page.me.screen.s', newWorkspaceScale);
-         } else if ( newWorkspaceScale < MIN_SCALE ) {
-            model.pass(passing).setDiff('_page.me.screen.s', MIN_SCALE);
-         } else if ( MAX_SCALE < newWorkspaceScale ) {
-            model.pass(passing).setDiff('_page.me.screen.s', MAX_SCALE);
-         }
-      }
-      function onDocumentTransformEnd(ev) {
-         model.del('_page.tmp.scaleBeforePinch');
-
-         setTimeout(function() {
-            wams.MTObjects.forEach(function(mt) {
-               if (mt.element.nodeName === '#document') {
-                  mt.on('drag', onDocumentDrag);
-               }
-            });
-         }, 50);
-      }
-      function onButtonPress(ev) {
-         model.set('_page.me.screen.x', 0);
-         model.set('_page.me.screen.y', 0);
-         model.set('_page.me.screen.w', window.innerWidth);
-         model.set('_page.me.screen.h', window.innerHeight);
-         model.set('_page.me.screen.s', 100);
-      }
       function onElementTouch(ev) {
          var el, i,
             touch = ev.gesture.touches[0],
@@ -629,12 +447,6 @@ racer.ready(function(model) {
             model.set(room + '.elements.' + i + '.attributes.data-lock', id);
             model.set('_page.tmp.elementRelativeTouchPoint', {x: relTouchX, y: relTouchY});
          }
-
-         wams.MTObjects.forEach(function(mt) {
-            if (mt.element.nodeName === '#document') {
-               mt.off('drag', onDocumentDrag);
-            }
-         });
       }
       function onElementDrag(ev) {
          var el, i,
@@ -680,14 +492,6 @@ racer.ready(function(model) {
             model.set(room + '.elements.' + i + '.attributes.data-lock', "");
             model.del('_page.tmp.elementRelativeTouchPoint');
          }
-
-         setTimeout(function() {
-            wams.MTObjects.forEach(function(mt) {
-               if (mt.element.nodeName === '#document') {
-                  mt.on('drag', onDocumentDrag);
-               }
-            });
-         }, 50);
       }
       function onElementMouseWheel(ev) {
          var i, el, newElementScale,
@@ -727,9 +531,7 @@ racer.ready(function(model) {
          model.set('_page.tmp.elScaleBeforePinch', el.s);
 
          wams.MTObjects.forEach(function(mt) {
-            if (mt.element.nodeName === '#document') {
-               mt.off('pinch', onDocumentPinch);
-            } else if (mt.element.tagName === 'IMG' &&
+            if (mt.element.tagName === 'IMG' &&
                        mt.element.className.indexOf('drag_img') > -1) {
                mt.off('drag', onElementDrag);
             }
@@ -762,9 +564,7 @@ racer.ready(function(model) {
 
          setTimeout(function() {
             wams.MTObjects.forEach(function(mt) {
-               if (mt.element.nodeName === '#document') {
-                  mt.on('pinch', onDocumentPinch);
-               } else if (mt.element.tagName === 'IMG' &&
+               if (mt.element.tagName === 'IMG' &&
                           mt.element.className.indexOf('drag_img') > -1) {
                   mt.on('drag', onElementDrag);
                }

@@ -64,11 +64,8 @@ var model = store.createModel();
 var roomPath = 'jumbotron';
 
 var resetUsers = true;
-var resetBalls = true;
-var showElementsOnMinimap = true;
+var resetElements = true;
 var gapBetweenClients = true;
-var enableBalls = false;
-var enableJumbotron = true;
 
 model.subscribe(roomPath, function(err) {
    if (err) { throw err; }
@@ -79,49 +76,25 @@ model.subscribe(roomPath, function(err) {
       model.set(roomPath + '.workspace', {});
    }
 
-   model.set(roomPath + '.settings.minimap.showElements', showElementsOnMinimap);
    model.set(roomPath + '.settings.minimap.gapBetweenClients', gapBetweenClients);
-   model.set(roomPath + '.settings.jumbotron', enableJumbotron);
 
-   if (resetBalls || model.get(roomPath + ".elements") === undefined) {
+   if (resetElements || model.get(roomPath + ".elements") === undefined) {
       var elements = [];
-      if (enableBalls) {
-         for (var i = 1; i <= 4; i++) {
-            var element = {
-               tag: 'div',
-               attributes: {
-                  id: 'ball' + i,
-                  class: 'ball',
-                  'data-lock': ''
-               },
-               type: 'ball',
-               x: (i - 1 - 2 * Math.floor((i - 1) / 2)) * 125 + 100,
-               y: Math.floor((i - 1) / 2) * 125 + 300,
-               w: 100,
-               h: 100,
-               s: 100
-            };
-            elements.push(element);
-         }
-      }
-      if (enableJumbotron) {
-         var imageSize = sizeOf('public/img/img0.jpg');
-         elements.push({
-            tag: 'img',
-            attributes: {
-               src: '/img/img0.jpg',
-               id: 'img0',
-               class: 'drag_img no_body_rescale',
-               'data-lock': ''
-            },
-            type: 'image',
-            x: 500,
-            y: 500,
-            w: imageSize.width,
-            h: imageSize.height,
-            s: 100
-         });
-      }
+      var imageSize = sizeOf('public/img/img0.jpg');
+      elements.push({
+         tag: 'img',
+         attributes: {
+            src: '/img/img0.jpg',
+            id: 'img0',
+            class: 'drag_img',
+            'data-lock': ''
+         },
+         x: 500,
+         y: 500,
+         w: imageSize.width,
+         h: imageSize.height,
+         s: 100
+      });
       model.set(roomPath + '.elements', elements);
    }
 
