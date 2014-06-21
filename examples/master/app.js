@@ -98,6 +98,9 @@ var APPLICATION_SETTINGS = {
          id: 'sharedWorkspaceWithRacer'
       },
       {
+         id: 'jumbotron'
+      },
+      {
          id: 'games',
          mainJS: 'game_server.js'
       },
