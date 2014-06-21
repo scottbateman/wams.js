@@ -1,0 +1,33 @@
+mixin exampleMixin(name, value)
+  .example(id='#{name}')
+    p.name Example '#{name}'
+    p.controls
+      if (value.running)
+        button.start_stop_btn(data-id='#{name}' data-start-btn='false') Stop example
+        button.restart_btn(data-id='#{name}') Restart example
+      else
+        button.start_stop_btn(data-id='#{name}' data-start-btn='true') Start example
+        button.restart_btn(data-id='#{name}' disabled) Restart example
+    p.description
+      if (value.running)
+        span.state State: Running
+      else
+        span.state State: Stopped
+      span.pid PID: #{value.pid}
+      span.link Link:
+        a(href='' data-port='#{value.port}' target='_blank')
+
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet' href='/css/index.css')
+  body
+    h1 Welcome to #{title}
+    #examplesList
+      - for (var example in allExamples)
+        +exampleMixin(example, allExamples[example])
+
+    script(type='text/javascript' src='/js/jquery-1.11.1.js')
+    script(type='text/javascript' src='/socket.io/socket.io.js')
+    script(type='text/javascript' src='/js/index.js')

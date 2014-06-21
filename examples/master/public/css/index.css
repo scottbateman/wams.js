@@ -1,0 +1,28 @@
+body {
+  padding: 10px;
+  font: 14px "Lucida Grande", "Helvetica Nueue", Arial, sans-serif;
+  background: #151515;
+  color: #fff;
+}
+a {
+  margin: 5px;
+  color: #20b2aa;
+}
+
+.example {
+  min-width: 300px;
+  margin: 5px;
+  padding: 5px;
+  border: white 1px dashed;
+  display: inline-block;
+}
+
+.name {
+  text-align: center;
+  display: block;
+  font-size: 16px;
+}
+
+.description > span {
+  display: block;
+}
