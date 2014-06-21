@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1 #{title} - Drag and rescale image on screen
+  p#description
+    span#userID
+    span.separator  - 
+    span#mode
+  p#controllers
+    button#rst_wrkspc_btn Reset workspace
+
+  canvas#minimap
+
+  script(async src='/js/jumbotron.js'
+    onload='require("racer").init(#{bundle})')
