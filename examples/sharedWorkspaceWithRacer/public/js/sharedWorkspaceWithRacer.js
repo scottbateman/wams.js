@@ -334,6 +334,17 @@ racer.ready(function(model) {
       });
 
       model.on('change', '_page.minimap.**', function(path, value, previous, passed) {
+         console.log(passed);
+         console.log(model.get('_page.minimap'));
+
+         if (path === 's' && passed.documentRescaleCenter) {
+            var rescaleP = passed.documentRescaleCenter,
+               dx = Math.round(rescaleP.x * (previous - value) / 100),
+               dy = Math.round(rescaleP.y * (previous - value) / 100);
+
+            model.increment('_page.minimap.x', -dx);
+            model.increment('_page.minimap.y', -dy);
+         }
          drawMinimap();
       });
 
@@ -471,6 +482,12 @@ racer.ready(function(model) {
                });
             }
          });
+      }
+
+      function getTargetOnMinimap(ev) {
+         console.log(ev);
+
+         var touchPointCenter = ev.gesture.center;
       }
 
       function restartMT() {
@@ -854,17 +871,24 @@ racer.ready(function(model) {
          });
 
          var newElementScale,
-            scale = model.get('_page.minimap.s'),
-            delta = ev.wheelDelta / 120 || -ev.detail;
+            minimap = model.get('_page.minimap'),
+            delta = ev.wheelDelta / 120 || -ev.detail,
+            target = ev.target,
+            passing = { documentRescaleCenter: {
+//               x: ev.pageX - $(target).offset().left + minimap.x,
+//               y: ev.pageY - $(target).offset().top + minimap.y
+               x: ev.pageX - $(target).offset().left,
+               y: ev.pageY - $(target).offset().top
+            } };
 
-         newElementScale = Math.round(scale + SCALE_DELTA * delta);
+         newElementScale = Math.round(minimap.s + SCALE_DELTA * delta);
 
          if (MIN_SCALE <= newElementScale && newElementScale <= MAX_SCALE) {
-            model.setDiff('_page.minimap.s', newElementScale);
+            model.pass(passing).setDiff('_page.minimap.s', newElementScale);
          } else if ( newElementScale < MIN_SCALE ) {
-            model.setDiff('_page.minimap.s', MIN_SCALE);
+            model.pass(passing).setDiff('_page.minimap.s', MIN_SCALE);
          } else if ( newElementScale > MAX_SCALE ) {
-            model.setDiff('_page.minimap.s', MAX_SCALE);
+            model.pass(passing).setDiff('_page.minimap.s', MAX_SCALE);
          }
 
          setTimeout(function() {
@@ -898,14 +922,21 @@ racer.ready(function(model) {
          var pinchScale = ev.gesture.scale,
             minimap = model.get('_page.minimap'),
             minimapScaleBeforePinch = model.get('_page.tmp.minimapScaleBeforePinch'),
-            newElementScale = Math.round(minimapScaleBeforePinch * pinchScale);
+            newElementScale = Math.round(minimapScaleBeforePinch * pinchScale),
+            target = ev.target,
+            passing = {
+               documentRescaleCenter: {
+                  x: ev.gesture.center.pageX - $(target).offset().left,
+                  y: ev.gesture.center.pageY - $(target).offset().top
+               }
+            };
 
          if ( MIN_SCALE <= newElementScale && newElementScale <= MAX_SCALE ) {
-            model.setDiff('_page.minimap.s', newElementScale);
+            model.pass(passing).setDiff('_page.minimap.s', newElementScale);
          } else if ( newElementScale < MIN_SCALE ) {
-            model.setDiff('_page.minimap.s', MIN_SCALE);
+            model.pass(passing).setDiff('_page.minimap.s', MIN_SCALE);
          } else if ( MAX_SCALE < newElementScale ) {
-            model.setDiff('_page.minimap.s', MAX_SCALE);
+            model.pass(passing).setDiff('_page.minimap.s', MAX_SCALE);
          }
       }
       function onMinimapTransformEnd(ev) {
